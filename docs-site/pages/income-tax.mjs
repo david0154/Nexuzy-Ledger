@@ -341,13 +341,14 @@ export default [
   <li><b>D — Tax Computation</b>: taxable income, slab tax, rebate, surcharge, cess, total tax.</li>
   <li><b>E — Advance Tax</b>: each instalment and what you paid, when advance tax applies.</li>
 </ul>
+<p>This PDF is a preparation worksheet, not a portal-valid ITR JSON or a filed return. Review it against your records and file separately on the Income Tax portal or through your CA.</p>
 <p>The PDF uses the recommended regime, and your PDF accent colour from Print Settings when custom colours are on. It is saved to your Downloads folder as <code>ITR-4-Summary-YourBusiness-2026-27.pdf</code>.</p>
 <div class="note warn"><strong>Can you file ITR-4?</strong><p>ITR-4 is for resident individuals, HUFs and firms (not LLPs) with total income up to ₹50 lakh, using presumptive taxation. With most capital gains (anything beyond long-term gains on listed shares of up to ₹1.25 lakh), income above ₹50 lakh, or regular books instead of presumptive income, you need ITR-2, ITR-3 or another form: use the PDF as a worksheet for your CA. Check every figure against Form 26AS and AIS before filing.</p></div>
 <div class="note tip"><strong>Something wrong?</strong><p><b>"Could not generate PDF"</b>: press ${key('Ctrl', 'F5')} and try again. The PAN line is empty: add your PAN to the business in Settings. Business income in the PDF differs from the tax: the PDF takes the Presumptive tab's figure when that tab has one, while the tax comes from the calculator; click ${ui('Use ₹... as Business Income')} on the Presumptive tab so both match.</p></div>
 </section>
 
 <section id="not-included">
-<h3>Not included yet</h3>
+<h3>Not included</h3>
 <p>The last card lists what the helper does not do, so you know what to get elsewhere: reading Form 16, a capital-gains module with broker imports, a house-property module for several properties, ITR-1, ITR-2 and ITR-3, the ITR JSON file the portal uploads, and Form 26AS reconciliation. File the return itself on incometax.gov.in or through your CA.</p>
 </section>
 `,

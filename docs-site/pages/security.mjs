@@ -106,7 +106,7 @@ export default [
   <li><strong>The "free" plans are not free for long.</strong> Most now give a trial credit and then charge every month, plus extra for storage that keeps your files.</li>
 </ul>
 <p>Hosting it online would also send your books to someone else's server, which is the one thing this app promises not to do.</p>
-<p><b>What you can do instead:</b> keep the app on one computer and take a <a href="backup.html">backup</a> often. To move to a new computer, see <a href="backup.html#move-pc">moving to a new computer</a>. Using the app from a phone or tablet on the <b>same Wi-Fi</b>, with a PIN that the app's server checks, is planned for the update on Saturday 7 November 2026. Using it over the internet may come later, but only after the app has a proper login of its own; this page will say so when it does.</p>
+<p><b>What you can do instead:</b> keep the app on one computer and take a <a href="backup.html">backup</a> often. To move to a new computer, see <a href="backup.html#move-pc">moving to a new computer</a>. Nexuzy Ledger is designed for local, single-computer use; it does not support access from a phone or tablet over Wi-Fi or from the internet.</p>
 </section>
 
 <section id="check-yourself">

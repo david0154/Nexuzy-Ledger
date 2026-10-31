@@ -1,4 +1,4 @@
-# Running Free GST Billing Software online: not yet
+# Running Nexuzy Ledger online: not supported
 
 An earlier version of this page described hosting the app on Railway, Render, Fly.io, Vercel + Supabase, a VPS or a Cloudflare Tunnel. **Don't follow those steps.** They do not work with the app as it is, and they are not safe:
 
@@ -8,4 +8,4 @@ An earlier version of this page described hosting the app on Railway, Render, Fl
 
 The full answer, with what to do instead, is in the guide: [Can I put it online?](https://dicecodes.com/free-gst-software-documentation/security.html#host-online)
 
-**Planned:** using the app from a phone or tablet on the **same Wi-Fi** as your computer, with a PIN that the app's server checks (update on Saturday 7 November 2026). Online use may come later, only after the app has a proper login of its own. This page will say so when it does.
+Nexuzy Ledger is intended for use on the computer where it is installed. It does not provide network access, user accounts or multi-user permissions. Do not expose it to the internet or another device.

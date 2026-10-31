@@ -12,7 +12,7 @@
 [![Countries](https://img.shields.io/badge/Countries-22-blue.svg)](#key-features)
 [![GST](https://img.shields.io/badge/GST-Compliant-success.svg)](#clipboard-gst-compliance--filing)
 
-**Create GST-compliant invoices, file GSTR-1 / GSTR-3B / GSTR-2B reconciliation, track TDS / TCS, bill international clients in 22 currencies, manage inventory — all without paying a single rupee. Ever.**
+**Create GST-compliant invoices, prepare GSTR-1 / GSTR-3B data, reconcile GSTR-2B, track TDS / TCS, bill international clients in 22 currencies and manage inventory — all without paying a single rupee. Ever.**
 
 **Free forever. Works on your computer, even offline. No tracking. No ads. No signup.**
 
@@ -22,7 +22,7 @@ Your data never leaves your computer. No cloud and no limits. Open source, so yo
 
 <a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip"><img src="https://img.shields.io/github/v/release/david0154/Nexuzy-Ledger?style=for-the-badge&label=%E2%AC%87%EF%B8%8F%20Download&color=16a34a&labelColor=15803d" alt="Download the latest version" height="48"></a>&nbsp;&nbsp;<a href="https://dicecodes.com/free-gst-software-documentation/"><img src="https://img.shields.io/badge/%F0%9F%93%96%20Documentation-Read%20the%20guide-2563eb?style=for-the-badge&labelColor=1d4ed8" alt="Read the documentation" height="48"></a>
 
-<sub>Always the newest version · about 16 MB · Windows, macOS and Linux in one ZIP · <a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest">release notes</a></sub>
+<sub>Always the newest version · about 24 MB · Windows, macOS and Linux in one ZIP · <a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest">release notes</a></sub>
 
 [⬇ Download ZIP](https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip) &nbsp;|&nbsp; [📦 Releases](https://github.com/david0154/Nexuzy-Ledger/releases) &nbsp;|&nbsp; [📖 Documentation](https://dicecodes.com/free-gst-software-documentation/) &nbsp;|&nbsp; [⚡ 3-Step Install](#quick-start--installation) &nbsp;|&nbsp; [🧾 First Invoice in 5 Minutes](#your-first-invoice-in-5-minutes) &nbsp;|&nbsp; [📸 Screenshots](#screenshots) &nbsp;|&nbsp; [🐛 Report Bug](https://github.com/david0154/Nexuzy-Ledger/issues)
 
@@ -114,7 +114,7 @@ The launcher:
 
 From then on, click the **Free GST Billing** icon on your Desktop: it starts the app and opens it in its own window. To update / backup / restore / move to another PC / stop the server, use the in-app **⚙ Control Panel** in the sidebar (or the launcher in the app folder). No batch files, no CMD windows.
 
-> **☁ Can I host it online (Railway, Render, Supabase)?** Not yet. The app has no login on its server, so anyone who found the address could read or delete your books, and it keeps its data as files, not in a database. [Why, and what to do instead](https://dicecodes.com/free-gst-software-documentation/security.html#host-online). Using it from a phone or tablet on the same Wi-Fi is planned for the update on Saturday 7 November 2026.
+> **Can I host it online or open it from another device?** No. Nexuzy Ledger is designed for one computer and listens only on that computer. It has no server-side login or multi-user access, so do not expose it to the internet or your local network.
 
 ---
 
@@ -158,7 +158,7 @@ More screenshots, next to the steps they show, in the [documentation](https://di
 - [How to Self-File GST Returns](#how-to-self-file-gst-returns)
 - [Free GST Billing Software vs Paid Alternatives](#-comparison-free-gst-billing-software-vs-paid-alternatives)
 - [Tech Stack](#tech-stack)
-- [Roadmap](#roadmap)
+- [Feature availability](#feature-availability)
 - [Documentation](#books-documentation)
 - [Who Is This For?](#who-is-this-for)
 - [Why Is This Free?](#why-is-this-free)
@@ -389,7 +389,7 @@ If we priced every 🆕 feature at the going rate on the paid alternatives:
 |---------|---------|
 | **GSTR-1 Data** | B2B invoices (with GSTIN), B2C aggregated by tax rate, B2C Large (inter-state > Rs.2.5 L), HSN summary with UQC, Credit Notes (CDNR / CDNUR), Document Summary (Table 13) |
 | **GSTR-3B Computation** | Output tax liability, Input Tax Credit from expenses + purchases (auto-routed to IGST or CGST+SGST per inter-state flag), net tax payable — ready to copy into GST portal |
-| **GSTR-1 + GSTR-3B JSON Export** | Download GSTN offline-tool format JSON files (schema v1.7) and upload directly to gst.gov.in — no manual data entry |
+| **GSTR-1 + GSTR-3B JSON Export** | Download GSTN offline-tool JSON/CSV files; import GSTR-1 JSON into the GSTN offline tool and submit on the GST portal |
 | **GSTR-2B Reconciliation** | Import GSTR-2B JSON downloaded from the GST portal; auto-matches each entry against your purchase records by supplier GSTIN + invoice number. Flags Matched / Amount-mismatch / Books-only / 2B-only entries with filterable summary and CSV export |
 | **TDS / TCS Reports** | Per-quarter, per-section aggregation of TDS receivable (deducted by clients) and TCS collected. CSV exports formatted as direct input for **Form 26Q** and **Form 27EQ** quarterly returns |
 | **CSV Exports** | Download B2B, B2C, B2C Large, HSN, CDNR, Doc Summary reports as CSV for your CA or portal upload |
@@ -540,9 +540,9 @@ Every install (the launcher, the one-line command, Mac and Linux) puts a **Free 
 
 > Use only this icon. Don't use the browser's own **Install app** button (in Chrome or Edge's address bar): that icon opens a window but cannot start the app, so after a restart it only shows "Needs a Quick Start". If you already have one, right-click it and choose **Uninstall**.
 
-### Online hosting (Railway, Render, Supabase): not yet
+### Online hosting and network access: not supported
 
-The app has no login on its server yet, so it must not be put on the internet. See [Can I put it online?](https://dicecodes.com/free-gst-software-documentation/security.html#host-online).
+Nexuzy Ledger has no server-side user accounts or roles. Keep it on the computer where it is installed; do not expose it to the internet or other devices. See [Can I put it online?](https://dicecodes.com/free-gst-software-documentation/security.html#host-online).
 
 ## How to Self-File GST Returns
 
@@ -553,16 +553,16 @@ Step 1 ──► Enter invoices throughout the month as you normally would
               │
 Step 2 ──► Go to GST Returns page → Review GSTR-1 data (B2B, B2C, HSN, Credit Notes)
               │
-Step 3 ──► Export GSTR-1 JSON → Upload directly to gst.gov.in
+Step 3 ──► Export GSTR-1 JSON → Import it in the GSTN offline tool → Upload from the portal
               │
 Step 4 ──► Review GSTR-3B summary → Copy figures into the GST portal and file
               │
 Step 5 ──► Mark the return as filed to track your compliance status
 ```
 
-The app includes a **step-by-step interactive filing guide** with screenshots and tips for both GSTR-1 and GSTR-3B. It even covers NIL return filing for months with no activity.
+The app includes a **step-by-step interactive filing guide** with screenshots and tips for both GSTR-1 and GSTR-3B. GSTR-1 JSON is prepared for the GSTN offline tool; GSTR-3B figures are reviewed in the app and entered on the portal. The app does not directly submit returns or file them for you.
 
-> **No CA needed for basic GST filing.** The app does all the calculations — you just upload and confirm.
+> The filing guide can help you prepare routine returns, but it does not file them for you. Check the portal's validations and consult a qualified tax professional when unsure.
 
 ---
 
@@ -583,91 +583,32 @@ The app includes a **step-by-step interactive filing guide** with screenshots an
 
 ---
 
-## Roadmap
+## Feature availability
 
-### :white_check_mark: Recently Delivered (v1.10 series — 2026)
+This table describes what is in the current app. “Partial” means the workflow
+needs a manual portal step or only part of the requested capability is present.
 
-- [x] **A page break never cuts through the signature or stamp** — the whole footer moves to the next page instead (v1.10.70)
-- [x] **Optional "system-generated invoice, no signature required" note** below Terms & Conditions (v1.10.70, #72)
-- [x] **One launcher for everything on Windows** — install, open and update from a single file, with its own icon and an auto-refreshing status (v1.10.69), plus a one-command PowerShell install
-- [x] **Install needs no administrator rights** — Node.js is set up inside the app folder if the PC does not have it, and the app opens in the browser by itself (v1.10.69)
-- [x] **Getting started checklist** on the Dashboard that ticks itself off from what you have actually set up (v1.10.69)
-- [x] **Purchase status dropdown**, Customize in the toolbar, and click-to-replace number fields in purchases (v1.10.69, #71)
-- [x] **A GSTIN fills in the client's state** and catches its own typos, offline (v1.10.68)
-- [x] **Cancel Invoice instead of deleting one** — the number stays in the books, the PDF is stamped CANCELLED, and it drops out of every total and return (v1.10.67)
-- [x] **Totals count only real sales** — proforma and delivery challans no longer inflate turnover; credit notes subtract (v1.10.67)
-- [x] **Company stamp beside the signature**, each with its own size slider (v1.10.67)
-- [x] **Separate books per business** — invoices, expenses, purchases, receipts, recurring templates, reports, GST returns and Income Tax all follow the selected company (v1.10.64–1.10.66)
-- [x] **Linux / NAS in-app updater** — Control Panel → Update Now works outside Windows (v1.10.66)
-- [x] **Mobile sidebar** — the menu hides behind ☰ on a phone so pages get the full width (v1.10.66)
-- [x] **Notifications can be cleared** and return when something new happens (v1.10.62)
-- [x] **Blank invoices and empty purchase bills can no longer be saved** (v1.10.58)
-- [x] **Purchase bills remember your suppliers and items** (v1.10.50)
-- [x] **One-file launcher per OS + in-app ⚙ Control Panel** — update, backup, restore, move PC, stop server (v1.10.44)
-- [x] **Direct-HTML vector thermal print with PDF fallback toggle** (v1.10.42)
-- [x] **Payment/receipt reconciliation** — orphaned receipts auto-heal on Dashboard load (v1.10.41)
-- [x] **REPRINT badge** repositioned + default OFF for non-retail (v1.10.41)
-- [x] **PDF Save & Download crash fix** — swapped `color-mix(oklab)` for `rgba()` (v1.10.40)
-- [x] **Bill of Supply / Delivery Challan** correctly remove GST from invoice total (v1.10.39)
-- [x] **Invoice PDF polish** — accent TOTAL DUE anchor, footer containers, smart Terms default (v1.10.38)
-- [x] **Payment Accounts — Account Holder Name + Account Type** on bank block (v1.10.37)
-- [x] **Portal print preview + settings redesign + business-type gating** (v1.10.36)
-- [x] **Vector-HTML thermal preview + OCR line items with catalog fuzzy-match** (v1.10.35)
-- [x] **In-app ConfirmModal + PromptModal** — every native browser confirm/prompt replaced (v1.10.34)
-- [x] **Thermal print rewrite + CSP fix + OCR offline bundling** (v1.10.33)
-- [x] **Complete 4-mode discount system** — Net / Unit / Price-with-Tax + invoice-level Total (v1.10.25)
-- [x] **Client credit balance** — overpayment carries forward and applies to next bill (v1.10.24)
-- [x] **Focus mode + Ctrl+K command palette + Notification bell** — POS-speed keyboard flow
-- [x] **DOM-level pagination + GST Rule 48 multi-copy** — page breaks respect row boundaries
-- [x] **UTGST bucket** for Chandigarh / Ladakh / A&N / Lakshadweep / DN&DD (Chapter II compliance)
-- [x] **TCS 206C(1H) on receipt-including-GST** per CBDT Circular 17/2020 + ₹50L threshold
-- [x] **9 one-click design presets** + full user-configurable PDF colours + font scale
-- [x] **Multi-language section labels** — English / Hindi / Tamil / Marathi / Bengali
-- [x] **Automatic daily backup + Trash bin** + transactional restore (rollback on error)
-- [x] **Bulk PDF export** with progress + cancel
-- [x] **Income Tax (ITR)** computation — old/new regime, 234B/C interest, surcharge cap
-- [x] **Setup wizard** with 6 business-type presets
+| Feature | Current availability |
+|---|---|
+| Bank statement import and ITR summary | Available: common-bank CSV formats plus a generic-column fallback, and an ITR-4 filing-summary PDF. PDF and Excel bank statements are not imported. The PDF is a preparation aid, not a portal-ready ITR return. See [Income Tax Helper](./docs/TAX_HELPER_PLAN.md). |
+| Tally XML export / ledger import | Not available. Product and client CSV import/export is supported. |
+| Recurring invoices | Scheduled invoice generation is available while the app server is running. Automatic email or WhatsApp dispatch is not available. |
+| E-invoicing (IRN) | Partial: export invoice JSON for manual upload to the IRP portal, then import the portal response or enter the IRN. The app does not call the IRP API to generate IRNs. |
+| Bulk e-invoicing | Available for bulk JSON export and IRN-response import; portal upload and IRN generation remain manual. |
+| Direct GSTR-1 / GSTR-3B submission | Not available. The app exports GSTN offline-tool JSON/CSV and provides a filing guide; users submit on the GST portal. |
+| Reverse charge | The invoice reverse-charge option and GST reporting are available. Generating a self-invoice for an unregistered-supplier purchase is not available. |
+| GST cess and composition invoices | Available: per-item cess and composition bill-of-supply invoices with the Rule 46A declaration. |
+| Payment reminders | In-app overdue notifications and user-triggered WhatsApp reminders are available. Automated email or scheduled WhatsApp reminders are not. |
+| Languages | Some invoice/PDF section labels are available in English, Hindi, Tamil, Marathi and Bengali. The full application UI is not translated; Telugu and Gujarati are not supported. |
+| Barcode scanning | Available for products and invoice line items using a camera in supported browsers. |
+| Multi-user roles, customer portal and payroll | Not available. This is a local, single-user app; there is no shareable customer portal or payroll module. |
+| Inventory | Stock tracking, barcode lookup and manufacturing features are available. Batch/expiry tracking and warehouse management are not. |
+| Financial reports | Profit & Loss, stock and cash-book reports are available. A formal Balance Sheet and Cash Flow statement are not. |
+| Discounts and price lists | Invoice-level and line-level discount modes are available. Party-specific discount defaults and multiple price lists are not. |
+| Orders and product variants | Purchase orders are available. Sales orders and size/colour variants are not. |
+| WhatsApp | Manual sharing through WhatsApp Web is available. The WhatsApp Business API and automated dispatch are not. |
 
-### :rocket: Coming Soon
-
-- [ ] **Bank Statement Import** + ITR Filing Summary PDF *(see [docs/TAX_HELPER_PLAN.md](./docs/TAX_HELPER_PLAN.md))*
-- [ ] **Tally XML export + Tally-format ledger import**
-- [ ] **Recurring invoices: scheduled auto-generate + email/WhatsApp dispatch**
-- [ ] **WhatsApp Business API integration** — one-click invoice send (currently opens WA Web with pre-filled text)
-- [ ] **Barcode scanning for products** (PWA camera)
-- [ ] **E-Invoicing (IRN)** — Invoice Reference Number via IRP portal *(mandatory for AATO > ₹5 cr)*
-
-### :calendar: Planned Features
-
-- [ ] **E-Invoicing (IRN)** — generate Invoice Reference Number via IRP portal *(mandatory for AATO > ₹5 cr — see [docs/COMPETITOR_GAPS.md](./docs/COMPETITOR_GAPS.md))*
-- [ ] **Bulk E-Invoicing** — generate IRN for multiple invoices at once
-- [ ] **Direct GSTR-1/3B portal upload** *(currently we generate the JSON, user uploads via offline tool — direct submission requires GSP partnership)*
-- [ ] **RCM self-invoice** for purchases from unregistered suppliers *(the reverse-charge switch, the "Reverse Charge: Yes / No" line on tax invoices and the GSTR-1 / GSTR-3B reporting already ship)*
-- [ ] **GST Cess** (compensation cess on tobacco/auto/coal)
-- [ ] **Composition scheme** invoice variant with Rule 46A declaration
-- [ ] **Automatic Payment Reminders** — email + WhatsApp for overdue invoices
-- [ ] **Android & iOS Mobile App** — native apps for billing on the go
-- [ ] **Multi-Language Support** — Hindi, Tamil, Telugu, Gujarati, Marathi
-- [ ] **AI-Powered Expense Categorization** — auto-classify expenses
-- [ ] **Shopify / WooCommerce Integration** — sync orders and generate invoices
-- [ ] **Customer Self-Service Portal** — shareable link for clients to view and pay invoices
-- [ ] **Payment-gateway pay-links** on invoices (Razorpay / Stripe / Cashfree)
-- [ ] **Multi-user access with roles** (admin, billing, view-only)
-- [ ] **Advanced Inventory** — batch tracking, expiry dates, warehouse management
-- [ ] **Payroll & Salary Management** — employee salary processing with TDS
-- [ ] **Balance Sheet & Cash Flow Reports** — complete financial reporting
-
-### :bulb: Community Requested (still open)
-
-- [ ] Party-wise discount settings
-- [ ] Multiple price lists (wholesale / retail)
-- [ ] Sales order & purchase order workflows
-- [ ] Item size / colour variants
-- [ ] Digital signature on invoices (DSC integration)
-- [ ] More industry-specific *invoice templates* (separate from the 13 Terms presets we already ship)
-- [ ] Branch-wise reporting
-
-> **Want a feature?** [Ask for it here](https://github.com/david0154/Nexuzy-Ledger/issues/new?template=feature_request.yml) and let us know.
+For changes and fixes that have shipped, see the [changelog](./CHANGELOG.md).
 
 ### :calendar: A new update every Saturday
 
@@ -689,8 +630,8 @@ See **[CHANGELOG.md](./CHANGELOG.md)** for a detailed history of every release. 
 The deep-dive material lives in **[docs/](./docs/)**:
 
 - **[docs/USER_GUIDE.md](./docs/USER_GUIDE.md)** — plain-language handbook for end users (Quick Start → Daily Use → Backup → Migration → FAQ → Troubleshooting). Also available **inside the app** as a searchable view with one-click PDF export.
-- **[docs/COMPETITOR_GAPS.md](./docs/COMPETITOR_GAPS.md)** — gap analysis vs ERPNext / Akaunting / Invoice Ninja / Crater + Tally / Vyapar / Zoho Books / ClearTax / Marg, with the prioritised post-1.4 roadmap.
-- **[docs/TAX_HELPER_PLAN.md](./docs/TAX_HELPER_PLAN.md)** — three-tier proposal for the v1.5.x Income Tax Helper (bank-statement CSV import + ITR Filing Summary PDF + optional ITR-4 JSON).
+- **[docs/COMPETITOR_GAPS.md](./docs/COMPETITOR_GAPS.md)** — a dated competitor comparison and notes on integration boundaries.
+- **[docs/TAX_HELPER_PLAN.md](./docs/TAX_HELPER_PLAN.md)** — current Income Tax Helper capabilities, supported bank CSVs and filing limitations.
 
 ---
 
@@ -705,7 +646,7 @@ The deep-dive material lives in **[docs/](./docs/)**:
 | **Startups & New Businesses** | Zero-cost billing from day one. No commitment, no vendor lock-in. |
 | **CAs & Tax Consultants** | Generate invoices for advisory fees. Use GST filing tools and CSV exports for clients. |
 | **Exporters** | Multi-currency invoices with GST toggles for export billing. |
-| **Anyone Who Wants to Self-File GST** | Built-in filing guide replaces the need for a CA for basic GSTR-1 and GSTR-3B filing. |
+| **Anyone Preparing GST Returns** | Review exported GST data and follow the built-in guide before filing on the GST portal. |
 
 ---
 
@@ -898,10 +839,10 @@ The `.hta` launcher is Windows-only, but the app itself works on macOS and Linux
 Updates only refresh the app code and dependencies. Your `data/` folder (invoices, clients, products, settings) and `Saved Invoices/` PDF archive are **never touched**. The updater also saves a backup ZIP to `Documents\FreeGSTBill Backups` before it changes anything.
 
 ### Is there a mobile app?
-No, and no Android app is planned. Using the app from a phone or tablet on the same Wi-Fi as your computer is planned for the update on Saturday 7 November 2026.
+No. Nexuzy Ledger is a local desktop app and is not designed to be accessed from a phone or tablet over the network.
 
 ### Can I import data from Tally / Vyapar / Excel?
-CSV import is supported today for clients and products. Direct Tally XML import is on the Coming Soon roadmap. Free-form Excel import requires manual mapping today.
+Product and client CSV import/export is supported. Direct Tally XML import/export is not available. An Excel file must be saved as CSV and match the supported columns before import.
 
 ---
 
@@ -910,7 +851,7 @@ CSV import is supported today for clients and products. Direct Tally XML import 
 - **Email:** [info@nexuzy.in](mailto:info@nexuzy.in)
 - **Report a problem:** [bug report form](https://github.com/david0154/Nexuzy-Ledger/issues/new?template=bug_report.yml) · **Ask for a feature:** [feature form](https://github.com/david0154/Nexuzy-Ledger/issues/new?template=feature_request.yml) (fixes and features ship every Saturday)
 - **Releases:** [GitHub Releases](https://github.com/david0154/Nexuzy-Ledger/releases)
-- **Discussions:** *(coming soon)*
+- **Discussions:** not enabled for this repository
 
 ---
 

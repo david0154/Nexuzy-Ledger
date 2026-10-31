@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.10.83] - 2026-10-31
+## [1.10.83] - 2026-11-01
 
 ### How to update
 
@@ -48,6 +48,11 @@ the old folder. Restart the app afterwards.
 
 Your invoices, clients, products and settings are never touched by an update;
 a backup is made first.
+
+### Documentation
+- Removed the outdated README roadmap and replaced it with a verified feature-status table.
+- Corrected the GST portal, Income Tax Helper, recurring invoice and integration descriptions to distinguish automatic features from manual workflows and unsupported features.
+- Updated the competitor comparison and online-access guidance to remove stale future-release promises.
 
 ### Added
 - **Offline mode, and proof the app keeps your data private.** Settings has
