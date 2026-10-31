@@ -52,7 +52,7 @@ const top = /^## \[([^\]]+)\] - (.+)$/m.exec(changelog);
 check('CHANGELOG starts with this version', top && top[1] === version, `The first entry is ${top ? top[1] : 'missing'}; add "## [${version}] - YYYY-MM-DD" at the top.`);
 check('...and it is dated (not "unreleased")', top && /^\d{4}-\d{2}-\d{2}$/.test(top[2].trim()), `Replace "${top?.[2]}" with today's date.`);
 const entry = top ? changelog.slice(top.index, changelog.indexOf('\n---\n', top.index)) : '';
-check('...with a "How to update" block (RELEASE_CHECKLIST)', /### How to update/.test(entry) && new RegExp(`New version:\\*\\*\\s*${version.replace(/\./g, '\\.')}`).test(entry) && /Free-GST-Billing\.zip/.test(entry),
+check('...with a "How to update" block (RELEASE_CHECKLIST)', /### How to update/.test(entry) && new RegExp(`New version:\\*\\*\\s*${version.replace(/\./g, '\\.')}`).test(entry) && /Nexuzy-Ledger\.zip/.test(entry),
   'Copy the How to update block from docs/RELEASE_CHECKLIST.md: current → new version, the Update button, and the manual Nexuzy-Ledger.zip steps.');
 
 console.log('\nRelease ZIP');

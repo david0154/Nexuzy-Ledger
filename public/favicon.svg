@@ -1,7 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#1e40af"/>
-  <rect x="4" y="4" width="56" height="56" rx="10" fill="#2563eb"/>
-  <path d="M18 16h28a2 2 0 012 2v28a2 2 0 01-2 2H18a2 2 0 01-2-2V18a2 2 0 012-2z" fill="#fff" opacity="0.15"/>
-  <text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="26" fill="#fff">N</text>
-  <rect x="14" y="50" width="36" height="3" rx="1.5" fill="#60a5fa"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW 2026 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="157.854mm" height="157.088mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 8251.32 8211.29"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ xmlns:xodm="http://www.corel.com/coreldraw/odm/2003">
+ <defs>
+   <clipPath id="id0">
+    <path d="M324 1004.77c444.06,-643.61 929.84,-1007.6 2009.45,-1004.75l3894.5 14.25c1361.11,98.42 2111.45,1165.43 2015.1,2546.28l0.25 3269.92c-3.9,1111.39 -683.6,2256.48 -2068.35,2374.66l-4129.99 6.15c-1038.34,-92.59 -1930.23,-934.17 -2039.46,-2145.48l-5.11 -3803.06c-8.8,-574.54 137.49,-925.71 323.62,-1257.97z"/>
+   </clipPath>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g style="clip-path:url(#id0)">
+   <image x="-589.77" y="-699" width="9441.45" height="9441.45" xlink:href="favicon_Images\favicon_ImgID1.png"/>
+  </g>
+ </g>
 </svg>

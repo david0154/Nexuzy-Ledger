@@ -461,12 +461,15 @@ function assertPortableZip(file) {
 }
 
 const sizeMB = (statSync(zipPath).size / 1024 / 1024).toFixed(2);
+const latestZipPath = join(OUT_DIR, 'Nexuzy-Ledger.zip');
+copyFileSync(zipPath, latestZipPath);
 console.log(`\n  ✅ Release built — ${sizeMB} MB`);
 console.log(`     ${zipPath}\n`);
+console.log(`     Latest-release asset: ${latestZipPath}\n`);
 console.log('  Next steps:');
 console.log('   1. Test locally: extract the ZIP, double-click the launcher for your OS.');
-console.log('   2. Upload to GitHub Releases: gh release create v' + version + ' "' + zipPath + '"');
-console.log('   3. README download link already points at latest release — no code change needed.\n');
+console.log('   2. Upload the fixed-name asset to GitHub Releases: gh release create v' + version + ' "' + latestZipPath + '" --title "Nexuzy Ledger v' + version + '" --generate-notes');
+console.log('   3. README and installer links automatically follow the latest release.\n');
 
 function copyDirRecursive(src, dst) {
   if (!existsSync(src)) return;
