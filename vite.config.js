@@ -89,7 +89,7 @@ export default defineConfig({
             // v1.10.6 — audit L16: SVG at fixed `sizes:96x96` confused
             // Windows jumplist. `any` lets the OS render at whatever
             // size it wants (SVG is scalable).
-            icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+            icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
           {
             name: 'Dashboard',
@@ -99,7 +99,7 @@ export default defineConfig({
             // v1.10.6 — audit L16: SVG at fixed `sizes:96x96` confused
             // Windows jumplist. `any` lets the OS render at whatever
             // size it wants (SVG is scalable).
-            icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+            icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
           {
             name: 'GST Returns',
@@ -109,7 +109,7 @@ export default defineConfig({
             // v1.10.6 — audit L16: SVG at fixed `sizes:96x96` confused
             // Windows jumplist. `any` lets the OS render at whatever
             // size it wants (SVG is scalable).
-            icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+            icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
           {
             name: 'Settings',
@@ -119,7 +119,7 @@ export default defineConfig({
             // v1.10.6 — audit L16: SVG at fixed `sizes:96x96` confused
             // Windows jumplist. `any` lets the OS render at whatever
             // size it wants (SVG is scalable).
-            icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+            icons: [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
           },
         ],
         // v1.10.2 — Icon set matches Android + iOS "Add to Home Screen"
@@ -132,11 +132,11 @@ export default defineConfig({
         // handle it (all modern desktop). The PNG entries point at files
         // that MUST be dropped into public/icons/ — see README.
         icons: [
-          { src: '/favicon.svg', sizes: 'any',       type: 'image/svg+xml' },
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/icons/maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
       },
       workbox: {

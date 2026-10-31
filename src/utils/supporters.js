@@ -9,7 +9,7 @@ const text = (value, max) => (
 
 export const upiNote = (businessName = '') => {
   const name = String(businessName || '').replace(/[^A-Za-z0-9 .-]+/g, ' ').replace(/\s+/g, ' ').trim();
-  return name ? `Free GST Billing support - ${name}`.slice(0, 50).trim() : 'Free GST Billing support';
+  return name ? `Nexuzy Ledger support - ${name}`.slice(0, 50).trim() : 'Nexuzy Ledger support';
 };
 
 export const parseSupporters = (raw) => {

@@ -61,7 +61,7 @@
 
   STEP-BY-STEP GUIDES, for every computer, with every click
   explained (no technical knowledge needed):
-  https://dicecodes.com/free-gst-software-documentation/install.html
+  https://ledger.nexuzy.in/install.html
 
 
 -----------------------------------------------------------
@@ -243,7 +243,7 @@
       and anything urgent straight away.
 
       The full guide, with every screen explained:
-      https://dicecodes.com/free-gst-software-documentation/
+      https://ledger.nexuzy.in/
 
 
 ===========================================================

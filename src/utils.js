@@ -819,7 +819,7 @@ export const markUnpaidPatch = (bill) => {
 // The online documentation. Help buttons link straight to the section for
 // their screen, and the sidebar User Guide opens the start (v1.10.75). The
 // build of docs-site checks that every doc="page#section" used in src exists.
-export const DOCS_URL = 'https://dicecodes.com/free-gst-software-documentation/';
+export const DOCS_URL = 'https://ledger.nexuzy.in/';
 export const docsLink = (doc = '') => {
   const [page, section] = String(doc).split('#');
   if (!page || page === 'index') return DOCS_URL + (section ? `#${section}` : '');
@@ -1915,6 +1915,7 @@ export const MENU_ITEMS = [
   { id: 'clients', label: 'Clients', module: 'clients', core: true, section: 'main', help: 'The people and businesses you bill.' },
   { id: 'inventory', label: 'Products', module: 'inventory', section: 'main', help: 'Your product and service list, with stock.' },
   { id: 'expenses', label: 'Expenses', module: 'expenses', section: 'main', help: 'Rent, salaries and other running costs.' },
+  { id: 'payroll', label: 'Payroll', module: 'payroll', section: 'main', help: 'Employee records, monthly salary runs and payslips. TDS is entered manually.' },
   { id: 'purchases', label: 'Purchases', module: 'purchases', section: 'main', help: 'Bills from your suppliers, for stock and input tax credit.' },
   { id: 'recurring', label: 'Recurring', module: 'recurring', section: 'main', help: 'Invoices that repeat every week, month or year.' },
   { id: 'receipts', label: 'Receipts', module: 'receipts', section: 'main', help: 'Payment receipts for money you receive.' },

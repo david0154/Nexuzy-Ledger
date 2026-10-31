@@ -30,7 +30,7 @@ set -eu
 # installing dependencies is worse than one that finishes or rolls back.
 trap '' HUP PIPE
 
-REPO_API='https://api.github.com/repos/david0154/Nexuzy-Ledger/releases/latest'
+REPO_API='https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10'
 
 say()  { printf '  %s\n' "$*" 2>/dev/null || true; }
 fail() { printf '\n  ERROR: %s\n\n' "$*" >&2 2>/dev/null || true; exit 1; }
@@ -50,7 +50,7 @@ FROM=unknown
 
 say ''
 say '============================================================'
-say ' Free GST Billing Software - Update'
+say ' Nexuzy Ledger - Update'
 say '============================================================'
 say ''
 
@@ -139,15 +139,19 @@ const agent = { 'User-Agent': 'FreeGSTBill-Updater' };
   if (typeof fetch !== 'function') throw new Error('Node.js 18 or newer is needed to download updates.');
   const rel = await fetch(api, { headers: { ...agent, Accept: 'application/vnd.github+json' } });
   if (!rel.ok) throw new Error(`GitHub answered ${rel.status}.`);
-  const info = await rel.json();
+  const releases = await rel.json();
+  const info = releases.find((item) => !item.draft);
+  if (!info) throw new Error('No published Nexuzy Ledger release was found.');
   const assets = info.assets || [];
   const asset = assets.find((a) => /^Nexuzy-Ledger-v.+\.zip$/i.test(a.name)) || assets.find((a) => /\.zip$/i.test(a.name));
-  if (!asset) throw new Error(`Release ${info.tag_name} has no ZIP attached yet. Try again later.`);
   console.log(`  Latest release: ${info.tag_name}`);
-  const res = await fetch(asset.browser_download_url, { headers: agent });
+  const attachment = String(info.body || '').match(/https:\/\/github\.com\/user-attachments\/files\/[^\s)<>]+\.zip(?=[)\s]|$)/i);
+  const url = asset?.browser_download_url || attachment?.[0];
+  if (!url) throw new Error(`Release ${info.tag_name} has no downloadable app ZIP.`);
+  const res = await fetch(url, { headers: agent });
   if (!res.ok) throw new Error(`The download failed with ${res.status}.`);
   const buf = Buffer.from(await res.arrayBuffer());
-  if (asset.size && buf.length !== asset.size) throw new Error(`The download is incomplete (${buf.length} of ${asset.size} bytes).`);
+  if (asset?.size && buf.length !== asset.size) throw new Error(`The download is incomplete (${buf.length} of ${asset.size} bytes).`);
   fs.writeFileSync(out, buf);
   console.log(`  Downloaded ${(buf.length / 1048576).toFixed(1)} MB`);
 })().catch((e) => { console.error(`  ${e.message}`); process.exit(1); });

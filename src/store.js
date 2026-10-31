@@ -440,6 +440,16 @@ export const getAllCashEntries = () => apiFetch(`${API}/cash-book`);
 export const saveCashEntry = async (entry) => (await apiFetch(`${API}/cash-book`, { method: 'POST', body: JSON.stringify(entry) })).entry;
 export const deleteCashEntry = (id) => apiFetch(`${API}/cash-book/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
+// Payroll records are kept in the normal metadata backup so they travel with
+// the user's business data on export, restore, and PC move.
+export const getPayrollData = async () => {
+  const { value } = await apiFetch(`${API}/meta/payroll`);
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+};
+export const savePayrollData = (value) => apiFetch(`${API}/meta/payroll`, {
+  method: 'POST', body: JSON.stringify({ value }),
+});
+
 // ---- Receipts / Payment Vouchers ----
 export const getAllReceipts = async () => {
   return apiFetch(`${API}/receipts`);

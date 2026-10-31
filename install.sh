@@ -27,7 +27,6 @@
 
 set -eu
 
-ZIP_URL='https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip'
 NODE_VERSION=v20.19.0
 NEED_FREE_MB=600
 TEST=${FREEGSTBILL_TEST:-}
@@ -58,6 +57,24 @@ download() { # url file
   else
     wget -q --show-progress -O "$2" "$1" 2>/dev/null || wget -O "$2" "$1"
   fi
+}
+
+release_zip_url() {
+  "$NODE" - <<'NODE'
+const api = 'https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10';
+(async () => {
+  const res = await fetch(api, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'NexuzyLedger-Installer' } });
+  if (!res.ok) throw new Error(`GitHub release list returned ${res.status}.`);
+  const releases = await res.json();
+  const release = releases.find((item) => !item.draft);
+  if (!release) throw new Error('No published Nexuzy Ledger release was found.');
+  const asset = (release.assets || []).find((item) => /\.zip$/i.test(item.name));
+  const attachment = String(release.body || '').match(/https:\/\/github\.com\/user-attachments\/files\/[^\s)<>]+\.zip(?=[)\s]|$)/i);
+  const url = asset?.browser_download_url || attachment?.[0];
+  if (!url) throw new Error(`Release ${release.tag_name} has no downloadable app ZIP.`);
+  console.log(url);
+})().catch((error) => { console.error(`  ${error.message}`); process.exit(1); });
+NODE
 }
 
 online() {
@@ -158,8 +175,10 @@ JS
 }
 
 make_mac_app() {
-  if [ -n "$TEST" ]; then APP="$TEST/Free GST Billing.app"; else APP="$HOME/Applications/Free GST Billing.app"; fi
+  if [ -n "$TEST" ]; then APP="$TEST/Nexuzy Ledger.app"; else APP="$HOME/Applications/Nexuzy Ledger.app"; fi
   rm -rf "$APP"
+  if [ -n "$TEST" ]; then rm -rf "$TEST/Free GST Billing.app"
+  else rm -rf "$HOME/Applications/Free GST Billing.app"; fi
   mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
   printf '#!/bin/sh\nexec /bin/sh "%s/open-app.sh"\n' "$SYS" > "$APP/Contents/MacOS/launch"
   chmod 755 "$APP/Contents/MacOS/launch"
@@ -179,8 +198,8 @@ make_mac_app() {
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleName</key><string>Free GST Billing</string>
-<key>CFBundleDisplayName</key><string>Free GST Billing</string>
+<key>CFBundleName</key><string>Nexuzy Ledger</string>
+<key>CFBundleDisplayName</key><string>Nexuzy Ledger</string>
 <key>CFBundleIdentifier</key><string>com.dicecodes.freegstbilling</string>
 <key>CFBundleExecutable</key><string>launch</string>
 <key>CFBundlePackageType</key><string>APPL</string>
@@ -207,7 +226,7 @@ write_desktop_entry() { # file
   cat > "$1" <<DESKTOP
 [Desktop Entry]
 Type=Application
-Name=Free GST Billing
+Name=Nexuzy Ledger
 Comment=GST invoices and billing, on this computer
 Exec=/bin/sh "$SYS/open-app.sh"
 Icon=$SYS/dist/icons/icon-512.png
@@ -241,11 +260,11 @@ add_to_dock() {
 }
 
 install_app() {
-  printf '\n  Free GST Billing - install or update\n\n'
+  printf '\n  Nexuzy Ledger - install or update\n\n'
 
   # --- [1/4] ---------------------------------------------------------------
   step '[1/4] Checking this computer'
-  case "$OS" in Darwin | Linux) ;; *) fail "This computer ($OS) is not supported by this installer." 'Use the ZIP download instead: https://dicecodes.com/free-gst-software-documentation/install.html' ;; esac
+  case "$OS" in Darwin | Linux) ;; *) fail "This computer ($OS) is not supported by this installer." 'Use the ZIP download instead: https://ledger.nexuzy.in/install.html' ;; esac
   if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
     fail 'Neither curl nor wget is installed.' 'Install curl (Debian / Ubuntu: sudo apt install curl), then run the install line again.'
   fi
@@ -267,7 +286,7 @@ install_app() {
   [ -f "$SYS/server.js" ] && IS_UPDATE=1
   rm -rf "$DIR"/.install-tmp.* 2>/dev/null || true   # left by an interrupted run
   ok
-  [ -z "$IS_UPDATE" ] || printf '        Found Free GST Billing in %s - updating it. Your data stays as it is.\n' "$DIR"
+  [ -z "$IS_UPDATE" ] || printf '        Found Nexuzy Ledger in %s - updating it. Your data stays as it is.\n' "$DIR"
 
   # --- [2/4] ---------------------------------------------------------------
   # Inside the app folder, so the files are moved into place, not copied.
@@ -284,10 +303,11 @@ install_app() {
   fi
   PATH="$(dirname "$NODE"):$PATH"; export PATH
   if [ -n "${FREEGSTBILL_ZIP:-}" ]; then
-    printf '        Free GST Billing: using %s\n' "$FREEGSTBILL_ZIP"
+    printf '        Nexuzy Ledger: using %s\n' "$FREEGSTBILL_ZIP"
     cp "$FREEGSTBILL_ZIP" "$WORK/app.zip" || fail "Could not read $FREEGSTBILL_ZIP" 'Check the path.'
   else
-    printf '        Free GST Billing (about 25 MB):\n'
+    printf '        Nexuzy Ledger (about 25 MB):\n'
+    ZIP_URL=$(release_zip_url) || fail 'The published release package could not be found on GitHub.' 'Open https://github.com/david0154/Nexuzy-Ledger/releases and check that a ZIP is attached or linked in the release notes.'
     download "$ZIP_URL" "$WORK/app.zip" || fail 'The app could not be downloaded from GitHub.' 'Check the internet connection, then run the install line again.'
   fi
 
@@ -354,31 +374,31 @@ install_app() {
   fi
   ok
   if [ -z "$IS_UPDATE" ]; then
-    if [ "$OS" = Darwin ] && ask 'Add Free GST Billing to the Dock?'; then add_to_dock; fi
-    if ask 'Open Free GST Billing by itself when this computer starts?'; then
+    if [ "$OS" = Darwin ] && ask 'Add Nexuzy Ledger to the Dock?'; then add_to_dock; fi
+    if ask 'Open Nexuzy Ledger by itself when this computer starts?'; then
       add_autostart
       printf '        It will open by itself when this computer starts.\n'
     fi
   fi
 
-  printf '\n  Done! Opening Free GST Billing...\n'
+  printf '\n  Done! Opening Nexuzy Ledger...\n'
   sh "$SYS/open-app.sh" || true
   if [ "$OS" = Darwin ]; then
-    printf '\n  Next time, click the Free GST Billing icon (in Launchpad, or in Applications in your home folder).\n\n'
+    printf '\n  Next time, click the Nexuzy Ledger icon (in Launchpad, or in Applications in your home folder).\n\n'
   else
-    printf '\n  Next time, open Free GST Billing from your applications menu.\n\n'
+    printf '\n  Next time, open Nexuzy Ledger from your applications menu.\n\n'
   fi
 }
 
 uninstall_app() {
-  [ -f "$DIR/_system/server.js" ] || fail "Free GST Billing is not installed in $DIR." 'Nothing was changed.'
+  [ -f "$DIR/_system/server.js" ] || fail "Nexuzy Ledger is not installed in $DIR." 'Nothing was changed.'
   SYS=$(CDPATH='' cd -- "$DIR" && pwd -P)/_system
-  printf '\n  Removing Free GST Billing from %s\n' "$DIR"
+  printf '\n  Removing Nexuzy Ledger from %s\n' "$DIR"
   stop_app
   if [ -z "$TEST" ]; then
-    rm -rf "$HOME/Applications/Free GST Billing.app" "$(menu_file)" "$(autostart_file)"
+    rm -rf "$HOME/Applications/Nexuzy Ledger.app" "$HOME/Applications/Free GST Billing.app" "$(menu_file)" "$(autostart_file)"
   else
-    rm -rf "$TEST/Free GST Billing.app" "$TEST/applications" "$TEST/autostart"
+    rm -rf "$TEST/Nexuzy Ledger.app" "$TEST/Free GST Billing.app" "$TEST/applications" "$TEST/autostart"
   fi
   # The program goes; the books stay unless the user says otherwise.
   for entry in "$SYS"/* "$SYS"/.[!.]*; do
@@ -415,9 +435,14 @@ uninstall_app() {
 }
 
 main() {
-  if [ "$OS" = Darwin ]; then default_dir="$HOME/Applications/Free GST Billing"
+  if [ "$OS" = Darwin ]; then default_dir="$HOME/Applications/Nexuzy Ledger"
   else default_dir="${XDG_DATA_HOME:-$HOME/.local/share}/free-gst-billing"; fi
   DIR=${FREEGSTBILL_DIR:-$default_dir}
+  if [ -z "${FREEGSTBILL_DIR:-}" ] && [ "$OS" = Darwin ] \
+    && [ ! -f "$DIR/_system/server.js" ] \
+    && [ -f "$HOME/Applications/Free GST Billing/_system/server.js" ]; then
+    DIR="$HOME/Applications/Free GST Billing"
+  fi
   # A copy unzipped by hand, with invoices in it, is updated rather than
   # starting a second, empty one next to it (ERR-038).
   if [ -z "${FREEGSTBILL_DIR:-}" ] && [ ! -f "$DIR/_system/server.js" ]; then

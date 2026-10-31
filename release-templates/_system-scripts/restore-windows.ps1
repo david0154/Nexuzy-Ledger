@@ -5,7 +5,7 @@
 # on top. Never destructive without a pre-restore snapshot.
 
 $ErrorActionPreference = 'Stop'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Restore'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Restore'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir

@@ -29,6 +29,7 @@ import payments from './pages/payments.mjs';
 import buying from './pages/buying.mjs';
 import money from './pages/money.mjs';
 import reports from './pages/reports.mjs';
+import payroll from './pages/payroll.mjs';
 import incomeTax from './pages/income-tax.mjs';
 import setup from './pages/setup.mjs';
 import invoice from './pages/invoice.mjs';
@@ -40,7 +41,7 @@ import security from './pages/security.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, 'out', SITE.folder);
 const IMG_SRC = join(HERE, 'assets', 'img');
-const PAGES = [...start, ...gstBasics, ...install, ...invoice, ...daily, ...clients, ...products, ...payments, ...buying, ...money, ...reports, ...incomeTax, ...setup, ...print, ...help, ...about, ...security];
+const PAGES = [...start, ...gstBasics, ...install, ...invoice, ...daily, ...clients, ...products, ...payments, ...buying, ...money, ...reports, ...payroll, ...incomeTax, ...setup, ...print, ...help, ...about, ...security];
 const TODAY = new Date().toISOString().slice(0, 10);
 const BRAND = 'Nexuzy Ledger';
 

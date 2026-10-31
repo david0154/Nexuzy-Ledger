@@ -108,7 +108,7 @@ try {
   const why = err.code === 'ENOSPC' ? 'The disk is full. Free some space and open the app again.'
     : (err.code === 'EACCES' || err.code === 'EPERM') ? 'The app is not allowed to write to its data folder. Move the app folder to Documents (not Program Files), or allow it in your antivirus.'
       : `The data folder could not be created (${err.code || err.message}).`;
-  console.error(`\n  Free GST Billing cannot start: ${why}\n  Data folder: ${DATA_DIR}\n  Help: https://dicecodes.com/free-gst-software-documentation/troubleshooting.html#${err.code === 'ENOSPC' ? 'disk-full' : 'no-permission'}\n`);
+  console.error(`\n  Free GST Billing cannot start: ${why}\n  Data folder: ${DATA_DIR}\n  Help: https://ledger.nexuzy.in/troubleshooting.html#${err.code === 'ENOSPC' ? 'disk-full' : 'no-permission'}\n`);
   try { fs.appendFileSync(path.join(DATA_DIR, 'errors.log'), `[${new Date().toISOString()}] [startup] ${why} ${err.code || ''}\n`, 'utf-8'); } catch { /* the folder is the problem */ }
   process.exit(1);
 }
@@ -1339,7 +1339,7 @@ app.get('/api/check-update', async (req, res) => {
     const t = setTimeout(() => ctrl.abort(), 4000);
     const [pkgRes, relRes] = await Promise.all([
       fetch('https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/package.json', { signal: ctrl.signal }).catch(() => null),
-      fetch('https://api.github.com/repos/david0154/Nexuzy-Ledger/releases/latest', {
+      fetch('https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10', {
         signal: ctrl.signal,
         headers: { 'Accept': 'application/vnd.github+json', 'User-Agent': 'FreeGSTBill-update-check' },
       }).catch(() => null),
@@ -1351,11 +1351,14 @@ app.get('/api/check-update', async (req, res) => {
     let releasePublishedAt = null;
     let releaseTag = null;
     if (relRes && relRes.ok) {
-      const rel = await relRes.json();
-      releaseNotes = rel.body || null;
-      releaseUrl = rel.html_url || null;
-      releasePublishedAt = rel.published_at || null;
-      releaseTag = rel.tag_name || null;
+      const releases = await relRes.json();
+      const rel = Array.isArray(releases) ? releases.find((item) => !item.draft) : null;
+      if (rel) {
+        releaseNotes = rel.body || null;
+        releaseUrl = rel.html_url || null;
+        releasePublishedAt = rel.published_at || null;
+        releaseTag = rel.tag_name || null;
+      }
     }
 
     // #105: the updater installs the latest RELEASE, so its tag is the version
@@ -2072,7 +2075,7 @@ app.get('{*path}', (req, res) => {
 function servePlaceholder(req, res) {
     if (req.path.startsWith('/api')) return res.status(404).json({ error: 'No such endpoint' });
     res.status(503).send(`<!doctype html>
-<html><head><meta charset="utf-8"><title>Free GST Billing Software — building…</title>
+<html><head><meta charset="utf-8"><title>Nexuzy Ledger — building…</title>
 <meta http-equiv="refresh" content="3">
 <style>
   body { font-family: -apple-system, Segoe UI, Inter, sans-serif; max-width: 560px;
@@ -2087,7 +2090,7 @@ function servePlaceholder(req, res) {
   .box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 8px; margin-top: 1rem; }
 </style></head>
 <body>
-  <h1>Free GST Billing Software</h1>
+  <h1>Nexuzy Ledger</h1>
   <p><span class="spinner"></span> The app is still building. This page refreshes every 3 seconds.</p>
   <div class="box">
     <p style="margin:0 0 0.5rem"><strong>Local install?</strong></p>
@@ -2183,7 +2186,7 @@ function startServer(port) {
     // we landed on 47372 instead, next launch tries 47372 first (cuts collision
     // scans in half on repeated reboots of whatever was holding 47371).
     try { fs.writeFileSync(PORT_FILE, String(port), 'utf-8'); } catch { /* ignore */ }
-    console.log(`\n  Free GST Billing Software running at http://localhost:${port}`);
+    console.log(`\n  Nexuzy Ledger running at http://localhost:${port}`);
     console.log(`  Data stored in: ${DATA_DIR}\n`);
   });
   server.on('error', (err) => {

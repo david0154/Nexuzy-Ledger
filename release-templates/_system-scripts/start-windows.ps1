@@ -13,7 +13,7 @@
 param([switch]$AppWindow, [switch]$Hidden)
 
 $ErrorActionPreference = 'Continue'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Server'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir
@@ -71,18 +71,28 @@ Move-ToRenamedLauncher
 function Move-IconsToApp {
   if ((Split-Path -Leaf $SystemDir) -ne '_system') { return }
   $hta = Join-Path (Split-Path -Parent $SystemDir) 'Free GST Billing - WINDOWS.hta'
+  $startScript = Join-Path $SystemDir 'start-windows.ps1'
   try {
     . (Join-Path $SystemDir 'app-shortcut.ps1')
     $wsh = New-Object -ComObject WScript.Shell
-    foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
+    $taskbar = Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar'
+    foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'), [Environment]::GetFolderPath('Startup'), $taskbar)) {
       if (-not $dir -or -not (Test-Path -LiteralPath $dir)) { continue }
       foreach ($lnk in Get-ChildItem -LiteralPath $dir -Filter '*.lnk' -File -ErrorAction SilentlyContinue) {
-        if (([string]$wsh.CreateShortcut($lnk.FullName).Arguments).Trim().Trim('"') -ne $hta) { continue }
-        New-AppShortcut $lnk.FullName $SystemDir
+        $arguments = [string]$wsh.CreateShortcut($lnk.FullName).Arguments
+        $quotedTarget = [regex]::Match($arguments, '"([^"]+)"')
+        $target = if ($quotedTarget.Success) { $quotedTarget.Groups[1].Value } else { $arguments.Trim() }
+        if ($target -ne $hta -and $target -ne $startScript) { continue }
+        $shortcutPath = $lnk.FullName
+        if ($lnk.Name -eq 'Free GST Billing.lnk' -and $dir -ne $taskbar) {
+          $shortcutPath = Join-Path $dir 'Nexuzy Ledger.lnk'
+        }
+        New-AppShortcut $shortcutPath $SystemDir
+        if ($shortcutPath -ne $lnk.FullName) { Remove-Item -LiteralPath $lnk.FullName -Force }
       }
     }
   } catch {
-    # The old icon still opens the launcher, which still works.
+    # Keep the existing shortcut if migration is blocked.
   }
 }
 Move-IconsToApp

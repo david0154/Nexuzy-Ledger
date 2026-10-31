@@ -1,0 +1,45 @@
+name: Build and publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure tag matches package version
+        run: |
+          node -e "const v = require('./package.json').version; if (process.env.GITHUB_REF_NAME !== 'v' + v) throw new Error('Release tag must be v' + v)"
+
+      - name: Install Firefox for packaged smoke tests
+        run: npx playwright install firefox
+
+      - name: Build and verify the release ZIP
+        run: npm run release:zip
+
+      - name: Publish release and attach ZIPs
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Nexuzy Ledger ${{ github.ref_name }}
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            release-build/Nexuzy-Ledger.zip
+            release-build/Nexuzy-Ledger-${{ github.ref_name }}.zip

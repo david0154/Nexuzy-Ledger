@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.85] - 2026-11-01
+
+### Added
+- A Payroll screen for employee records, monthly salary runs, manually entered
+  deductions/TDS, paid/unpaid status, and printable payslips.
+- Balance Sheet & Cash Flow reports. The balance snapshot is explicitly a
+  partial working-capital estimate; cash flow is limited to recorded cash-book
+  activity.
+- Payroll records are included in app metadata backups and are separated by
+  business profile.
+- Windows taskbar icon sizes and the app-window favicon now use the full
+  Nexuzy Ledger artwork.
+
+### Limits
+- Payroll does not calculate statutory TDS, PF, ESI, professional tax or
+  payroll filings; salary payments are not automatically posted to Cash book.
+- The estimated balance snapshot excludes inventory valuation, fixed assets,
+  owner capital, loans, bank balances and tax liabilities. Cash depends on a
+  cash-book opening entry being recorded by the user.
+
+---
+
+## [1.10.84] - 2026-11-01
+
+### How to update
+
+**Current version:** 1.10.83  →  **New version:** 1.10.84
+
+To update from v1.10.83, run the platform install command from the Nexuzy
+Ledger documentation, or download `Nexuzy-Ledger.zip` from the v1.10.84
+release and open the launcher. The installer updates an existing copy in
+place and preserves your data. After this update, the in-app **Update Now**
+button can install subsequent published releases.
+
+Your invoices and settings are backed up before updating and are not replaced.
+
+### Fixed
+- First-run setup now appears when no business profile exists, even if a
+  stale browser preference says onboarding was already completed.
+- Windows installer, app launcher, desktop/startup shortcuts and help text use
+  Nexuzy Ledger branding; existing Free GST Billing shortcuts and install
+  locations remain discoverable for upgrades.
+- New Windows and macOS installs use Nexuzy Ledger-named folders while
+  preserving existing data locations during updates.
+- Windows, macOS and Linux installers and updaters resolve the newest
+  published GitHub release and can download a ZIP linked in its release notes.
+- The in-app update check recognizes published pre-releases instead of
+  falling back to the source branch version.
+- Invoice PDF spacer rows are trimmed when that allows near-fit Tally and
+  Boxed invoices to stay on one page.
+- The Windows install guide now includes a command for users already in
+  PowerShell, avoiding a blocked nested `powershell.exe` launch.
+- GST smoke-test fixtures now use local calendar dates and the active business
+  profile, preventing timezone and profile-switch state from skewing return
+  assertions.
+
+### Added
+- A responsive standalone project website with product overview, install
+  instructions, Nexuzy Lab developer contact, and Razorpay donation link.
+- A GitHub Actions release workflow that builds, verifies, and attaches the
+  versioned and fixed-name ZIP when a matching version tag is pushed.
+
+---
+
 ## [1.10.83] - 2026-11-01
 
 ### How to update
@@ -40,7 +104,7 @@ Use the launcher: **More options → Update to the latest version**, then
 Use the **Update** button in the app. **Never drag the new folder over the
 old one on a Mac**: Finder's Replace swaps the whole folder, including
 `_system/data` with your invoices. Step by step:
-[Updating on a Mac](https://dicecodes.com/free-gst-software-documentation/update.html#mac).
+[Updating on a Mac](https://ledger.nexuzy.in/update.html#mac).
 
 #### Linux / NAS
 Run `update-unix.sh` from the `_system` folder, or extract the new ZIP over
@@ -456,7 +520,7 @@ because Mac users could not start the app at all.
    instead. **Never drag the new folder over the old one on a Mac**: Finder's
    Replace swaps the whole folder, including `_system/data` with your
    invoices. Step-by-step:
-   [Updating on a Mac](https://dicecodes.com/free-gst-software-documentation/update.html#mac).
+   [Updating on a Mac](https://ledger.nexuzy.in/update.html#mac).
 
 #### Windows (1.10.73 and later)
 Click **Update to v1.10.82** in the sidebar, or **Settings → App Updates →
@@ -1100,7 +1164,7 @@ https://github.com/david0154/Nexuzy-Ledger/issues
   and always shows that invoice's own options (the app-wide defaults used to
   replace them a moment after it opened).
 - **User Guide** in the sidebar (and "Read the 5-minute guide" on the Dashboard)
-  now opens the [online documentation](https://dicecodes.com/free-gst-software-documentation/),
+  now opens the [online documentation](https://ledger.nexuzy.in/),
   which covers every screen. The old built-in guide had fallen behind the app
   and is removed.
 - **Support & About** in the sidebar: who makes the app, free ways to help
@@ -1109,7 +1173,7 @@ https://github.com/david0154/Nexuzy-Ledger/issues
   small thank-you card (Maybe later / Don't show again). Nothing is locked and
   nothing is printed on your invoices.
   The documentation has the same page, linked from its top bar next to the
-  name: [Support & About](https://dicecodes.com/free-gst-software-documentation/support.html).
+  name: [Support & About](https://ledger.nexuzy.in/support.html).
 - A one-line **"Star on GitHub"** note at the top of the app, at most once a
   month: first 3 days after you start using the app, then 30 days after you
   close it with ✕. **Star on GitHub** or **Already starred** hides it for good.

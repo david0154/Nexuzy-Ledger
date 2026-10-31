@@ -51,7 +51,7 @@ function LockScreen({ length, onUnlock }) {
         <button type="button" className="app-lock-link" onClick={() => setShowHelp((v) => !v)}>Forgot PIN?</button>
         {showHelp && (
           <p className="app-lock-help">
-            Open the Free-GST-Billing folder on this PC (where you start the app), make a new text file there named <strong>RESET-PIN</strong>, then reload this page. The PIN is removed and the file deleted. Your invoices are not touched.
+            Open the Nexuzy Ledger app folder on this PC, make a new text file there named <strong>RESET-PIN</strong>, then reload this page. The PIN is removed and the file deleted. Your invoices are not touched.
           </p>
         )}
       </form>

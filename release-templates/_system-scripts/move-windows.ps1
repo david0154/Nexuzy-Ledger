@@ -7,7 +7,7 @@
 # Restore Backup to pull their invoices in.
 
 $ErrorActionPreference = 'Stop'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Move to Another PC'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Move to Another PC'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir

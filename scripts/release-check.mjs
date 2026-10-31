@@ -129,7 +129,7 @@ if (!offline) {
   console.log('\nGitHub');
   try {
     const gh = (...a) => execFileSync('gh', a, { cwd: ROOT, encoding: 'utf8' }).trim();
-    const latest = gh('api', `repos/${REPO}/releases/latest`, '--jq', '.tag_name').replace(/^v/, '');
+    const latest = gh('api', `repos/${REPO}/releases?per_page=10`, '--jq', 'map(select(.draft == false))[0].tag_name').replace(/^v/, '');
     check(`v${version} is newer than the latest release (v${latest})`, cmpVer(version, latest) > 0, 'This version is already released. Bump the version.');
     const mainVer = JSON.parse(gh('api', `repos/${REPO}/contents/package.json`, '--jq', '.content').split('\n').map((l) => Buffer.from(l, 'base64').toString()).join('')).version;
     check(`main on GitHub still says the last release (${mainVer}) until this release is pushed (ERR-057)`, mainVer === latest || mainVer === version,

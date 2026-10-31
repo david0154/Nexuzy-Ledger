@@ -180,7 +180,7 @@ function Show-NodeHelp {
     'The app needs Node.js 18 or newer. To install it yourself:',
     '  1. Open https://nodejs.org (opening it now) and download the LTS version.',
     '  2. Run the installer and keep the default options.',
-    '  3. Open Free GST Billing again.',
+    '  3. Open Nexuzy Ledger again.',
     'If your antivirus removed it, add the Free-GST-Billing folder to its exclusions.')
   try { Start-Process 'https://nodejs.org/en/download' } catch { }
 }

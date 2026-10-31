@@ -34,6 +34,10 @@ const check = (name, pass, detail = '') => {
   console.log(`  ${pass ? '✓' : '✗'} ${name}${detail ? `  — ${detail}` : ''}`);
 };
 
+const localDateISO = (date = new Date()) => (
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+);
+
 /** Boot the app unless the caller pointed us at a running one. */
 async function startServer() {
   if (process.env.APP_URL) return process.env.APP_URL;
@@ -157,10 +161,27 @@ const page = await ctx.newPage();
 
 const cspViolations = [];
 page.on('console', (m) => { if (/Content-Security-Policy/i.test(m.text())) cspViolations.push(m.text()); });
+await page.addInitScript(() => {
+  localStorage.setItem('freegstbill_onboarded', 'true');
+  localStorage.setItem('gst_printSettings', JSON.stringify({ onboardingComplete: true }));
+});
+let startupProfileChecked = false;
+await page.route('**/api/profile', async (route) => {
+  if (!startupProfileChecked && route.request().method() === 'GET') {
+    startupProfileChecked = true;
+    const response = await route.fetch();
+    const profile = await response.json();
+    await route.fulfill({ response, body: JSON.stringify({ ...profile, businessName: '' }) });
+    return;
+  }
+  await route.continue();
+});
 
 try {
   await page.goto(APP, { waitUntil: 'networkidle' });
   await sleep(2000);
+  check('setup wizard appears for a blank business profile despite a saved onboarding flag',
+    await page.getByText('What kind of business do you run?').isVisible().catch(() => false));
   await dismissFirstRun(page);
   check('first-run setup can be dismissed',
     await page.evaluate(() => !!document.querySelector('.nav-btn')));
@@ -493,21 +514,24 @@ try {
   }, { prof: originalProfile, gstin: TEST_GSTIN });
   const activeProfile = { gstin: TEST_GSTIN };
   await page.evaluate(async (gstin) => {
+    const localDateISO = (date = new Date()) => (
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    );
     const post = (b) => fetch('/api/bills', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b),
     });
     // Belongs to the active business.
     await post({ id: 'smoketest-mine', invoiceNumber: 'SMOKE-MINE/1', clientName: 'Smoke Test Client',
-      status: 'unpaid', totalAmount: 1000, payments: [], items: [], invoiceDate: new Date().toISOString().slice(0,10),
+      status: 'unpaid', totalAmount: 1000, payments: [], items: [], invoiceDate: localDateISO(),
       data: { profile: { gstin, businessName: 'Active Co' }, details: {}, totals: { total: 1000 } } });
     // Belongs to a DIFFERENT business.
     await post({ id: 'smoketest-other', invoiceNumber: 'SMOKE-OTHER/1', clientName: 'Smoke Test Client',
-      status: 'unpaid', totalAmount: 2000, payments: [], items: [], invoiceDate: new Date().toISOString().slice(0,10),
+      status: 'unpaid', totalAmount: 2000, payments: [], items: [], invoiceDate: localDateISO(),
       data: { profile: { gstin: '29ZZZZZ9999Z9Z9', businessName: 'Other Co' }, details: {}, totals: { total: 2000 } } });
     // Legacy: no seller recorded at all.
     // Dated in the current FY so the dashboard's year filter cannot be what
     // hides it — this test is about company scoping, nothing else.
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDateISO();
     await post({ id: 'smoketest-legacy', invoiceNumber: 'SMOKE-LEGACY/1', clientName: 'Smoke Test Client',
       status: 'unpaid', totalAmount: 3000, payments: [], items: [], invoiceDate: today,
       data: { details: { invoiceNumber: 'SMOKE-LEGACY/1' }, totals: { total: 3000 } } });
@@ -541,6 +565,9 @@ try {
   // company's invoices on screen until a manual reload.
   const OTHER_GSTIN = '29BBBBB2222B2Z2';
   await page.evaluate(async ({ a, b }) => {
+    const localDateISO = (date = new Date()) => (
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    );
     const post = (u, body) => fetch(u, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
@@ -548,7 +575,7 @@ try {
     await post('/api/profiles', { id: 'smoketest-pb', businessName: 'Smoke Beta', gstin: b });
     await post('/api/bills', {
       id: 'smoketest-beta-bill', invoiceNumber: 'SMOKE-BETA/1', clientName: 'Smoke Test Client',
-      status: 'unpaid', totalAmount: 4000, invoiceDate: new Date().toISOString().slice(0, 10),
+      status: 'unpaid', totalAmount: 4000, invoiceDate: localDateISO(),
       payments: [], items: [],
       data: { profile: { gstin: b, businessName: 'Smoke Beta' }, details: {}, totals: { total: 4000 } },
     });
@@ -588,7 +615,7 @@ try {
   // Every "ignores another company" check below is paired with a sanity check
   // that the same number DOES move for this company. Without the pair, a card
   // that never updates at all would pass the first check.
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateISO();
   const THIRD_GSTIN = '27CCCCC3333C3Z3';
   const api = (url, body) => page.evaluate(async ({ url, body }) => (await fetch(url, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -1612,7 +1639,7 @@ try {
     // terms template exists (it used to be replaced by the first template).
     await post77('/api/templates', { id: 'smoketest-tpl77', name: 'Smoke template', content: '<p>SMOKE-TEMPLATE-TERMS</p>' });
     const prof77 = (await get77('/api/profile')).json;
-    const today77 = new Date().toISOString().slice(0, 10);
+    const today77 = localDateISO();
     const bill77 = {
       id: 'smoketest-terms77', invoiceNumber: 'smoketest-terms77', clientName: 'Smoke Test Client', invoiceDate: today77, invoiceType: 'tax-invoice',
       status: 'unpaid', totalAmount: 1180, paidAmount: 0, payments: [],
@@ -1691,7 +1718,7 @@ try {
     const draft78 = (type) => ({
       invoiceType: type,
       client: { name: 'Smoke Test Client', address: '', city: '', pin: '', state: 'Punjab', gstin: '', country: 'India', email: '', phone: '', isSEZ: false },
-      details: { invoiceDate: new Date().toISOString().slice(0, 10), placeOfSupply: 'Punjab' },
+      details: { invoiceDate: localDateISO(), placeOfSupply: 'Punjab' },
       items: draftItems, taxInclusive: false,
     });
     await openDraft(draft78('quotation'));
@@ -1712,7 +1739,7 @@ try {
 
     // #92 Undo is a button in the Actions column and asks first
     const prof78 = await get78('/api/profile');
-    const today78 = new Date().toISOString().slice(0, 10);
+    const today78 = localDateISO();
     await post78('/api/bills', {
       id: 'smoketest-undo78', invoiceNumber: 'smoketest-undo78', clientName: 'Smoke Test Client', invoiceDate: today78, invoiceType: 'tax-invoice',
       status: 'cancelled', cancelledAt: new Date().toISOString(), totalAmount: 1180, paidAmount: 0, payments: [],
@@ -1770,8 +1797,11 @@ try {
     // Brand prefix: other types are brand-TYPE, so they never collide with invoices
     await post79('/api/meta/invoiceNumberSettings', { value: { ...(shared79 || {}), brandPrefix: 'SMKA' } });
     await page.evaluate(() => {
+      const localDateISO = (date = new Date()) => (
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      );
       sessionStorage.setItem('gst_invoiceDraft', JSON.stringify({ invoiceType: 'quotation', client: { name: 'Smoke Test Client', state: 'Punjab', country: 'India' },
-        details: { invoiceDate: new Date().toISOString().slice(0, 10), placeOfSupply: 'Punjab' },
+        details: { invoiceDate: localDateISO(), placeOfSupply: 'Punjab' },
         items: [{ id: 'l1', name: 'Smoke item', hsn: '9983', quantity: 1, rate: 1000, taxPercent: 18, discount: 0, unit: 'Nos' }] }));
       sessionStorage.setItem('gst_currentView', 'new'); sessionStorage.removeItem('gst_editingBill');
     });
@@ -1815,9 +1845,9 @@ try {
     // Converting two quotations in a row makes two invoices (the second used
     // to overwrite the first: a conversion saved under a number it only peeked).
     const quoteOf79 = (id) => ({
-      id, invoiceNumber: id, clientName: 'Smoke Test Client', invoiceDate: new Date().toISOString().slice(0, 10), invoiceType: 'quotation',
+      id, invoiceNumber: id, clientName: 'Smoke Test Client', invoiceDate: localDateISO(), invoiceType: 'quotation',
       status: 'unpaid', totalAmount: 1180, paidAmount: 0, payments: [],
-      data: { profile: profile79, client: { name: 'Smoke Test Client', state: profile79.state, country: 'India' }, details: { invoiceNumber: id, invoiceDate: new Date().toISOString().slice(0, 10) },
+      data: { profile: profile79, client: { name: 'Smoke Test Client', state: profile79.state, country: 'India' }, details: { invoiceNumber: id, invoiceDate: localDateISO() },
         invoiceType: 'quotation', invoiceOptions: {}, totals: { total: 1180 }, stockApplied: {},
         items: [{ id: 'l1', name: 'Smoke item', hsn: '9983', quantity: 1, rate: 1000, taxPercent: 18, discount: 0, unit: 'Nos' }] },
     });

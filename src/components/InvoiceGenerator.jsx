@@ -554,6 +554,8 @@ const LineItem = memo(function LineItem({
 // terms, bank details and signature stay on page 1. Returns a function that
 // puts everything back. Elements: [data-pdf-spacer="stretch"] rows have their
 // cells shortened; [data-pdf-spacer="row"] rows are hidden whole.
+const PDF_SINGLE_PAGE_OVERFLOW_TOLERANCE = 0.06;
+
 function fitSpacersToOnePage(container, pageWmm, pageHmm, ps) {
   const m = (k) => Math.max(0, Number(ps?.[k]) || 0);
   const availW = Math.max(20, pageWmm - m('marginLeft') - m('marginRight'));
@@ -562,7 +564,7 @@ function fitSpacersToOnePage(container, pageWmm, pageHmm, ps) {
   let over = container.scrollHeight - onePagePx + 3;
   const spacers = [...container.querySelectorAll('[data-pdf-spacer]')];
   const room = spacers.reduce((s, el) => s + el.getBoundingClientRect().height, 0);
-  if (over <= 3 || over > room) return () => {};
+  if (over <= 3 || room <= 0 || over > room + onePagePx * PDF_SINGLE_PAGE_OVERFLOW_TOLERANCE) return () => {};
   const undo = [];
   for (const el of spacers.reverse()) {
     if (over <= 0) break;
@@ -2590,7 +2592,7 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
     // shrunk to fit, instead of sending the footer to a page of its own: a
     // 4px overflow used to move the terms, bank details and signature to page 2.
     const fitsOnePage = scaledImgHeight <= contentHeightFull + 2
-      || (paperCfg.kind !== 'thermal' && scaledImgHeight <= contentHeightFull * 1.06);
+      || (paperCfg.kind !== 'thermal' && scaledImgHeight <= contentHeightFull * (1 + PDF_SINGLE_PAGE_OVERFLOW_TOLERANCE));
     if (window.__lastPdfLayout) window.__lastPdfLayout.onePage = fitsOnePage;
     if (fitsOnePage) {
       // Single-page fits — no cropping needed. Page 1 has no header/footer

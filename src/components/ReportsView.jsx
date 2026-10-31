@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Wallet, BarChart3, Clock, Search, X, Users, Package, Boxes, Building2, Percent } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, Clock, Search, X, Users, Package, Boxes, Building2, Percent, Banknote } from 'lucide-react';
 import { getAllBills, getAllExpenses, getProfile } from '../store';
 import { formatCurrency, getFYOptions, belongsToProfile, isCancelledBill, salesSign, countsAsSales, calculateLineItemTax, roundQty, parseLocalDate, amountDue } from '../utils';
 import { toast } from './Toast';
@@ -12,6 +12,7 @@ import { billsInInr } from '../utils/fx';
 import CostCentreReport from './CostCentreReport';
 import { costCentresOn } from './useCostCentres';
 import TdsTcsReport from './TdsTcsReport';
+import FinancialStatements from './FinancialStatements';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -36,6 +37,7 @@ const TAB_HELP = {
   stock: ['Stock', 'reports#stock'],
   costcentres: ['By cost centre', 'reports#cost-centres'],
   tds: ['TDS & TCS', 'reports#tds-tcs'],
+  financial: ['Balance Sheet & Cash Flow', 'reports#balance-sheet-cash-flow'],
 };
 
 export default function ReportsView() {
@@ -240,6 +242,10 @@ export default function ReportsView() {
         <button className={`btn ${activeTab === 'pl' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('pl')}>
           <BarChart3 size={16} /> Profit & Loss
+        </button>
+        <button className={`btn ${activeTab === 'financial' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setActiveTab('financial')}>
+          <Banknote size={16} /> Balance Sheet &amp; Cash Flow
         </button>
         <button className={`btn ${activeTab === 'aging' ? 'btn-primary' : 'btn-secondary'}`}
           onClick={() => setActiveTab('aging')}>
@@ -464,6 +470,11 @@ export default function ReportsView() {
       {activeTab === 'stock' && <StockReport businessName={businessName} />}
 
       {activeTab === 'tds' && <TdsTcsReport bills={bills} businessName={businessName} onBillsChanged={loadData} />}
+
+      {activeTab === 'financial' && (
+        <FinancialStatements bills={bills} expenses={expenses} profile={ownerProfile}
+          from={periodRange.from} to={periodRange.to} periodLabel={periodLabel} />
+      )}
 
       {activeTab === 'aging' && (
         <>

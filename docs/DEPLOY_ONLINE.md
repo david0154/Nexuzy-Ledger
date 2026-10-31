@@ -6,6 +6,6 @@ An earlier version of this page described hosting the app on Railway, Render, Fl
 - **The server only listens on the computer it runs on** (`127.0.0.1`), so a hosting service cannot reach it without a code change that removes that protection.
 - **There is no database.** The app saves its books as files in its `data` folder, so Supabase would not be used. On most free hosting plans those files are wiped every time the service restarts.
 
-The full answer, with what to do instead, is in the guide: [Can I put it online?](https://dicecodes.com/free-gst-software-documentation/security.html#host-online)
+The full answer, with what to do instead, is in the guide: [Can I put it online?](https://ledger.nexuzy.in/security.html#host-online)
 
 Nexuzy Ledger is intended for use on the computer where it is installed. It does not provide network access, user accounts or multi-user permissions. Do not expose it to the internet or another device.

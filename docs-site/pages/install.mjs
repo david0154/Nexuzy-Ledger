@@ -57,16 +57,20 @@ ${which}
 [3/4] Installing ... OK
 [4/4] Adding icons ... OK</code></pre>
   It may also fetch Node.js, the engine the app runs on (about 30 MB, kept inside the app folder).</li>
-  <li><strong>Answer one question</strong>It asks <i>Open Free GST Billing by itself when this computer starts?</i> Type <code>Y</code> and press ${key('Enter')} for yes, or just press ${key('Enter')} for no.</li>
-  <li><strong>The app opens in its own window</strong>The window says <i>Done! Opening Free GST Billing...</i> and the app appears, with no browser tabs or address bar. A short welcome asks for your business details; see <a href="first-run.html">The first-run setup</a>. The install window closes by itself.</li>
+  <li><strong>Answer one question</strong>It asks <i>Open Nexuzy Ledger by itself when this computer starts?</i> Type <code>Y</code> and press ${key('Enter')} for yes, or just press ${key('Enter')} for no.</li>
+  <li><strong>The app opens in its own window</strong>The window says <i>Done! Opening Nexuzy Ledger...</i> and the app appears, with no browser tabs or address bar. A short welcome asks for your business details; see <a href="first-run.html">The first-run setup</a>. The install window closes by itself.</li>
 </ol>
-<div class="note warn"><strong>The installer needs a published release</strong>
-<p>If it says no release package has been published, the download is not available yet. Check the <a href="${SITE.repo}/releases">Nexuzy Ledger Releases page</a>. Once a release is published, run the same install line again.</p></div>
-<p><b>Every day after that:</b> click the <b>Free GST Billing</b> icon on your Desktop or in the Start menu.</p>
+<p>If you are already in a PowerShell window, paste this shorter version there instead (do not type <code>powershell</code> again):</p>
+<pre><code>[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm ${RAW}/install.ps1 | iex</code></pre>
+<div class="note tip"><strong>The installer downloads the published release</strong>
+<p>It downloads the newest published release from GitHub, including pre-releases, and uses the ZIP attached to its release notes if there is no uploaded asset. For a manual download, use the <a href="${SITE.repo}/releases">Nexuzy Ledger Releases page</a>.</p></div>
+<div class="note warn"><strong>About the Windows publisher warning</strong>
+<p>This app is not currently signed with a trusted code-signing certificate, so Windows may show “Unknown Publisher.” The Nexuzy Lab developer name does not verify the publisher in Windows; removing that warning requires signing the installer with a trusted certificate. Download only from the official GitHub repository and review the public source code.</p></div>
+<p><b>Every day after that:</b> click the <b>Nexuzy Ledger</b> icon on your Desktop or in the Start menu.</p>
 <p><b>To update or repair it:</b> do the same three steps again. It finds your install, backs up your data to <code>Documents\\FreeGSTBill Backups</code>, and replaces only the app's own files. Your invoices, clients and settings stay exactly as they are.</p>
 <div class="note tip"><strong>If the window shows PROBLEM in red</strong>
 <p>The line under it says what to do (no internet, the disk is full, the folder cannot be written to). Do that, then paste the same line again; it carries on where it stopped. Nothing in your data is changed by a failed install.</p></div>
-<p>The app is installed to <code>%LOCALAPPDATA%\\Programs\\Free GST Billing</code>. If you installed it from the ZIP before, the line finds that copy (through its Desktop shortcut) and updates it where it is. Your data is in the <code>_system\\data</code> folder inside it.</p>
+<p>The app is installed to <code>%LOCALAPPDATA%\\Programs\\Nexuzy Ledger</code>. If you installed it from the ZIP before, the line finds that copy (through its Desktop shortcut) and updates it where it is. Your data is in the <code>_system\\data</code> folder inside it.</p>
 </section>
 
 <section id="zip">
@@ -77,7 +81,7 @@ ${which}
 <section id="download">
 <h2>Step 1: Download</h2>
 <ol class="steps">
-  <li><strong>Click this button</strong><a class="download" href="${SITE.download}">Download Free GST Billing</a></li>
+  <li><strong>Click this button</strong><a class="download" href="${SITE.download}">Download Nexuzy Ledger</a></li>
   <li><strong>Wait for the download to finish</strong>Your browser shows it at the top right (Chrome and Edge) or bottom left. The file is called <code>Nexuzy-Ledger.zip</code>.</li>
   <li><strong>Open your Downloads folder</strong>Click the folder icon next to the download, or open <b>File Explorer</b> (the yellow folder on the taskbar) and click <b>Downloads</b> on the left.</li>
 </ol>

@@ -5,8 +5,8 @@
 #
 # Design decisions:
 #   * Data folder never touched - user's invoices survive updates
-#   * We fetch by tag_name from GitHub Releases so users always get
-#     the latest published release, not a random dev commit
+#   * We fetch the newest published GitHub release, including pre-releases,
+#     and use its release-note ZIP link when no asset was uploaded.
 #   * Pre-update, we snapshot data/ to a timestamped backup as a
 #     safety net - even though we don't touch data, hardware faults
 #     during rmdir could corrupt state
@@ -19,7 +19,7 @@
 param([string]$InstallTo = '')
 
 $ErrorActionPreference = 'Stop'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Update'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Update'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir
@@ -38,7 +38,7 @@ if ($InstallTo) {
 
 Write-Host ''
 Write-Host '  ============================================================'
-Write-Host '   Free GST Billing Software - Update'
+Write-Host '   Nexuzy Ledger - Update'
 Write-Host '  ============================================================'
 Write-Host ''
 
@@ -60,17 +60,20 @@ if ($FromFolder) {
   $sourceRoot = $FromFolder
   $newSystem  = Join-Path $FromFolder '_system'
 } else {
-# --- Step 2: Find latest release ---
+# --- Step 2: Find latest published release, including pre-releases ---
 Write-Host '  Checking latest release from GitHub...'
 try {
-  $api = Invoke-RestMethod -Uri 'https://api.github.com/repos/david0154/Nexuzy-Ledger/releases/latest' -Headers @{ 'User-Agent' = 'FreeGSTBill-Updater' }
+  $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10' -Headers @{ 'User-Agent' = 'NexuzyLedger-Updater' }
+  $api = @($releases | Where-Object { -not $_.draft } | Select-Object -First 1)[0]
+  if (-not $api) { throw 'No published release was found.' }
   $tag = $api.tag_name
-  $zipAsset = $api.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
-  if (-not $zipAsset) {
-    # Fall back to source-code ZIP if no release asset uploaded
-    $zipUrl = $api.zipball_url
-  } else {
+  $zipAsset = @($api.assets | Where-Object { $_.name -match '\.zip$' } | Select-Object -First 1)[0]
+  if ($zipAsset) {
     $zipUrl = $zipAsset.browser_download_url
+  } else {
+    $attachment = [regex]::Match([string]$api.body, 'https://github\.com/user-attachments/files/[^\s)<>]+\.zip(?=[)\s]|$)')
+    if (-not $attachment.Success) { throw "Release $tag has no downloadable app ZIP." }
+    $zipUrl = $attachment.Value
   }
   Write-Host "  Latest: $tag"
 } catch {
@@ -92,9 +95,8 @@ Write-Host '  Extracting...'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $tmp)
 
-# The extract may contain either the pretty release structure
-# (root has Free GST Billing - WINDOWS.hta + _system/) or the source zipball
-# (root has david0154-Nexuzy-Ledger-HASH/).
+# The extract contains the release structure (root has the launchers and
+# _system/). GitHub source archives are never used as app updates.
 $extracted = Get-ChildItem -Path $tmp -Directory | Select-Object -First 1
 $candidateSystem = Join-Path $extracted.FullName '_system'
 if (Test-Path $candidateSystem) {

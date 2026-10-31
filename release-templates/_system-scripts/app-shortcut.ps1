@@ -14,6 +14,6 @@ function New-AppShortcut([string]$path, [string]$sys) {
   $sc.WorkingDirectory = $sys
   $sc.WindowStyle = 7
   $sc.IconLocation = "$(Join-Path $sys 'app-icon.ico'),0"
-  $sc.Description = 'Free GST Billing Software'
+  $sc.Description = 'Nexuzy Ledger by Nexuzy Lab'
   $sc.Save()
 }

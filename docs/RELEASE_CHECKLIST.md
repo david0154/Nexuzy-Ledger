@@ -88,24 +88,20 @@ Write for the person who reported it, not for the compiler.
 # 3. Build
 npm run release:zip
 
-# 4. Publish ONE ZIP, under the fixed name (from v1.10.76: two identical
-#    ZIPs on a release confused people). The README's Download button links
-#    to releases/latest/download/Nexuzy-Ledger.zip, which only resolves if
-#    the latest release has a file of exactly that name. The in-app and
-#    launcher updaters take the first *.zip, so the name does not matter to
-#    them. See ERR-003: one tagged release per version.
-Copy-Item "release-build\Nexuzy-Ledger-v<NEW>.zip" "release-build\Nexuzy-Ledger.zip"
-gh release create v<NEW> "release-build\Nexuzy-Ledger.zip" `
-  --target main --title "Nexuzy Ledger v<NEW>" --generate-notes
-curl.exe -sIL https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip
+# 4. Push a tag matching package.json (for example, v1.10.84).
+#    The release workflow builds and verifies the ZIP, then creates the GitHub
+#    release and attaches both generated ZIP names. A failed gate does not
+#    publish an asset.
+git tag v<NEW>
+git push origin v<NEW>
 
-# 5. Verify what the in-app updater will actually see
-gh api repos/david0154/Nexuzy-Ledger/releases/latest --jq "{tag: .tag_name, asset: .assets[0].name}"
+# 5. After the "Build and publish release" workflow succeeds, verify the
+#    latest release has the fixed-name asset used by the download button.
+gh api repos/david0154/Nexuzy-Ledger/releases/latest --jq "{tag: .tag_name, assets: [.assets[].name]}"
 ```
 
-The tag and the asset filename must **both** match the new version. The
-updater shows the user `tag_name`, so a mismatch means every user is told
-the wrong version number.
+The tag must match the package version exactly or the workflow stops. The
+fixed-name `Nexuzy-Ledger.zip` is required by the README download link.
 
 ---
 

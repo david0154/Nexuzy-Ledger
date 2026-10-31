@@ -20,11 +20,13 @@ Your data never leaves your computer. No cloud and no limits. Open source, so yo
 
 **A free invoice builder and invoice maker** for shop owners, freelancers, consultants, traders and small businesses in India: make a GST invoice, quotation (proforma / estimate), bill of supply, credit note or delivery challan in minutes and save it as a PDF. Free billing software and a free, open-source alternative to Tally, Vyapar, Zoho and myBillBook.
 
-<a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip"><img src="https://img.shields.io/github/v/release/david0154/Nexuzy-Ledger?style=for-the-badge&label=%E2%AC%87%EF%B8%8F%20Download&color=16a34a&labelColor=15803d" alt="Download the latest version" height="48"></a>&nbsp;&nbsp;<a href="https://dicecodes.com/free-gst-software-documentation/"><img src="https://img.shields.io/badge/%F0%9F%93%96%20Documentation-Read%20the%20guide-2563eb?style=for-the-badge&labelColor=1d4ed8" alt="Read the documentation" height="48"></a>
+<a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip"><img src="https://img.shields.io/github/v/release/david0154/Nexuzy-Ledger?style=for-the-badge&label=%E2%AC%87%EF%B8%8F%20Download&color=16a34a&labelColor=15803d" alt="Download the latest version" height="48"></a>&nbsp;&nbsp;<a href="https://ledger.nexuzy.in/"><img src="https://img.shields.io/badge/%F0%9F%93%96%20Documentation-Read%20the%20guide-2563eb?style=for-the-badge&labelColor=1d4ed8" alt="Read the documentation" height="48"></a>
 
 <sub>Always the newest version · about 24 MB · Windows, macOS and Linux in one ZIP · <a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest">release notes</a></sub>
 
-[⬇ Download ZIP](https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip) &nbsp;|&nbsp; [📦 Releases](https://github.com/david0154/Nexuzy-Ledger/releases) &nbsp;|&nbsp; [📖 Documentation](https://dicecodes.com/free-gst-software-documentation/) &nbsp;|&nbsp; [⚡ 3-Step Install](#quick-start--installation) &nbsp;|&nbsp; [🧾 First Invoice in 5 Minutes](#your-first-invoice-in-5-minutes) &nbsp;|&nbsp; [📸 Screenshots](#screenshots) &nbsp;|&nbsp; [🐛 Report Bug](https://github.com/david0154/Nexuzy-Ledger/issues)
+[⬇ Download ZIP](https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip) &nbsp;|&nbsp; [📦 Releases](https://github.com/david0154/Nexuzy-Ledger/releases) &nbsp;|&nbsp; [📖 Documentation](https://ledger.nexuzy.in/) &nbsp;|&nbsp; [⚡ 3-Step Install](#quick-start--installation) &nbsp;|&nbsp; [🧾 First Invoice in 5 Minutes](#your-first-invoice-in-5-minutes) &nbsp;|&nbsp; [📸 Screenshots](#screenshots) &nbsp;|&nbsp; [🐛 Report Bug](https://github.com/david0154/Nexuzy-Ledger/issues)
+
+[Project website](website/index.html) · [About Nexuzy Lab](website/index.html#about)
 
 </div>
 
@@ -56,13 +58,13 @@ Your data never leaves your computer. No cloud and no limits. Open source, so yo
 
 **That is the complete list.** No analytics, no ads, no error-tracking service, and no server of ours that receives your data.
 
-**[Read the full answer: every address the app connects to, and more ways to check →](https://dicecodes.com/free-gst-software-documentation/security.html)**
+**[Read the full answer: every address the app connects to, and more ways to check →](https://ledger.nexuzy.in/security.html)**
 
 ---
 
 ## ⚡ Install in 60 Seconds
 
-**Windows:** the easiest option is the [one-line Windows installer guide](https://dicecodes.com/free-gst-software-documentation/install.html). It downloads and installs the app, creates a Desktop shortcut, and opens Nexuzy Ledger. No administrator rights or Node.js setup is needed.
+**Windows:** the easiest option is the [one-line Windows installer guide](https://ledger.nexuzy.in/install.html). It downloads and installs the app, creates a Desktop shortcut, and opens Nexuzy Ledger. No administrator rights or Node.js setup is needed.
 
 Already comfortable with PowerShell? Open PowerShell and paste:
 
@@ -70,9 +72,11 @@ Already comfortable with PowerShell? Open PowerShell and paste:
 [Net.ServicePointManager]::SecurityProtocol='Tls12'; irm https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/install.ps1 | iex
 ```
 
-**Mac or Linux/NAS:** use the [Mac guide](https://dicecodes.com/free-gst-software-documentation/install-mac.html) or [Linux/NAS guide](https://dicecodes.com/free-gst-software-documentation/install-linux.html).
+**Mac or Linux/NAS:** use the [Mac guide](https://ledger.nexuzy.in/install-mac.html) or [Linux/NAS guide](https://ledger.nexuzy.in/install-linux.html).
 
 The manual ZIP option is below. A published GitHub release is required for both the one-line installer and the latest-release download link.
+
+Maintainers can publish a verified release by pushing a version tag matching `package.json` (for example, `v1.10.84`). GitHub Actions runs `npm run release:zip` and attaches the fixed-name ZIP to the GitHub release only if all release checks pass. See [the release checklist](docs/RELEASE_CHECKLIST.md).
 
 The download ZIP holds a **launcher for each system**, a plain-English **`READ ME FIRST.txt`**, and a `_system/` folder with everything else. Extract the ZIP, double-click the launcher for your computer, click **Install** — it sets itself up, needs no administrator rights, and opens the app in your browser when it is done.
 
@@ -149,7 +153,7 @@ Real screens from the app, with a made-up demo business (fake GSTIN and bank det
   </tr>
 </table>
 
-More screenshots, next to the steps they show, in the [documentation](https://dicecodes.com/free-gst-software-documentation/).
+More screenshots, next to the steps they show, in the [documentation](https://ledger.nexuzy.in/).
 
 ---
 
@@ -259,7 +263,7 @@ Once you're comfortable with the basics, explore:
 - **GSTR-2B Reconciliation** — download your 2B JSON from gst.gov.in, click Import in our 2B tab — we auto-match against your purchase records and flag mismatches.
 - **TDS / TCS** — Customize → tick TDS or TCS, pick a section (194Q / 206C(1H) / etc.). The Reports view aggregates these for Form 26Q / 27EQ filing.
 
-📖 **Full walkthrough** — see [docs/USER_GUIDE.md](docs/USER_GUIDE.md) or the [online documentation](https://dicecodes.com/free-gst-software-documentation/), which the app's **User Guide** button opens.
+📖 **Full walkthrough** — see [docs/USER_GUIDE.md](docs/USER_GUIDE.md) or the [online documentation](https://ledger.nexuzy.in/), which the app's **User Guide** button opens.
 
 ---
 
@@ -478,7 +482,7 @@ If we priced every 🆕 feature at the going rate on the paid alternatives:
 
 ## Quick Start / Installation
 
-> **New to computers?** Follow the step-by-step guides, with every click explained: [Windows](https://dicecodes.com/free-gst-software-documentation/install.html) · [Mac](https://dicecodes.com/free-gst-software-documentation/install-mac.html) · [Linux / NAS](https://dicecodes.com/free-gst-software-documentation/install-linux.html) · [Updating](https://dicecodes.com/free-gst-software-documentation/update.html) · [Using the Terminal](https://dicecodes.com/free-gst-software-documentation/terminal.html)
+> **New to computers?** Follow the step-by-step guides, with every click explained: [Windows](https://ledger.nexuzy.in/install.html) · [Mac](https://ledger.nexuzy.in/install-mac.html) · [Linux / NAS](https://ledger.nexuzy.in/install-linux.html) · [Updating](https://ledger.nexuzy.in/update.html) · [Using the Terminal](https://ledger.nexuzy.in/terminal.html)
 
 ### Prerequisites
 
@@ -554,7 +558,7 @@ Every install (the launcher, the one-line command, Mac and Linux) puts a **Free 
 
 ### Online hosting and network access: not supported
 
-Nexuzy Ledger has no server-side user accounts or roles. Keep it on the computer where it is installed; do not expose it to the internet or other devices. See [Can I put it online?](https://dicecodes.com/free-gst-software-documentation/security.html#host-online).
+Nexuzy Ledger has no server-side user accounts or roles. Keep it on the computer where it is installed; do not expose it to the internet or other devices. See [Can I put it online?](https://ledger.nexuzy.in/security.html#host-online).
 
 ## How to Self-File GST Returns
 
@@ -814,7 +818,7 @@ Find the message you see. **None of these touch your invoices**: they stay in th
 | Forgot the app PIN | In the app folder (next to the launcher), create an empty text file named `RESET-PIN` and reload the app. The PIN is removed; invoices aren't touched. |
 | Linux / Mac / NAS: **"Node.js … is too old"** or **"not installed"** | The message lists the command for your system (`apt`, `dnf`, `pacman`, `apk`, `brew` or nvm). Install Node.js 20, then open the launcher again. |
 
-**Still stuck?** [Report a problem](https://github.com/david0154/Nexuzy-Ledger/issues/new?template=bug_report.yml) with the message you see and a screenshot (hide your GSTIN and bank details). If the app doesn't start, add what `node -v` and `npm -v` show in Command Prompt. More answers: [troubleshooting guide](https://dicecodes.com/free-gst-software-documentation/troubleshooting.html).
+**Still stuck?** [Report a problem](https://github.com/david0154/Nexuzy-Ledger/issues/new?template=bug_report.yml) with the message you see and a screenshot (hide your GSTIN and bank details). If the app doesn't start, add what `node -v` and `npm -v` show in Command Prompt. More answers: [troubleshooting guide](https://ledger.nexuzy.in/troubleshooting.html).
 
 ---
 

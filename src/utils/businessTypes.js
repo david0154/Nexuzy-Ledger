@@ -15,6 +15,7 @@ export const SWITCHABLE_MODULES = FEATURE_GROUPS.flatMap(g => g.modules).filter(
 
 // Menu helpers every type keeps: they are about the app, not the business.
 const APP_HELPERS = ['guide', 'notifications', 'darkMode', 'controlPanel', 'offlineButton'];
+const COMMON_MODULES = ['payroll'];
 // Every type sells, and every business handles cash (the cash book).
 const SELLING = ['receipts', 'cashBook', 'reports', 'gstReturns', 'incomeTax', 'upiQr', 'googleDrive'];
 const GOODS = ['inventory', 'purchases', 'expenses'];
@@ -54,7 +55,7 @@ export const invoiceDefaultsForType = (typeId) => (typeId === 'freelancer'
 export const modulesForType = (typeId) => {
   const type = businessTypeById(typeId);
   if (!type) return null;
-  const on = new Set([...type.on, ...APP_HELPERS]);
+  const on = new Set([...type.on, ...APP_HELPERS, ...COMMON_MODULES]);
   return Object.fromEntries(SWITCHABLE_MODULES.map(id => [id, on.has(id)]));
 };
 

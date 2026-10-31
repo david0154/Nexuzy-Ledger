@@ -29,6 +29,7 @@ const ClientsView = lazy(() => import('./components/ClientsView'));
 const InventoryView = lazy(() => import('./components/InventoryView'));
 const ReportsView = lazy(() => import('./components/ReportsView'));
 const ExpenseTracker = lazy(() => import('./components/ExpenseTracker'));
+const Payroll = lazy(() => import('./components/Payroll'));
 const RecurringInvoices = lazy(() => import('./components/RecurringInvoices'));
 const ReceiptVoucher = lazy(() => import('./components/ReceiptVoucher'));
 const CashBook = lazy(() => import('./components/CashBook'));
@@ -80,7 +81,7 @@ function App() {
       const params = new URLSearchParams(window.location.search);
       const v = params.get('view');
       // v1.10.74 - 'controlpanel' added so ?view=controlpanel deep links work too.
-      const valid = ['dashboard', 'new', 'clients', 'inventory', 'expenses', 'purchases', 'recurring', 'receipts', 'cashbook', 'reports', 'filing', 'incometax', 'settings', 'controlpanel', 'support'];
+      const valid = ['dashboard', 'new', 'clients', 'inventory', 'expenses', 'payroll', 'purchases', 'recurring', 'receipts', 'cashbook', 'reports', 'filing', 'incometax', 'settings', 'controlpanel', 'support'];
       if (v && valid.includes(v)) {
         // Strip the query string so a refresh doesn't keep snapping back to
         // the shortcut target — only the *first* navigation honours it.
@@ -346,8 +347,9 @@ function App() {
             profileLoaded.current = true;
             const p = await res.json();
             setProfile(p);
-            if (!p.businessName && !localStorage.getItem('freegstbill_onboarded')) {
-              setShowWelcome(true);
+            if (!p.businessName) {
+              setShowWizard(true);
+              if (!localStorage.getItem('freegstbill_onboarded')) setShowWelcome(true);
             }
           }
           return;
@@ -510,7 +512,7 @@ function App() {
   // If the user just disabled the module backing the current view, kick them to dashboard
   // so they don't land on an empty page after toggling.
   useEffect(() => {
-    const map = { new: 'invoicing', clients: 'clients', inventory: 'inventory', expenses: 'expenses', purchases: 'purchases', recurring: 'recurring', receipts: 'receipts', cashbook: 'cashBook', reports: 'reports', filing: 'gstReturns', incometax: 'incomeTax' };
+    const map = { new: 'invoicing', clients: 'clients', inventory: 'inventory', expenses: 'expenses', payroll: 'payroll', purchases: 'purchases', recurring: 'recurring', receipts: 'receipts', cashbook: 'cashBook', reports: 'reports', filing: 'gstReturns', incometax: 'incomeTax' };
     const moduleForView = map[currentView];
     if (moduleForView && !isModuleEnabled(moduleForView, enabledModules)) {
       setCurrentView('dashboard');
@@ -526,6 +528,7 @@ function App() {
     clients: { icon: Users, label: 'Clients' },
     inventory: { icon: Package, label: 'Products' },
     expenses: { icon: Wallet, label: 'Expenses' },
+    payroll: { icon: Banknote, label: 'Payroll' },
     purchases: { icon: ShoppingCart, label: 'Purchases' },
     recurring: { icon: RefreshCw, label: 'Recurring' },
     receipts: { icon: Receipt, label: 'Receipts' },
@@ -856,7 +859,7 @@ function App() {
           aria-label="Open menu" aria-expanded={navOpen}>
           <Menu size={22} />
         </button>
-        <span className="mobile-topbar-title">GST Billing</span>
+        <span className="mobile-topbar-title">Nexuzy Ledger</span>
         <span className="mobile-topbar-business">{profile?.businessName || ''}</span>
         {topActions}
       </div>
@@ -1045,6 +1048,9 @@ function App() {
             business. Remounting makes every one of them read it again. */}
         {currentView === 'expenses' && (
           <ExpenseTracker key={businessKey} />
+        )}
+        {currentView === 'payroll' && (
+          <Payroll key={businessKey} profile={profile} />
         )}
         {currentView === 'purchases' && (
           <PurchaseBills key={businessKey} />
@@ -1266,7 +1272,7 @@ function App() {
             <div className="notice notice-info" style={{ marginBottom: '0.85rem' }}>
               <span className="notice-icon">🔒</span>
               <div>
-                <strong>Your data is safe.</strong> Updates only refresh the app code and dependencies — your <code>data/</code> folder (invoices, clients, products, settings) and <code>Saved Invoices/</code> PDF archive are <strong>never touched</strong>. The updater pulls the latest source from GitHub and rebuilds, then restarts.
+                <strong>Your data is safe.</strong> Updates download the published Nexuzy Ledger release and refresh the app code — your <code>data/</code> folder (invoices, clients, products, settings) and <code>Saved Invoices/</code> PDF archive are <strong>never touched</strong>. The updater backs up your data before installing the release.
               </div>
             </div>
 
@@ -1305,7 +1311,7 @@ function App() {
               </button>
             </div>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.6rem', marginBottom: 0 }}>
-              <em>Update Now</em> backs up your data, then fetches the newest release. It takes about a minute — leave this window open, then reload the page when it finishes.
+              <em>Update Now</em> backs up your data, then downloads and installs the newest published release from GitHub. It takes about a minute — leave this window open, then reload the page when it finishes.
             </p>
           </div>
         </div>

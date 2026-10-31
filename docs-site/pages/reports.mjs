@@ -7,7 +7,7 @@ export default [
 {
   slug: 'reports',
   title: 'Reports',
-  lead: 'Profit and loss, who owes you and for how long, party outstanding by month, your best clients, your best-selling products, closing stock with its value, TDS and TCS, and profit by branch or project. Every report prints and downloads as Excel or CSV.',
+  lead: 'Profit and loss, an estimated working-capital snapshot, cash-book flow, who owes you and for how long, party outstanding by month, your best clients, your best-selling products, closing stock with its value, TDS and TCS, and profit by branch or project. Every report prints and downloads as Excel or CSV.',
   body: `
 <section id="tabs">
 <h2>The report tabs</h2>
@@ -15,6 +15,7 @@ export default [
 <div class="table-wrap"><table>
   <tr><th>Tab</th><th>What it answers</th><th>Period</th></tr>
   <tr><td>${ui('Profit & Loss')}</td><td>Did I make money? Sales minus expenses, without GST, and month by month.</td><td>The period you choose</td></tr>
+  <tr><td>${ui('Balance Sheet & Cash Flow')}</td><td>Known cash, unpaid INR invoices and purchases, plus cash-book movement for a period. The balance snapshot is partial, not a full accounting balance sheet.</td><td>Cash flow uses the period; snapshot is as of today</td></tr>
   <tr><td>${ui('Outstanding & Aging')}</td><td>Who owes me money today, on which invoice, and how late is it?</td><td>Every unpaid invoice, any date</td></tr>
   <tr><td>${ui('Party Outstanding')}</td><td>The same money owed, one row per party and one column per month, the way Tally shows it.</td><td>A financial or calendar year</td></tr>
   <tr><td>${ui('Client Analytics')}</td><td>Who are my best customers, and who pays slowest?</td><td>The period you choose</td></tr>
@@ -24,6 +25,13 @@ export default [
   <tr><td>${ui('By cost centre')}</td><td>What did each branch, site or project sell, spend and earn? Shows only when cost centres are turned on.</td><td>The period you choose</td></tr>
 </table></div>
 <p>Reports always open on Profit &amp; Loss. Which tab you were on is not remembered after you leave the screen.</p>
+</section>
+
+<section id="balance-sheet-cash-flow">
+<h2>Estimated Balance Sheet and Cash Flow</h2>
+<p>This tab deliberately calls its snapshot an <b>estimate</b>. Nexuzy Ledger does not yet have a general ledger, owner capital, loans, inventory valuation, fixed-asset register or complete tax liabilities, so it cannot produce a complete or audited balance sheet. It shows the recorded INR cash-book balance (including an opening balance only if you entered one), unpaid INR sales invoices and unpaid INR purchase bills. Foreign-currency balances are excluded.</p>
+<p>The cash-flow section is a summary of cash transactions entered in the Cash book or recorded as cash payments on invoices, receipts, expenses and purchase bills. It does <b>not</b> include bank transfers, card payments or a bank statement. Record and reconcile every transaction before relying on the totals.</p>
+<p>Both tables can be printed or exported. This report is for a working estimate only and must not be used for statutory filing, lending or audited accounts.</p>
 </section>
 
 <section id="included">

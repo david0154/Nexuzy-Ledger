@@ -1,19 +1,11 @@
-// v1.10.7 — Regenerates the PNG icon set from `public/favicon.svg`.
+// v1.10.7 — Regenerates app icons from the high-resolution Nexuzy Ledger mark.
 //
-// Why this exists: the PWA manifest declares 192/512/maskable/apple
-// PNGs but the corresponding files were never shipped (see v1.10.2
-// changelog "⚠ Action required"). Without them:
-//   • Android "Add to Home Screen" falls back to the SVG (works,
-//     but no adaptive-icon safe zone → the icon can get cropped).
-//   • iOS silently ignores SVG apple-touch-icons and renders a
-//     generated screenshot tile of the current page.
-// This script eliminates the "queued follow-up" note.
+// The PWA and Windows launcher icons all come from the same high-resolution
+// artwork. The SVG favicon remains a small, self-contained N mark.
 //
 // Run: `npm run icons`
 //
-// Uses `sharp` (native binary with prebuilt Windows/macOS/Linux
-// tarballs — no build step). Output PNGs are ~1-4 KB each because
-// the source SVG is line-art + solid fills.
+// Uses `sharp` (native binary with prebuilt Windows/macOS/Linux tarballs).
 
 import path from 'path';
 import fs from 'fs';
@@ -22,26 +14,26 @@ import sharp from 'sharp';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const SRC_SVG = path.join(ROOT, 'public', 'favicon.svg');
 const OUT_DIR = path.join(ROOT, 'public', 'icons');
+const SRC_PNG = path.join(OUT_DIR, 'icon-512.png');
 
-if (!fs.existsSync(SRC_SVG)) {
-  console.error(`FATAL: source SVG missing at ${SRC_SVG}`);
+if (!fs.existsSync(SRC_PNG)) {
+  console.error(`FATAL: high-resolution app icon missing at ${SRC_PNG}`);
   process.exit(1);
 }
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const svgBuffer = fs.readFileSync(SRC_SVG);
+const brandPng = fs.readFileSync(SRC_PNG);
 
 // Maskable icons need a solid-color safe zone around the artwork
 // because Android's adaptive-icon shape (circle, squircle, teardrop…)
 // masks the outer 40%. So the "logo" is inset ~62% into a full-bleed
-// background rectangle in the same colour as the SVG's outer chip.
+// background rectangle in the same colour as the mark's outer chip.
 async function renderPng(size, purpose) {
   if (purpose === 'maskable') {
-    // Pre-render the SVG at 62% inside a solid #1e40af background.
+    // Keep the full-color mark inside the adaptive-icon safe zone.
     const inner = Math.round(size * 0.62);
-    const innerPng = await sharp(svgBuffer).resize(inner, inner).png().toBuffer();
+    const innerPng = await sharp(brandPng).resize(inner, inner).png().toBuffer();
     const gap = Math.round((size - inner) / 2);
     return sharp({
       create: { width: size, height: size, channels: 4, background: '#1e40af' },
@@ -50,7 +42,7 @@ async function renderPng(size, purpose) {
       .png()
       .toBuffer();
   }
-  return sharp(svgBuffer).resize(size, size).png().toBuffer();
+  return sharp(brandPng).resize(size, size).png().toBuffer();
 }
 
 const targets = [
@@ -83,7 +75,7 @@ console.log(`\nWrote ${targets.length} PNGs to ${path.relative(ROOT, OUT_DIR)}/ 
 //    behind the letter. At 48px and up that reads as depth. At 16px - the
 //    size Explorer uses in a list, and the one in a window title bar - the
 //    two blues merge into a blurred edge, the panel becomes a grey ghost,
-//    the bar becomes a smudge, and the B is left about six pixels tall.
+//    the bar becomes a smudge, and the N is left about six pixels tall.
 //    It does not look like a logo, it looks like a damaged file. So the
 //    small sizes are drawn from a simplified mark: one solid square, one
 //    big letter. Same brand, no mush. Type foundries call this an optical
@@ -97,13 +89,12 @@ console.log(`\nWrote ${targets.length} PNGs to ${path.relative(ROOT, OUT_DIR)}/ 
 //    what every Windows since 95 expects, so those are used for every size
 //    that fits in one, with PNG kept only for 256 where the bitmap would be
 //    256 KB on its own.
-const ICO_SMALL = [16, 20, 24, 32, 48];   // simplified mark
-const ICO_LARGE = [64, 128, 256];         // full mark
+const ICO_SMALL = [16, 20, 24];          // simplified mark for title-bar sizes
+const ICO_LARGE = [32, 48, 64, 128, 256]; // full mark for taskbar and larger
 const ICO_OUT = path.join(ROOT, 'release-templates', '_system-scripts', 'app-icon.ico');
 
-// The same blue, the same letter, nothing that cannot survive being six
-// pixels tall. Kept beside favicon.svg rather than replacing it: the web app
-// is never rendered at 16px.
+// A simple N remains legible at the smallest Windows taskbar and title-bar
+// sizes; the larger ICO entries use the full-color app artwork.
 const SIMPLE_SVG = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="13" fill="#2563eb"/>
   <text x="32" y="47" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif"
@@ -114,8 +105,8 @@ const SIMPLE_SVG = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox=
 // (colour rows plus the mask), bottom-up BGRA rows, then a 1bpp AND mask.
 // The mask is all zeroes because the alpha channel already carries the
 // shape; it still has to be there, and its rows still pad to 4 bytes.
-async function icoBitmap(svg, size) {
-  const { data } = await sharp(svg).resize(size, size).raw().ensureAlpha().toBuffer({ resolveWithObject: true });
+async function icoBitmap(image, size) {
+  const { data } = await sharp(image).resize(size, size).raw().ensureAlpha().toBuffer({ resolveWithObject: true });
   const dib = Buffer.alloc(40);
   dib.writeUInt32LE(40, 0);          // header size
   dib.writeInt32LE(size, 4);         // width
@@ -145,7 +136,7 @@ for (const size of ICO_SMALL) images.push({ size, buf: await icoBitmap(SIMPLE_SV
 for (const size of ICO_LARGE) {
   images.push(size === 256
     ? { size, buf: await renderPng(256, 'any'), png: true }
-    : { size, buf: await icoBitmap(svgBuffer, size), png: false });
+    : { size, buf: await icoBitmap(brandPng, size), png: false });
 }
 
 const header = Buffer.alloc(6);

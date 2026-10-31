@@ -7,7 +7,7 @@
 # extract folder again.
 
 $ErrorActionPreference = 'Continue'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Installer'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Installer'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir
@@ -15,7 +15,7 @@ $RootDir   = Split-Path -Parent $ScriptDir
 
 Write-Host ''
 Write-Host '  ============================================================'
-Write-Host '   Free GST Billing Software - Installer'
+Write-Host '   Nexuzy Ledger - Installer'
 Write-Host '  ============================================================'
 Write-Host ''
 
@@ -29,20 +29,20 @@ function Find-OtherInstall {
   $here = $RootDir.TrimEnd('\')
   $roots = @()
   foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
-    # One unreadable or empty shortcut must not stop the others being checked.
-    try {
-      $lnk = Join-Path $dir 'Free GST Billing.lnk'
-      if (-not (Test-Path -LiteralPath $lnk)) { continue }
-      # v1.10.83 - the one-line install's shortcut runs "...\_system\start-windows.ps1"
-      # -AppWindow; the launcher's runs "...\Free GST Billing - WINDOWS.hta". The
-      # first quoted path is the script either way.
-      $a = [string](New-Object -ComObject WScript.Shell).CreateShortcut($lnk).Arguments
-      $p = if ($a -match '"([^"]+)"') { $Matches[1] } else { $a.Trim() }
-      $r = Split-Path -Parent $p
-      if ((Split-Path -Leaf $r) -eq '_system') { $r = Split-Path -Parent $r }
-      $roots += $r
-    } catch { }
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+      try {
+        $lnk = Join-Path $dir $name
+        if (-not (Test-Path -LiteralPath $lnk)) { continue }
+        # v1.10.83 - both launcher and app shortcuts put their script path first.
+        $a = [string](New-Object -ComObject WScript.Shell).CreateShortcut($lnk).Arguments
+        $p = if ($a -match '"([^"]+)"') { $Matches[1] } else { $a.Trim() }
+        $r = Split-Path -Parent $p
+        if ((Split-Path -Leaf $r) -eq '_system') { $r = Split-Path -Parent $r }
+        $roots += $r
+      } catch { }
+    }
   }
+  $roots += Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
   $roots += Join-Path $env:LOCALAPPDATA 'Programs\Free GST Billing'
   foreach ($r in $roots) {
     if (-not $r -or $r.TrimEnd('\') -eq $here) { continue }
@@ -53,12 +53,12 @@ function Find-OtherInstall {
 if (-not $env:FREEGSTBILL_DIR) {
   $other = Find-OtherInstall
   if ($other) {
-    Write-Host '  Free GST Billing is already installed on this computer, in:' -ForegroundColor Yellow
+    Write-Host '  Nexuzy Ledger is already installed on this computer, in:' -ForegroundColor Yellow
     Write-Host "    $other"
     Write-Host ''
     Write-Host '  Installing again here would make a second copy with no invoices in it.'
     Write-Host '  To get the newest version, update the installed copy instead:'
-    Write-Host '  open it from your Free GST Billing shortcut, then'
+    Write-Host '  open it from your Nexuzy Ledger shortcut, then'
     Write-Host '  More options -> Update to the latest version.'
     Write-Host ''
     Write-Host '  Nothing was changed. This folder is not needed; you can delete it.'
@@ -130,7 +130,15 @@ Write-Host ''
 Write-Host '  Creating the Desktop and Start Menu icons...'
 foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
   try {
-    New-AppShortcut (Join-Path $dir 'Free GST Billing.lnk') $SystemDir
+    New-AppShortcut (Join-Path $dir 'Nexuzy Ledger.lnk') $SystemDir
+    $legacy = Join-Path $dir 'Free GST Billing.lnk'
+    if (Test-Path -LiteralPath $legacy) {
+      $legacyArgs = [string](New-Object -ComObject WScript.Shell).CreateShortcut($legacy).Arguments
+      $legacyTarget = if ($legacyArgs -match '"([^"]+)"') { $Matches[1] } else { $legacyArgs.Trim() }
+      $legacyRoot = Split-Path -Parent $legacyTarget
+      if ((Split-Path -Leaf $legacyRoot) -eq '_system') { $legacyRoot = Split-Path -Parent $legacyRoot }
+      if ($legacyRoot.TrimEnd('\') -eq $RootDir.TrimEnd('\')) { Remove-Item -LiteralPath $legacy -Force }
+    }
     Write-Host "  Icon created in $dir"
   } catch {
     Write-Host "  WARNING: could not create the icon in $dir ($($_.Exception.Message)). You can still open the app from the launcher in the app folder."
@@ -156,7 +164,7 @@ try {
     $lines = @(
       '[.ShellClassInfo]',
       'IconResource=_system\app-icon.ico,0',
-      'InfoTip=Free GST Billing Software - open the launcher inside'
+      'InfoTip=Nexuzy Ledger - open the launcher inside'
     )
     Set-Content -Path $ini -Value $lines -Encoding ASCII -Force
     attrib +H +S "$ini" 2>$null
@@ -174,7 +182,7 @@ Write-Host '  ============================================================'
 Write-Host ''
 Write-Host '  Opening the app in your browser now...'
 Write-Host ''
-Write-Host '  Next time, click the Free GST Billing icon on your Desktop or in the Start menu.'
+Write-Host '  Next time, click the Nexuzy Ledger icon on your Desktop or in the Start menu.'
 Write-Host ''
 
 # v1.10.69 - finish the job. Leaving a console window saying "now go and

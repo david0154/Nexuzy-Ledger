@@ -29,11 +29,13 @@
 import { existsSync, readdirSync, rmSync, mkdirSync, statSync, writeFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { spawn, spawnSync } from 'child_process';
+import net from 'net';
 import { fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 
 const REPO_ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
-const OUT_DIR = join(REPO_ROOT, 'release-build');
+const outArg = process.argv.find((arg) => arg.startsWith('--outDir='));
+const OUT_DIR = resolve(REPO_ROOT, outArg ? outArg.slice('--outDir='.length) : 'release-build');
 
 const log = (msg) => process.stdout.write(`${msg}\n`);
 const fail = (msg, detail = '') => {
@@ -94,6 +96,17 @@ function findSystemDir(root) {
   return null;
 }
 
+async function findFreePort() {
+  const probe = net.createServer();
+  await new Promise((resolvePromise, rejectPromise) => {
+    probe.once('error', rejectPromise);
+    probe.listen(0, '127.0.0.1', resolvePromise);
+  });
+  const { port } = probe.address();
+  await new Promise((resolvePromise, rejectPromise) => probe.close((err) => (err ? rejectPromise(err) : resolvePromise())));
+  return port;
+}
+
 /** Start the packaged server and resolve with its URL once it binds. */
 function startServer(systemDir) {
   return new Promise((resolvePromise, rejectPromise) => {
@@ -150,10 +163,11 @@ try {
     fail('_system/node_modules/express is missing: the ZIP does not carry its packages.');
   }
 
-  // FGSB_VERIFY_PORT: start on this port, away from a copy of the app that is
-  // already running on this machine.
+  // Use an unused port so verification never tests against a user's running
+  // install when the packaged app's saved port is already occupied.
   mkdirSync(join(systemDir, 'data'), { recursive: true });
-  if (process.env.FGSB_VERIFY_PORT) writeFileSync(join(systemDir, 'data', 'port.txt'), process.env.FGSB_VERIFY_PORT);
+  const verifyPort = Number(process.env.FGSB_VERIFY_PORT) || await findFreePort();
+  writeFileSync(join(systemDir, 'data', 'port.txt'), String(verifyPort));
   log('  3/5  starting the packaged server…');
   server = await startServer(systemDir);
   log(`       bound at ${server.url}`);

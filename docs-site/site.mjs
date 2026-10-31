@@ -7,9 +7,9 @@ export const SITE = {
   folder: 'free-gst-software-documentation',
   // Where the folder is published. Used for canonical links, the sitemap,
   // social previews and llms.txt, which all need full addresses.
-  url: 'https://dicecodes.com/free-gst-software-documentation/',
+  url: 'https://ledger.nexuzy.in/',
   publisher: { name: 'Nexuzy Lab', url: 'mailto:info@nexuzy.in' },
-  version: '1.10.83',
+  version: '1.10.85',
   repo: 'https://github.com/david0154/Nexuzy-Ledger',
   // Always the newest release: GitHub resolves this to the latest release's
   // file of exactly this name (see docs/RELEASE_CHECKLIST.md, step 4b).
@@ -20,7 +20,7 @@ export const SITE = {
 // Other pages use their own title and the first ~155 characters of their lead.
 export const SEO = {
   index: {
-    title: 'Nexuzy Ledger for India: documentation and user guide',
+    title: 'Nexuzy Ledger: Free GST Billing Software for India | User Guide',
     description: 'Free, open-source GST billing software for Windows, Mac and Linux. Make GST invoices, track payments and stock, and prepare GSTR-1 and GSTR-3B. No signup, works offline.',
   },
   install: {
@@ -49,7 +49,7 @@ export const NAV = [
   { title: 'Start here', pages: ['index', 'install', 'install-mac', 'install-linux', 'update', 'first-run', 'first-invoice', 'gst-basics', 'security'] },
   { title: 'Invoicing', pages: ['invoices', 'invoice-options', 'thermal-printing', 'dashboard'] },
   { title: 'Clients, stock and payments', pages: ['clients', 'products', 'receipts', 'cash-book', 'recurring'] },
-  { title: 'Buying', pages: ['purchases', 'expenses'] },
+  { title: 'Buying and payroll', pages: ['purchases', 'expenses', 'payroll'] },
   { title: 'Tax and reports', pages: ['gst-returns', 'reports', 'income-tax'] },
   { title: 'Setting up', pages: ['settings', 'print-settings', 'backup', 'control-panel'] },
   { title: 'Help', pages: ['shortcuts', 'troubleshooting', 'terminal', 'limitations', 'glossary', 'support'] },

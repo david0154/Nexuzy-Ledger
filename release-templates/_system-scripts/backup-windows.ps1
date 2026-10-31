@@ -5,7 +5,7 @@
 # Opens the folder in Explorer so the user knows where it went.
 
 $ErrorActionPreference = 'Stop'
-$Host.UI.RawUI.WindowTitle = 'Free GST Billing - Backup'
+$Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Backup'
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir

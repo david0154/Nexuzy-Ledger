@@ -60,7 +60,7 @@ function Get-IconFolders {
   return @{ Desktop = [Environment]::GetFolderPath('Desktop'); Programs = [Environment]::GetFolderPath('Programs'); Startup = [Environment]::GetFolderPath('Startup') }
 }
 
-# The app folder a "Free GST Billing" shortcut opens. The launcher's runs
+# The app folder a Nexuzy Ledger shortcut opens. The launcher's runs
 # "...\Free GST Billing - WINDOWS.hta", this installer's runs
 # "...\_system\start-windows.ps1": the first quoted path either way.
 function Get-LinkRoot([string]$lnk) {
@@ -81,13 +81,20 @@ function Find-Install {
   foreach ($dir in @($f.Desktop, $f.Programs)) {
     # One unreadable shortcut must not stop the other being checked.
     try {
-      $lnk = Join-Path $dir 'Free GST Billing.lnk'
-      if (-not (Test-Path -LiteralPath $lnk)) { continue }
-      $r = Get-LinkRoot $lnk
-      if ($r -and (Test-Path -LiteralPath (Join-Path $r '_system\server.js'))) { return $r }
+      foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+        $lnk = Join-Path $dir $name
+        if (-not (Test-Path -LiteralPath $lnk)) { continue }
+        $r = Get-LinkRoot $lnk
+        if ($r -and (Test-Path -LiteralPath (Join-Path $r '_system\server.js'))) { return $r }
+      }
     } catch { }
   }
-  return (Join-Path $env:LOCALAPPDATA 'Programs\Free GST Billing')
+  $newInstall = Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
+  $legacyInstall = Join-Path $env:LOCALAPPDATA 'Programs\Free GST Billing'
+  foreach ($candidate in @($newInstall, $legacyInstall)) {
+    if (Test-Path -LiteralPath (Join-Path $candidate '_system\server.js')) { return $candidate }
+  }
+  return $newInstall
 }
 
 function Test-Writable([string]$dir) {
@@ -111,6 +118,21 @@ function Get-FreeMB([string]$dir) {
   return [int]($free / 1MB)
 }
 
+function Get-PublishedZipUrl {
+  try {
+    $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10' -Headers @{ 'User-Agent' = 'NexuzyLedger-Installer' } -TimeoutSec 20
+    $release = @($releases | Where-Object { -not $_.draft } | Select-Object -First 1)[0]
+    if (-not $release) { throw 'No published GitHub release was found.' }
+    $asset = @($release.assets | Where-Object { $_.name -match '\.zip$' } | Select-Object -First 1)[0]
+    if ($asset) { return $asset.browser_download_url }
+    $attachment = [regex]::Match([string]$release.body, 'https://github\.com/user-attachments/files/[^\s)<>]+\.zip(?=[)\s]|$)')
+    if ($attachment.Success) { return $attachment.Value }
+    throw "Release $($release.tag_name) has no downloadable app ZIP."
+  } catch {
+    Fail 'The published Nexuzy Ledger release could not be found.' 'Open https://github.com/david0154/Nexuzy-Ledger/releases and check that its release notes link to the Nexuzy-Ledger ZIP.'
+  }
+}
+
 function Test-Online {
   try {
     $null = Invoke-WebRequest -Uri 'https://github.com' -Method Head -UseBasicParsing -TimeoutSec 20 -ErrorAction Stop
@@ -119,7 +141,7 @@ function Test-Online {
 }
 
 # Downloads with a running "x of y MB", so a slow line does not look stuck.
-function Save-Url([string]$url, [string]$out) {
+function Save-Url([string]$url, [string]$out, [switch]$PublishedAttachment) {
   try {
     $req = [Net.HttpWebRequest]::Create($url)
     $req.UserAgent = 'FreeGSTBill-Installer'
@@ -128,9 +150,17 @@ function Save-Url([string]$url, [string]$out) {
   } catch {
     Write-Host ''
     $status = 0
-    if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
+    $errorResponse = $_.Exception.Response
+    if (-not $errorResponse -and $_.Exception.InnerException) { $errorResponse = $_.Exception.InnerException.Response }
+    if ($errorResponse) { $status = [int]$errorResponse.StatusCode }
     if ($status -eq 404) {
-      Fail 'No Nexuzy Ledger release package has been published yet.' 'Open https://github.com/david0154/Nexuzy-Ledger/releases. When a release is available, run this same install line again.'
+      if (-not $PublishedAttachment) {
+        Write-Host '  Checking the published release package...'
+        $publishedUrl = Get-PublishedZipUrl
+        Save-Url $publishedUrl $out -PublishedAttachment
+        return
+      }
+      Fail 'The published Nexuzy Ledger package could not be found.' 'Open https://github.com/david0154/Nexuzy-Ledger/releases and contact Nexuzy Lab if the release ZIP is listed there.'
     }
     Fail 'The app could not be downloaded from GitHub.' 'Check the internet connection (open any website), then run the same line again.'
   }
@@ -200,25 +230,25 @@ function New-AppShortcut([string]$path, [string]$sys) {
   $sc.WorkingDirectory = $sys
   $sc.WindowStyle = 7
   $sc.IconLocation = "$(Join-Path $sys 'app-icon.ico'),0"
-  $sc.Description = 'Free GST Billing Software'
+  $sc.Description = 'Nexuzy Ledger by Nexuzy Lab'
   $sc.Save()
 }
 
 function Install-App {
   Write-Host ''
-  Write-Host '  Free GST Billing - install or update'
+  Write-Host '  Nexuzy Ledger - install or update'
   Write-Host ''
 
   # --- [1/4] -----------------------------------------------------------------
   Step '[1/4] Checking this computer'
   if ([Environment]::OSVersion.Version.Major -lt 10) {
-    Fail 'This computer runs an old Windows.' 'Free GST Billing needs Windows 10 or 11 (Node.js no longer runs on Windows 7 or 8).'
+    Fail 'This computer runs an old Windows.' 'Nexuzy Ledger needs Windows 10 or 11 (Node.js no longer runs on Windows 7 or 8).'
   }
   $dest = Find-Install
   $sys = Join-Path $dest '_system'
   $isUpdate = Test-Path -LiteralPath (Join-Path $sys 'server.js')
   if (-not (Test-Writable $dest)) {
-    Fail "This folder cannot be written to: $dest" 'Close any program using it, or choose another folder: $env:FREEGSTBILL_DIR = ''D:\Free GST Billing'' and run the line again.'
+    Fail "This folder cannot be written to: $dest" 'Close any program using it, or choose another folder: $env:FREEGSTBILL_DIR = ''D:\Nexuzy Ledger'' and run the line again.'
   }
   $free = Get-FreeMB $dest
   if ($free -lt $NeedFreeMB) {
@@ -230,7 +260,7 @@ function Install-App {
   # Left over by an install that was interrupted.
   Get-ChildItem -LiteralPath $dest -Directory -Force -Filter '.install-tmp-*' -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
   Ok
-  if ($isUpdate) { Write-Host "        Found Free GST Billing in $dest - updating it. Your data stays as it is." }
+  if ($isUpdate) { Write-Host "        Found Nexuzy Ledger in $dest - updating it. Your data stays as it is." }
 
   # --- [2/4] -----------------------------------------------------------------
   # Unpacked inside the app folder itself: the same drive, so the files can be
@@ -255,13 +285,13 @@ function Install-App {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     try { [IO.Compression.ZipFile]::ExtractToDirectory($zip, $unpacked) } catch {
       if ($_.Exception.InnerException -is [IO.PathTooLongException] -or $_.Exception -is [IO.PathTooLongException]) {
-        Fail "The folder path is too long for Windows: $dest" 'Install to a shorter one: run $env:FREEGSTBILL_DIR = ''C:\Free GST Billing'' in PowerShell, then the install line there.'
+        Fail "The folder path is too long for Windows: $dest" 'Install to a shorter one: run $env:FREEGSTBILL_DIR = ''C:\Nexuzy Ledger'' in PowerShell, then the install line there.'
       }
       Fail 'The downloaded file could not be unpacked (damaged download, or the disk is full).' 'Run the same line again.'
     }
     $inner = Get-ChildItem -LiteralPath $unpacked -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName '_system\server.js') } | Select-Object -First 1
     if (-not $inner -or -not (Test-Path -LiteralPath (Join-Path $inner.FullName '_system\node_modules\express\package.json'))) {
-      Fail 'The downloaded file is not a complete Free GST Billing package.' 'Run the same line again. If it happens again, report it: https://github.com/david0154/Nexuzy-Ledger/issues'
+      Fail 'The downloaded file is not a complete Nexuzy Ledger package.' 'Run the same line again. If it happens again, report it: https://github.com/david0154/Nexuzy-Ledger/issues'
     }
     $newSys = Join-Path $inner.FullName '_system'
     $backup = if ($isUpdate) { Backup-Data $sys } else { $null }
@@ -318,20 +348,29 @@ function Install-App {
   $f = Get-IconFolders
   foreach ($d in @($f.Desktop, $f.Programs)) {
     New-Item -ItemType Directory -Path $d -Force | Out-Null
-    New-AppShortcut (Join-Path $d 'Free GST Billing.lnk') $sys
+    New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys
+  }
+  foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
+    $legacy = Join-Path $d 'Free GST Billing.lnk'
+    try {
+      if ((Test-Path -LiteralPath $legacy) -and ((Get-LinkRoot $legacy) -eq $dest.TrimEnd('\'))) {
+        if ($d -eq $f.Startup) { New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys }
+        Remove-Item -LiteralPath $legacy -Force
+      }
+    } catch { }
   }
   Ok
-  if (-not $isUpdate -and (Ask 'Open Free GST Billing by itself when this computer starts?')) {
+  if (-not $isUpdate -and (Ask 'Open Nexuzy Ledger by itself when this computer starts?')) {
     New-Item -ItemType Directory -Path $f.Startup -Force | Out-Null
-    New-AppShortcut (Join-Path $f.Startup 'Free GST Billing.lnk') $sys
+    New-AppShortcut (Join-Path $f.Startup 'Nexuzy Ledger.lnk') $sys
     Write-Host '        It will open by itself when this computer starts.'
   }
 
   Write-Host ''
-  Write-Host '  Done! Opening Free GST Billing...' -ForegroundColor Green
+  Write-Host '  Done! Opening Nexuzy Ledger...' -ForegroundColor Green
   & (Join-Path $sys 'start-windows.ps1') -AppWindow
   Write-Host ''
-  Write-Host '  Next time, click the Free GST Billing icon on your Desktop or in the Start menu.'
+  Write-Host '  Next time, click the Nexuzy Ledger icon on your Desktop or in the Start menu.'
   Write-Host ''
   if (-not $Test) { Start-Sleep -Seconds 10 }
 }
@@ -339,14 +378,16 @@ function Install-App {
 function Uninstall-App {
   $dest = Find-Install
   $sys = Join-Path $dest '_system'
-  if (-not (Test-Path -LiteralPath (Join-Path $sys 'server.js'))) { Fail "Free GST Billing is not installed in $dest." 'Nothing was changed.' }
+  if (-not (Test-Path -LiteralPath (Join-Path $sys 'server.js'))) { Fail "Nexuzy Ledger is not installed in $dest." 'Nothing was changed.' }
   Write-Host ''
-  Write-Host "  Removing Free GST Billing from $dest"
+  Write-Host "  Removing Nexuzy Ledger from $dest"
   Stop-App $sys
   $f = Get-IconFolders
   foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
-    $lnk = Join-Path $d 'Free GST Billing.lnk'
-    try { if ((Test-Path -LiteralPath $lnk) -and ((Get-LinkRoot $lnk) -eq $dest.TrimEnd('\'))) { Remove-Item -LiteralPath $lnk -Force } } catch { }
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+      $lnk = Join-Path $d $name
+      try { if ((Test-Path -LiteralPath $lnk) -and ((Get-LinkRoot $lnk) -eq $dest.TrimEnd('\'))) { Remove-Item -LiteralPath $lnk -Force } } catch { }
+    }
   }
   # The program goes; the books stay unless the user says otherwise.
   $keep = @('data', 'Saved Invoices', 'Trash')
@@ -379,7 +420,7 @@ try {
   if (-not $script:KnownProblem) {
     $diskFull = ($_.Exception.HResult -eq -2147024784) -or ($msg -match 'not enough space')
     if ($diskFull) { $msg = "The disk is full.`n    Free some space, then run the same line again." }
-    else { $msg = "$msg`n    Close Free GST Billing if it is open, then run the same line again; it carries on where it stopped." }
+    else { $msg = "$msg`n    Close Nexuzy Ledger if it is open, then run the same line again; it carries on where it stopped." }
   }
   Write-Host "  PROBLEM: $msg" -ForegroundColor Red
   Write-Host '    Your invoices and settings were not changed.'
