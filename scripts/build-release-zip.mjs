@@ -58,8 +58,13 @@ if (!existsSync(templates)) {
 const pkgJson = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'));
 const version = pkgJson.version;
 
-// --- Clean staging area ---
-if (existsSync(OUT_DIR)) rmSync(OUT_DIR, { recursive: true, force: true });
+// --- Refresh only this app package; preserve other release-build artifacts ---
+mkdirSync(OUT_DIR, { recursive: true });
+if (existsSync(STAGING)) rmSync(STAGING, { recursive: true, force: true });
+for (const name of [`Nexuzy-Ledger-v${version}.zip`, 'Nexuzy-Ledger.zip']) {
+  const previous = join(OUT_DIR, name);
+  if (existsSync(previous)) rmSync(previous, { force: true });
+}
 mkdirSync(SYSTEM, { recursive: true });
 
 // --- Copy launcher files to root of staging ---
