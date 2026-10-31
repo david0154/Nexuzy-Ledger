@@ -53,6 +53,7 @@ a backup is made first.
 - Removed the outdated README roadmap and replaced it with a verified feature-status table.
 - Corrected the GST portal, Income Tax Helper, recurring invoice and integration descriptions to distinguish automatic features from manual workflows and unsupported features.
 - Updated the competitor comparison and online-access guidance to remove stale future-release promises.
+- Renamed the release ZIP's extracted top-level folder from `Free-GST-Billing` to `Nexuzy-Ledger`; existing Linux installs using the old folder name are still detected by the installer.
 
 ### Added
 - **Offline mode, and proof the app keeps your data private.** Settings has

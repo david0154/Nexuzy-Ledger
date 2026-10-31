@@ -94,16 +94,13 @@ npm run release:zip
 #    the latest release has a file of exactly that name. The in-app and
 #    launcher updaters take the first *.zip, so the name does not matter to
 #    them. See ERR-003: one tagged release per version.
-cp "release-build/Nexuzy-Ledger-v<NEW>.zip" "release-build/Nexuzy-Ledger.zip"
-gh release create v<NEW> "release-build/Nexuzy-Ledger.zip" \
-  --target main --title "v<NEW> — <short user-facing summary>" \
-  --notes-file <notes>
-curl -sIL -o /dev/null -w "%{http_code}\n" \
-  https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip
+Copy-Item "release-build\Nexuzy-Ledger-v<NEW>.zip" "release-build\Nexuzy-Ledger.zip"
+gh release create v<NEW> "release-build\Nexuzy-Ledger.zip" `
+  --target main --title "Nexuzy Ledger v<NEW>" --generate-notes
+curl.exe -sIL https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip
 
 # 5. Verify what the in-app updater will actually see
-gh api repos/david0154/Nexuzy-Ledger/releases/latest \
-  --jq '{tag: .tag_name, asset: .assets[0].name}'
+gh api repos/david0154/Nexuzy-Ledger/releases/latest --jq "{tag: .tag_name, asset: .assets[0].name}"
 ```
 
 The tag and the asset filename must **both** match the new version. The

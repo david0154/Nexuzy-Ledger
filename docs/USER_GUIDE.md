@@ -89,6 +89,11 @@ It needs no admin rights and writes nothing outside your own user folder:
 [Net.ServicePointManager]::SecurityProtocol='Tls12'; irm https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/install.ps1 | iex
 ```
 
+The installer downloads the latest published release from
+[Nexuzy Ledger Releases](https://github.com/david0154/Nexuzy-Ledger/releases).
+If no release has been published yet, the download cannot start; check the
+Releases page and run the command again when one is available.
+
 It installs to `%LOCALAPPDATA%\Programs\Free GST Billing`. To pick your own
 folder, run `$env:FREEGSTBILL_DIR = 'D:\Apps\Free GST Billing'` first.
 

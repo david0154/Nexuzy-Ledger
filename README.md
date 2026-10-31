@@ -60,12 +60,24 @@ Your data never leaves your computer. No cloud and no limits. Open source, so yo
 
 ---
 
-## ⚡ Install in 60 Seconds — one launcher per platform
+## ⚡ Install in 60 Seconds
+
+**Windows:** the easiest option is the [one-line Windows installer guide](https://dicecodes.com/free-gst-software-documentation/install.html). It downloads and installs the app, creates a Desktop shortcut, and opens Nexuzy Ledger. No administrator rights or Node.js setup is needed.
+
+Already comfortable with PowerShell? Open PowerShell and paste:
+
+```powershell
+[Net.ServicePointManager]::SecurityProtocol='Tls12'; irm https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/install.ps1 | iex
+```
+
+**Mac or Linux/NAS:** use the [Mac guide](https://dicecodes.com/free-gst-software-documentation/install-mac.html) or [Linux/NAS guide](https://dicecodes.com/free-gst-software-documentation/install-linux.html).
+
+The manual ZIP option is below. A published GitHub release is required for both the one-line installer and the latest-release download link.
 
 The download ZIP holds a **launcher for each system**, a plain-English **`READ ME FIRST.txt`**, and a `_system/` folder with everything else. Extract the ZIP, double-click the launcher for your computer, click **Install** — it sets itself up, needs no administrator rights, and opens the app in your browser when it is done.
 
 ```
-Free-GST-Billing/
+Nexuzy-Ledger/
 ├── Free GST Billing - WINDOWS.hta    ← Windows: double-click this
 ├── Free GST Billing - MAC.command    ← macOS
 ├── Free GST Billing - LINUX.sh       ← Linux / NAS
@@ -793,7 +805,7 @@ Find the message you see. **None of these touch your invoices**: they stay in th
 | **"could not install the app's dependencies"** / **"cannot reach the internet"** | The first install needs the internet. Check the connection; in an office, a proxy or firewall may block `registry.npmjs.org`. Click **Install** again: it carries on where it stopped. |
 | **"Still starting…"** / **"The server has not answered in 90 seconds"** | The first start after an install or update is slow while antivirus checks the new files. Wait a minute and open <http://localhost:47371>. Still nothing? Close the black window and open the app again from its icon. |
 | **"Free GST Billing is already installed on this computer, in: …"** | You extracted a new ZIP into a new folder. Your invoices are in the folder it names: click **Update the installed copy** in the launcher, then delete the new folder. |
-| **"The app cannot write to its own folder"** | Don't keep it in `C:\Program Files`. Move the whole Free-GST-Billing folder to Documents or `D:\` and open it from there. |
+| **"The app cannot write to its own folder"** | Don't keep it in `C:\Program Files`. Move the whole Nexuzy-Ledger folder to Documents or `D:\` and open it from there. |
 | **"Drive … is almost full"** | The install needs about 400 MB free. Empty the Recycle Bin or delete old downloads. |
 | **"Node.js was downloaded but will not run"** | Antivirus removed it. Add the app folder to its exclusions and click **Install** again. |
 | **"Install Node.js LTS now?"** (winget) | The app couldn't download Node.js itself and offers Windows' own installer. Type **Y** to accept (Windows may ask permission), or install it yourself from the page it opens. |

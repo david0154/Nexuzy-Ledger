@@ -63,9 +63,9 @@ else {
   check('ZIP is readable', !!e, 'The ZIP central directory is corrupt; rebuild it.');
   if (e) {
     check('every path uses "/" (ERR-014, ERR-061)', !e.some((x) => x.name.includes('\\')), 'Backslash paths unpack as flat files on Linux / Mac. Build with npm run release:zip, never Compress-Archive.');
-    check('server.js is at Free-GST-Billing/_system/', e.some((x) => x.name === 'Free-GST-Billing/_system/server.js'), 'The layout is wrong; the launchers will not find the app.');
+    check('server.js is at Nexuzy-Ledger/_system/', e.some((x) => x.name === 'Nexuzy-Ledger/_system/server.js'), 'The layout is wrong; the launchers will not find the app.');
     for (const l of ['Free GST Billing - WINDOWS.hta', 'Free GST Billing - MAC.command', 'Free GST Billing - LINUX.sh', 'READ ME FIRST.txt']) {
-      check(`${l} is in the ZIP`, e.some((x) => x.name === `Free-GST-Billing/${l}`), `${l} is missing from the ZIP.`);
+      check(`${l} is in the ZIP`, e.some((x) => x.name === `Nexuzy-Ledger/${l}`), `${l} is missing from the ZIP.`);
     }
     const scripts = e.filter((x) => /\.(command|sh)$/.test(x.name));
     check(`all ${scripts.length} .command / .sh files are executable (ERR-062, #120)`, scripts.length > 0 && scripts.every((x) => x.mode & 0o111),
@@ -73,7 +73,7 @@ else {
     const ps1 = e.filter((x) => x.name.endsWith('.ps1')).map((x) => x.name.split('/').pop());
     check('ensure-node.ps1 ships with the scripts that use it (#109)', ps1.includes('ensure-node.ps1') && e.some((x) => x.name.endsWith('/check-node.sh')), 'ensure-node.ps1 / check-node.sh missing: install, update and start would fail.');
     // v1.10.83 - the packages ship inside the ZIP: no user's PC runs npm.
-    check('node_modules ships inside the ZIP (no npm install on users\' PCs)', e.some((x) => x.name === 'Free-GST-Billing/_system/node_modules/express/package.json'),
+    check('node_modules ships inside the ZIP (no npm install on users\' PCs)', e.some((x) => x.name === 'Nexuzy-Ledger/_system/node_modules/express/package.json'),
       '_system/node_modules/express is missing. Build with npm run release:zip (it runs npm ci in the staging folder).');
     check('ZIP size looks right (12-60 MB; the server packages only)', statSync(appZip).size > 1.2e7 && statSync(appZip).size < 6e7, `It is ${(statSync(appZip).size / 1e6).toFixed(1)} MB.`);
   }

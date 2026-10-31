@@ -60,6 +60,8 @@ ${which}
   <li><strong>Answer one question</strong>It asks <i>Open Free GST Billing by itself when this computer starts?</i> Type <code>Y</code> and press ${key('Enter')} for yes, or just press ${key('Enter')} for no.</li>
   <li><strong>The app opens in its own window</strong>The window says <i>Done! Opening Free GST Billing...</i> and the app appears, with no browser tabs or address bar. A short welcome asks for your business details; see <a href="first-run.html">The first-run setup</a>. The install window closes by itself.</li>
 </ol>
+<div class="note warn"><strong>The installer needs a published release</strong>
+<p>If it says no release package has been published, the download is not available yet. Check the <a href="${SITE.repo}/releases">Nexuzy Ledger Releases page</a>. Once a release is published, run the same install line again.</p></div>
 <p><b>Every day after that:</b> click the <b>Free GST Billing</b> icon on your Desktop or in the Start menu.</p>
 <p><b>To update or repair it:</b> do the same three steps again. It finds your install, backs up your data to <code>Documents\\FreeGSTBill Backups</code>, and replaces only the app's own files. Your invoices, clients and settings stay exactly as they are.</p>
 <div class="note tip"><strong>If the window shows PROBLEM in red</strong>
@@ -89,7 +91,7 @@ ${which}
 <ol class="steps">
   <li><strong>Right-click the ZIP</strong>Right-click <code>Nexuzy-Ledger.zip</code> and choose ${ui('Extract All\u2026')}. (On Windows 11 it may be under ${ui('Show more options')}.)</li>
   <li><strong>Choose where</strong>Click ${ui('Browse\u2026')} and pick <b>Documents</b>, or a drive like <code>D:\\</code>. Not <b>Downloads</b>: things there get deleted when people tidy up. Do not choose <code>C:\\Program Files</code>.</li>
-  <li><strong>Click Extract</strong>A new folder called <b>Free-GST-Billing</b> opens. Inside you see <b>Free GST Billing - WINDOWS</b>, <b>READ ME FIRST</b>, and launchers for Mac and Linux.</li>
+  <li><strong>Click Extract</strong>A new folder called <b>Nexuzy-Ledger</b> opens. Inside you see <b>Free GST Billing - WINDOWS</b>, <b>READ ME FIRST</b>, and launchers for Mac and Linux.</li>
 </ol>
 <p>If you double-click the launcher while still looking inside the ZIP, it says <i>Please extract the ZIP first</i>. Close it and do this step.</p>
 <figure class="narrow"><img src="${img('launcher-zip.png')}" alt="The launcher explaining that the ZIP needs to be extracted first"></figure>
@@ -98,7 +100,7 @@ ${which}
 <section id="launch">
 <h2>Step 3: Open the launcher and click Install</h2>
 <ol class="steps">
-  <li><strong>Double-click "Free GST Billing - WINDOWS"</strong>In the Free-GST-Billing folder.</li>
+  <li><strong>Double-click "Free GST Billing - WINDOWS"</strong>In the Nexuzy-Ledger folder.</li>
   <li><strong>If Windows warns you</strong>See <a href="#windows-protected">"Windows protected your PC"</a> just below: click ${ui('More info')}, then ${ui('Run anyway')}. If it asks <i>Do you want to run this file?</i>, click ${ui('Run')} or ${ui('Open')}.</li>
   <li><strong>Click Install</strong>A small window opens with one big button. Click ${ui('Install')}. There is nothing to fill in.</li>
   <li><strong>Leave the black window alone</strong>A black window appears and does the work: it may get Node.js (the engine the app runs on, about 30 MB, kept inside the app folder). This takes 1 to 3 minutes. Don't close it; it closes by itself.</li>
@@ -121,7 +123,7 @@ ${which}
   <li>Click the button ${ui('Run anyway')}.</li>
 </ol>
 <p>If the file will not open at all: right-click <b>Free GST Billing - WINDOWS</b>, choose ${ui('Properties')}, tick ${ui('Unblock')} at the bottom, click ${ui('OK')}, and double-click it again.</p>
-<p>If your antivirus deletes a file during the install, add the Free-GST-Billing folder to its exclusions (often under <i>Exclusions</i> or <i>Allowed apps</i>) and click ${ui('Install')} again.</p>
+<p>If your antivirus deletes a file during the install, add the Nexuzy-Ledger folder to its exclusions (often under <i>Exclusions</i> or <i>Allowed apps</i>) and click ${ui('Install')} again.</p>
 </section>
 
 <section id="every-day">
@@ -129,8 +131,8 @@ ${which}
 <ol class="steps">
   <li><strong>Double-click the "Free GST Billing" icon on your Desktop</strong>The install put this icon (the blue <b>B</b>) there and in the Start menu. It starts the app and opens it in its own window. There is nothing else to click.</li>
 </ol>
-<p>Update, back up, restore, restart and stop the app from the <a href="control-panel.html">Control Panel</a> in the app's menu. Restarting the computer also stops it. The launcher, <b>Free GST Billing - WINDOWS</b> in the Free-GST-Billing folder, stays there for updates and repairs.</p>
-<p>Your data is in the <code>_system\\data</code> folder inside Free-GST-Billing; see <a href="backup.html">Backups</a>.</p>
+<p>Update, back up, restore, restart and stop the app from the <a href="control-panel.html">Control Panel</a> in the app's menu. Restarting the computer also stops it. The launcher, <b>Free GST Billing - WINDOWS</b> in the Nexuzy-Ledger folder, stays there for updates and repairs.</p>
+<p>Your data is in the <code>_system\\data</code> folder inside Nexuzy-Ledger; see <a href="backup.html">Backups</a>.</p>
 <p>Use only this icon. If you also have a Free GST Billing app icon made by Chrome or Edge, remove it (right-click it, then ${ui('Uninstall')}): it opens a window but cannot start the app.</p>
 </section>
 
@@ -225,8 +227,8 @@ ${which}
 <h2>Part 2: Download and unzip the app</h2>
 <ol class="steps">
   <li><strong>Download</strong><a class="download" href="${SITE.download}">Download Free GST Billing</a></li>
-  <li><strong>Find it in Downloads</strong>Open <b>Finder</b> (the blue face in the Dock) and click <b>Downloads</b> on the left. <b>Safari</b> usually unzips it for you, so you see a folder called <b>Free-GST-Billing</b>. If you see <code>Nexuzy-Ledger.zip</code> instead, double-click it to unzip.</li>
-  <li><strong>Move the folder to Documents</strong>Drag the <b>Free-GST-Billing</b> folder onto <b>Documents</b> on the left of Finder, so it is not deleted when Downloads is cleared. Your invoices will be kept inside it.</li>
+  <li><strong>Find it in Downloads</strong>Open <b>Finder</b> (the blue face in the Dock) and click <b>Downloads</b> on the left. <b>Safari</b> usually unzips it for you, so you see a folder called <b>Nexuzy-Ledger</b>. If you see <code>Nexuzy-Ledger.zip</code> instead, double-click it to unzip.</li>
+  <li><strong>Move the folder to Documents</strong>Drag the <b>Nexuzy-Ledger</b> folder onto <b>Documents</b> on the left of Finder, so it is not deleted when Downloads is cleared. Your invoices will be kept inside it.</li>
 </ol>
 </section>
 
@@ -234,7 +236,7 @@ ${which}
 <h2>Part 3: Open it the first time</h2>
 <p>Apple asks you to confirm apps that are not from the App Store. This is needed <b>once</b>.</p>
 <ol class="steps">
-  <li><strong>Control-click the launcher</strong>In the Free-GST-Billing folder, hold the ${key('Control')} key and click <b>Free GST Billing - MAC</b> (or right-click it, or click with two fingers on a trackpad). Choose ${ui('Open')}.</li>
+  <li><strong>Control-click the launcher</strong>In the Nexuzy-Ledger folder, hold the ${key('Control')} key and click <b>Free GST Billing - MAC</b> (or right-click it, or click with two fingers on a trackpad). Choose ${ui('Open')}.</li>
   <li><strong>Confirm</strong>A box says macOS cannot check the developer. Click ${ui('Open')}.</li>
   <li><strong>On macOS 15 Sequoia or newer, if there is no Open button</strong>Click ${ui('Done')}. Open the Apple menu (the apple logo) → ${ui('System Settings')} → ${ui('Privacy &amp; Security')}, scroll down to the message about <b>Free GST Billing - MAC</b>, click ${ui('Open Anyway')}, type your password, then ${ui('Open Anyway')} again.</li>
   <li><strong>A Terminal window opens</strong>It is a plain text window; you do not need to type anything in it. (A download from before version 1.10.83 asks <i>Install now? [Y/n]</i>: press ${key('Return')}.)</li>
@@ -261,7 +263,7 @@ ${which}
 </ol>
 <p><b>Tip:</b> make a Desktop shortcut. Control-click the launcher → ${ui('Make Alias')}, and drag the alias to your Desktop. You can also bookmark <code>http://localhost:47371</code> in your browser; it works while the app is running.</p>
 <p>To stop the app: in the app open <b>Control Panel</b> in the sidebar and click ${ui('Stop Server')}. Restarting the Mac also stops it.</p>
-<p>Your data is in <code>Free-GST-Billing/_system/data</code>. Updating: see <a href="update.html#mac">Updating on a Mac</a>; never drag a new download over the old folder.</p>
+<p>Your data is in <code>Nexuzy-Ledger/_system/data</code>. Updating: see <a href="update.html#mac">Updating on a Mac</a>; never drag a new download over the old folder.</p>
 </section>
 `,
 },
@@ -326,7 +328,7 @@ ${which}
 
 <section id="start">
 <h2>Step 3: Start the app</h2>
-<pre><code>cd ~/Free-GST-Billing && bash "Free GST Billing - LINUX.sh"</code></pre>
+<pre><code>cd ~/Nexuzy-Ledger && bash "Free GST Billing - LINUX.sh"</code></pre>
 <ol class="steps">
   <li><strong>Wait up to a minute</strong>When it says <i>Server running</i>, the app opens in your browser at <code>http://localhost:47371</code>. You can close the Terminal; the app keeps running. (A download from before version 1.10.83 first asks <i>Install now? [Y/n]</i>: press ${key('Enter')}.)</li>
 </ol>
@@ -336,7 +338,7 @@ ${which}
 <section id="nas">
 <h2>On a NAS or server (for IT people)</h2>
 <pre><code>unzip Nexuzy-Ledger.zip
-cd Free-GST-Billing
+cd Nexuzy-Ledger
 bash "_system/start-unix.sh"</code></pre>
 <p>The ZIP carries the app's packages, so there is no <code>npm install</code>; any Node.js 18 or newer runs it.</p>
 <p>The app listens on <code>127.0.0.1:47371</code> only (it has no login, so it is never opened to the network). Updating from inside the app needs <code>unzip</code> or python3.</p>
@@ -391,12 +393,12 @@ bash "_system/start-unix.sh"</code></pre>
 
 <section id="windows">
 <h2>Windows: other ways</h2>
-<p><b>From the launcher:</b> double-click <b>Free GST Billing - WINDOWS</b> in the Free-GST-Billing folder → ${ui('More options')} → ${ui('Update to the latest version')} → then ${ui('Open App')}.</p>
+<p><b>From the launcher:</b> double-click <b>Free GST Billing - WINDOWS</b> in the Nexuzy-Ledger folder → ${ui('More options')} → ${ui('Update to the latest version')} → then ${ui('Open App')}.</p>
 <p><b>By hand, with the ZIP</b> (if the app does not open at all):</p>
 <ol class="steps">
   <li><strong>Download</strong><a class="download" href="${SITE.download}">Download Free GST Billing</a></li>
   <li><strong>Stop the app</strong>Launcher → ${ui('More options')} → ${ui('Stop the app')}.</li>
-  <li><strong>Extract into the same place as before</strong>Right-click the ZIP → ${ui('Extract All\u2026')} → ${ui('Browse\u2026')} → choose the folder that <i>contains</i> your Free-GST-Billing folder (for example <b>Documents</b>) → ${ui('Extract')}.</li>
+  <li><strong>Extract into the same place as before</strong>Right-click the ZIP → ${ui('Extract All\u2026')} → ${ui('Browse\u2026')} → choose the folder that <i>contains</i> your Nexuzy-Ledger folder (for example <b>Documents</b>) → ${ui('Extract')}.</li>
   <li><strong>Replace the files</strong>Windows asks about files that already exist: choose ${ui('Replace the files in the destination')}. On Windows this <b>adds</b> to your folder; your <code>_system\\data</code> folder is not touched.</li>
   <li><strong>Open the app</strong>Double-click <b>Free GST Billing - WINDOWS</b> → ${ui('Open App')}. The first start after an update takes a minute.</li>
 </ol>
@@ -420,7 +422,7 @@ bash "_system/start-unix.sh"</code></pre>
 <section id="linux">
 <h2>Linux: other ways</h2>
 <p>Use the Update button, or in the Terminal:</p>
-<pre><code>sh ~/Free-GST-Billing/_system/update-unix.sh</code></pre>
+<pre><code>sh ~/Nexuzy-Ledger/_system/update-unix.sh</code></pre>
 <p>It downloads the newest version, checks every file, keeps <code>_system/data</code>, and rolls back if anything fails. Restart the app afterwards.</p>
 </section>
 `,
@@ -479,7 +481,7 @@ bash "_system/start-unix.sh"</code></pre>
 <ol class="steps">
   <li><strong>Open Terminal</strong>${key('Cmd', 'Space')}, type <code>Terminal</code>, ${key('Return')}.</li>
   <li><strong>Type the start of the command</strong>Type <code>chmod +x</code> and then one space. Do not press Return yet.</li>
-  <li><strong>Drag the launcher in</strong>Drag <b>Free GST Billing - MAC</b> from your Free-GST-Billing folder into the Terminal window. The line now ends with its location.</li>
+  <li><strong>Drag the launcher in</strong>Drag <b>Free GST Billing - MAC</b> from your Nexuzy-Ledger folder into the Terminal window. The line now ends with its location.</li>
   <li><strong>Press Return</strong>Nothing is printed: that means it worked. Close Terminal and open the launcher again (Control-click → ${ui('Open')}).</li>
 </ol>
 </section>

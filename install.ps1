@@ -127,6 +127,11 @@ function Save-Url([string]$url, [string]$out) {
     $res = $req.GetResponse()
   } catch {
     Write-Host ''
+    $status = 0
+    if ($_.Exception.Response) { $status = [int]$_.Exception.Response.StatusCode }
+    if ($status -eq 404) {
+      Fail 'No Nexuzy Ledger release package has been published yet.' 'Open https://github.com/david0154/Nexuzy-Ledger/releases. When a release is available, run this same install line again.'
+    }
     Fail 'The app could not be downloaded from GitHub.' 'Check the internet connection (open any website), then run the same line again.'
   }
   $total = $res.ContentLength

@@ -155,7 +155,7 @@ export default [
 <p>The black window shows <strong>PROBLEM:</strong> and what went wrong. Fix it, then click ${ui('Install')} again; it carries on where it stopped.</p>
 <ul>
   <li><strong>"The app cannot reach the internet to download its packages"</strong>, <strong>"Could not download Node.js"</strong> or <strong>"The download did not work"</strong>: the first install needs the internet. Check the connection (open any website). On an office network, a proxy or firewall may block it; ask whoever runs the network to allow <code>registry.npmjs.org</code> and <code>nodejs.org</code>.</li>
-  <li><strong>"The app packages did not install"</strong>: the internet, disk and folder look fine, so antivirus is the usual cause. Add the Free-GST-Billing folder to its exclusions and click ${ui('Install')} again.</li>
+  <li><strong>"The app packages did not install"</strong>: the internet, disk and folder look fine, so antivirus is the usual cause. Add the Nexuzy-Ledger folder to its exclusions and click ${ui('Install')} again.</li>
   <li><strong>"Node.js could not be set up automatically"</strong>: install Node.js LTS yourself from <a href="https://nodejs.org">nodejs.org</a> (the page opens by itself), keep the default options, and open the launcher again. If antivirus removed it, add the folder to its exclusions.</li>
   <li><strong>"Windows can install Node.js LTS for this PC ... Install Node.js LTS now?"</strong>: the app could not download Node.js itself, so it offers Windows' own installer. Type <b>Y</b> and press <kbd>Enter</kbd> to accept (Windows may ask for permission), or anything else to install it yourself.</li>
   <li><strong>"This version of Windows is too old"</strong>: the app needs Windows 10 or 11. Node.js no longer runs on Windows 7 or 8.</li>
@@ -239,7 +239,7 @@ export default [
 <p><b>Forgot the PIN?</b> It can be removed on this computer without losing anything:</p>
 <ol>
   <li>Open the <b>Free-GST-Billing</b> folder, the one with the launcher in it.</li>
-  <li>Make a new empty file there named <code>RESET-PIN</code>. On Windows: right-click an empty space, ${ui('New')} → ${ui('Text Document')}, and name it <code>RESET-PIN</code> (<code>RESET-PIN.txt</code> also works). On a Mac or Linux, in the Terminal: <code>touch ~/Free-GST-Billing/RESET-PIN</code> (change the path if your folder is elsewhere).</li>
+  <li>Make a new empty file there named <code>RESET-PIN</code>. On Windows: right-click an empty space, ${ui('New')} → ${ui('Text Document')}, and name it <code>RESET-PIN</code> (<code>RESET-PIN.txt</code> also works). On a Mac or Linux, in the Terminal: <code>touch ~/Nexuzy-Ledger/RESET-PIN</code> (change the path if your folder is elsewhere).</li>
   <li>Reload the app's page. The PIN is removed and the file deleted by itself. Your invoices are not touched.</li>
   <li>Set a new PIN in <a href="settings.html#lock">Settings</a> if you want one.</li>
 </ol>
@@ -351,7 +351,7 @@ export default [
   <li>Stop the app (launcher, ${ui('More options')} → ${ui('Stop the app')}).</li>
   <li>Move the whole <b>Free-GST-Billing</b> folder to <b>Documents</b> or <code>D:\\</code>, and open the launcher from there. The old Desktop shortcut points at the old place: right-click the launcher → ${ui('Send to')} → ${ui('Desktop (create shortcut)')} for a new one.</li>
   <li>If antivirus blocks it, allow the app: in <b>Windows Security → Virus &amp; threat protection → Ransomware protection</b>, use <b>Allow an app through Controlled folder access</b>, or add the folder to your antivirus's exclusions.</li>
-  <li><strong>Mac or Linux:</strong> the folder may belong to another user (for example after using <code>sudo</code>). In the Terminal: <code>sudo chown -R $(whoami) ~/Free-GST-Billing</code> (change the path if your folder is elsewhere).</li>
+  <li><strong>Mac or Linux:</strong> the folder may belong to another user (for example after using <code>sudo</code>). In the Terminal: <code>sudo chown -R $(whoami) ~/Nexuzy-Ledger</code> (change the path if your folder is elsewhere).</li>
 </ol>
 </section>
 
@@ -571,7 +571,7 @@ export default [
 <h3>"Permission denied" or "bash: not found"</h3>
 <p>You may see: <strong>"Permission denied"</strong> when starting <code>./Free GST Billing - LINUX.sh</code>, or <strong>"bash: not found"</strong> on a NAS.</p>
 <ol>
-  <li>Start it through bash, which needs no permission change: <code>cd ~/Free-GST-Billing &amp;&amp; bash "Free GST Billing - LINUX.sh"</code>.</li>
+  <li>Start it through bash, which needs no permission change: <code>cd ~/Nexuzy-Ledger &amp;&amp; bash "Free GST Billing - LINUX.sh"</code>.</li>
   <li>No bash (Alpine, some NAS systems): install it, for example <code>sudo apk add bash</code>.</li>
   <li>"Permission denied" while the app writes files: see <a href="#no-permission">The app is not allowed to write</a>.</li>
 </ol>
@@ -585,7 +585,7 @@ export default [
   <li><strong>"Could not download the update"</strong>: check the internet and try again.</li>
   <li><strong>"could not be extracted (damaged download, or the disk is full)"</strong>: free some space (see <a href="#disk-full">The disk is full</a>) and try again.</li>
   <li><strong>"Update Node.js as shown above"</strong>: see <a href="#old-node">Node.js is too old</a>.</li>
-  <li><strong>"npm install failed."</strong>: check the internet and the free space, then run <code>sh ~/Free-GST-Billing/_system/update-unix.sh</code> again.</li>
+  <li><strong>"npm install failed."</strong>: check the internet and the free space, then run <code>sh ~/Nexuzy-Ledger/_system/update-unix.sh</code> again.</li>
   <li><strong>"This copy runs from a git checkout"</strong>: update it with <code>git pull &amp;&amp; npm install &amp;&amp; npm run build</code>.</li>
 </ul>
 <p>After <strong>"[OK] Update complete"</strong>, restart the app (or its Docker container or service).</p>

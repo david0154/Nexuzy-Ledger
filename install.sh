@@ -421,7 +421,7 @@ main() {
   # A copy unzipped by hand, with invoices in it, is updated rather than
   # starting a second, empty one next to it (ERR-038).
   if [ -z "${FREEGSTBILL_DIR:-}" ] && [ ! -f "$DIR/_system/server.js" ]; then
-    for c in "$HOME/Free-GST-Billing" "$HOME/Documents/Free-GST-Billing" "$HOME/Desktop/Free-GST-Billing" "$HOME/Downloads/Free-GST-Billing"; do
+    for c in "$HOME/Nexuzy-Ledger" "$HOME/Documents/Nexuzy-Ledger" "$HOME/Desktop/Nexuzy-Ledger" "$HOME/Downloads/Nexuzy-Ledger" "$HOME/Free-GST-Billing" "$HOME/Documents/Free-GST-Billing" "$HOME/Desktop/Free-GST-Billing" "$HOME/Downloads/Free-GST-Billing"; do
       if [ -f "$c/_system/server.js" ] && [ -n "$(ls -A "$c/_system/data" 2>/dev/null)" ]; then DIR=$c; break; fi
     done
   fi

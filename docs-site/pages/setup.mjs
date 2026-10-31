@@ -429,7 +429,7 @@ export default [
 <ul>
   <li><b>"The two PINs do not match"</b> or <b>"The PIN must be 6 digits"</b>: type the same PIN, of the length you chose, in both boxes.</li>
   <li><b>"Current PIN is wrong"</b>: check Caps Lock is not the problem (PINs are digits only) and try again; after five tries, wait 30 seconds.</li>
-  <li><b>Forgot the PIN?</b> Open the Free-GST-Billing folder (where you start the app), make a new empty file there named <code>RESET-PIN</code>, and reload the app. The PIN is removed and the file deleted. Your invoices are not touched.</li>
+  <li><b>Forgot the PIN?</b> Open the Nexuzy-Ledger folder (where you start the app), make a new empty file there named <code>RESET-PIN</code>, and reload the app. The PIN is removed and the file deleted. Your invoices are not touched.</li>
 </ul>
 </section>
 
