@@ -103,6 +103,14 @@ console.log('\nErrors users reported stay fixed');
 const hta = read('release-templates/Nexuzy Ledger - WINDOWS.hta');
 check('ERR-002 the launcher says UTF-8 and is plain ASCII', /charset=utf-8/i.test(hta) && !/[^\x00-\x7F]/.test(hta), 'Its text turns into garbage on Indian-locale Windows.');
 check('ERR-017 the launcher spots being run from inside the ZIP', hta.includes("'\\\\appdata\\\\local\\\\temp\\\\'"), 'Run from the ZIP it said "_system missing" instead of "extract first".');
+const oneLineInstall = read('install.ps1');
+const zipInstall = read('release-templates/_system-scripts/install-windows.ps1');
+check('Windows installers keep the Nexuzy Ledger Desktop shortcut', oneLineInstall.includes("New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys")
+  && oneLineInstall.includes("$legacy = Join-Path $d 'Free GST Billing.lnk'")
+  && zipInstall.includes("New-AppShortcut (Join-Path $dir 'Nexuzy Ledger.lnk') $SystemDir")
+  && zipInstall.includes("$legacy = Join-Path $dir 'Free GST Billing.lnk'")
+  && hta.includes("n === 0 ? 'Nexuzy Ledger.lnk' : 'Free GST Billing.lnk'"),
+  'The legacy-shortcut cleanup must never target the newly created Nexuzy Ledger.lnk.');
 const csp = (/http-equiv="Content-Security-Policy" content="([^"]*)"/.exec(read('src/index.html')) || [])[1] || '';
 const cspHas = (dir, src) => new RegExp(`${dir}[^;]*\\s${src.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|;|$)`).test(csp);
 check('ERR-004 the security policy allows the print frame, workers and blob images', ['frame-src', 'worker-src', 'img-src'].every((d) => cspHas(d, 'blob:')), 'Print, PDF or OCR is blocked by src/index.html.');

@@ -29,7 +29,7 @@ function Find-OtherInstall {
   $here = $RootDir.TrimEnd('\')
   $roots = @()
   foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
-    foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
       try {
         $lnk = Join-Path $dir $name
         if (-not (Test-Path -LiteralPath $lnk)) { continue }
@@ -130,8 +130,11 @@ Write-Host ''
 Write-Host '  Creating the Desktop and Start Menu icons...'
 foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
   try {
+    if (-not (Test-Path -LiteralPath $dir)) {
+      New-Item -ItemType Directory -Path $dir -Force -ErrorAction Stop | Out-Null
+    }
     New-AppShortcut (Join-Path $dir 'Nexuzy Ledger.lnk') $SystemDir
-    $legacy = Join-Path $dir 'Nexuzy Ledger.lnk'
+    $legacy = Join-Path $dir 'Free GST Billing.lnk'
     if (Test-Path -LiteralPath $legacy) {
       $legacyArgs = [string](New-Object -ComObject WScript.Shell).CreateShortcut($legacy).Arguments
       $legacyTarget = if ($legacyArgs -match '"([^"]+)"') { $Matches[1] } else { $legacyArgs.Trim() }

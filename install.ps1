@@ -81,7 +81,7 @@ function Find-Install {
   foreach ($dir in @($f.Desktop, $f.Programs)) {
     # One unreadable shortcut must not stop the other being checked.
     try {
-      foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
+      foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
         $lnk = Join-Path $dir $name
         if (-not (Test-Path -LiteralPath $lnk)) { continue }
         $r = Get-LinkRoot $lnk
@@ -351,7 +351,7 @@ function Install-App {
     New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys
   }
   foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
-    $legacy = Join-Path $d 'Nexuzy Ledger.lnk'
+    $legacy = Join-Path $d 'Free GST Billing.lnk'
     try {
       if ((Test-Path -LiteralPath $legacy) -and ((Get-LinkRoot $legacy) -eq $dest.TrimEnd('\'))) {
         if ($d -eq $f.Startup) { New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys }
@@ -384,7 +384,7 @@ function Uninstall-App {
   Stop-App $sys
   $f = Get-IconFolders
   foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
-    foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
       $lnk = Join-Path $d $name
       try { if ((Test-Path -LiteralPath $lnk) -and ((Get-LinkRoot $lnk) -eq $dest.TrimEnd('\'))) { Remove-Item -LiteralPath $lnk -Force } } catch { }
     }

@@ -84,7 +84,7 @@ function Move-IconsToApp {
         $target = if ($quotedTarget.Success) { $quotedTarget.Groups[1].Value } else { $arguments.Trim() }
         if ($target -ne $hta -and $target -ne $startScript) { continue }
         $shortcutPath = $lnk.FullName
-        if ($lnk.Name -eq 'Nexuzy Ledger.lnk' -and $dir -ne $taskbar) {
+        if ($lnk.Name -eq 'Free GST Billing.lnk' -and $dir -ne $taskbar) {
           $shortcutPath = Join-Path $dir 'Nexuzy Ledger.lnk'
         }
         New-AppShortcut $shortcutPath $SystemDir
