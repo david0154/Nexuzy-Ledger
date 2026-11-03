@@ -1,6 +1,6 @@
 # Weekly releases: one update every Saturday
 
-From v1.10.81, Free GST Billing ships **one update every Saturday** with that
+From v1.10.81, Nexuzy Ledger ships **one update every Saturday** with that
 week's fixes and new features. Users are told this in the app (Support &
 About), in the README, on the docs site and in the GitHub issue forms, so the
 promise has to be kept.

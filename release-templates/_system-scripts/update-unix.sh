@@ -1,5 +1,5 @@
 #!/bin/sh
-# Free GST Billing - Linux / macOS / NAS updater.
+# Nexuzy Ledger - Linux / macOS / NAS updater.
 #
 # The Unix counterpart of update-windows.ps1, run by the Control Panel's
 # "Update Now" button. Before v1.10.66 there was no Unix updater at all, so on
@@ -299,7 +299,7 @@ for launcher in "$NEW_ROOT"/*.sh "$NEW_ROOT"/*.command "$NEW_ROOT"/*.hta; do
 done
 # ...and launchers an older version had that this one no longer ships.
 if [ -n "$SHIPPED" ]; then
-  for f in "$ROOT_DIR"/'Free GST Billing - '* "$ROOT_DIR/READ ME FIRST.txt"; do
+  for f in "$ROOT_DIR"/'Nexuzy Ledger - '* "$ROOT_DIR/READ ME FIRST.txt"; do
     [ -f "$f" ] || continue
     [ -e "$NEW_ROOT/$(basename "$f")" ] || rm -f "$f"
   done

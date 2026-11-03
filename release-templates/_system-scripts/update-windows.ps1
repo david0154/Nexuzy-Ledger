@@ -1,4 +1,4 @@
-# Free GST Billing - Windows updater.
+# Nexuzy Ledger - Windows updater.
 #
 # Pulls the latest release ZIP from GitHub, extracts _system/ over
 # the existing one, re-runs npm install. Data folder is preserved.
@@ -125,7 +125,7 @@ Get-ChildItem -Path $newSystem -Force | Where-Object { $keep -notcontains $_.Nam
   Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force
 }
 # If the new release ships new launcher/HTA files at root, refresh those too
-Get-ChildItem -Path $sourceRoot -File | Where-Object { $_.Extension -match '\.(hta|command|sh)$' -or $_.Name -match '^Free GST Billing' } | ForEach-Object {
+Get-ChildItem -Path $sourceRoot -File | Where-Object { $_.Extension -match '\.(hta|command|sh)$' -or $_.Name -match '^Nexuzy Ledger' } | ForEach-Object {
   Copy-Item -Path $_.FullName -Destination (Join-Path $RootDir $_.Name) -Force
 }
 # v1.10.83 - a clean update: files an older version had and this one does not
@@ -139,7 +139,7 @@ if ($shipped) {
   } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
   $rootNames = @(Get-ChildItem -Path $sourceRoot -File | ForEach-Object { $_.Name })
   Get-ChildItem -Path $RootDir -File | Where-Object {
-    ($_.Name -like 'Free GST Billing - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
+    ($_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
   } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue }
 }
 

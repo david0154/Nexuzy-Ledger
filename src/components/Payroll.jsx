@@ -71,6 +71,10 @@ export default function Payroll({ profile }) {
   const [runForm, setRunForm] = useState(() => emptyRun());
   const [editingRun, setEditingRun] = useState('');
   const [saving, setSaving] = useState(false);
+  // v1.10.x — Attendance (mark present / absent / leave per employee per day).
+  const [showAttendance, setShowAttendance] = useState(false);
+  const [attMonth, setAttMonth] = useState(thisMonth());
+  const [attendance, setAttendance] = useState({});
 
   useEffect(() => {
     let active = true;
@@ -79,6 +83,7 @@ export default function Payroll({ profile }) {
       const saved = data[key] || {};
       setEmployees(Array.isArray(saved.employees) ? saved.employees : []);
       setRuns(Array.isArray(saved.payRuns) ? saved.payRuns : []);
+      setAttendance((saved.attendance && typeof saved.attendance === 'object') ? saved.attendance : {});
     }).catch(() => toast('Could not load payroll data', 'error'));
     return () => { active = false; };
   }, [key]);
@@ -89,6 +94,20 @@ export default function Payroll({ profile }) {
     await savePayrollData(data);
     setEmployees(nextEmployees);
     setRuns(nextRuns);
+
+  };
+
+  const persistAttendance = async (nextAttendance) => {
+    const data = await getPayrollData();
+    data[key] = { ...(data[key] || {}), attendance: nextAttendance };
+    await savePayrollData(data);
+    setAttendance(nextAttendance);
+  };
+
+  const cycleAttendance = (employeeId, date) => {
+    const cur = attendance?.[employeeId]?.[date] || '';
+    const next = cur === '' ? 'P' : cur === 'P' ? 'A' : cur === 'A' ? 'L' : '';
+    persistAttendance({ ...attendance, [employeeId]: { ...(attendance?.[employeeId] || {}), [date]: next } });
   };
 
   const activeEmployees = useMemo(() => employees.filter((employee) => employee.active !== false), [employees]);
@@ -182,6 +201,11 @@ export default function Payroll({ profile }) {
         <div>
           <h1 className="page-title">Payroll &amp; Salary <HelpButton title="Payroll & salary" doc="payroll" size={16} /></h1>
           <p className="page-subtitle">Employee records, monthly salary runs, and printable payslips</p>
+          <div style={{ marginTop: '0.6rem' }}>
+            <button type="button" className="btn btn-secondary" onClick={() => setShowAttendance(true)}>
+              <UserRound size={16} /> Attendance
+            </button>
+          </div>
         </div>
       </div>
       <div className="glass-panel" style={{ padding: '1rem 1.25rem', marginBottom: '1.25rem', borderLeft: '4px solid var(--warning)' }}>
@@ -290,6 +314,83 @@ export default function Payroll({ profile }) {
         )}
       </div>
       <p className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.75rem' }}>Payroll records are saved in this app's business data and included in normal app backups.</p>
+
+      {showAttendance && (
+        <div className="modal-overlay" onClick={() => setShowAttendance(false)}>
+          <div className="modal-content" style={{ maxWidth: '94vw', maxHeight: '86vh', overflow: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="section-title" style={{ margin: 0 }}>Attendance</h2>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowAttendance(false)}><X size={16} /> Close</button>
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                Month
+                <input type="month" className="form-input" style={{ marginLeft: '0.5rem' }} value={attMonth}
+                  onChange={(e) => setAttMonth(e.target.value)} />
+              </label>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                Tap a day to cycle: Present (P) → Absent (A) → Leave (L) → blank
+              </span>
+            </div>
+            {activeEmployees.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)' }}>Add at least one employee first to mark attendance.</p>
+            ) : (() => {
+              const [y, m] = attMonth.split('-').map(Number);
+              const days = new Date(y, m, 0).getDate();
+              const dateKey = (d) => `${attMonth}-${String(d).padStart(2, '0')}`;
+              return (
+                <div className="table-scroll">
+                  <table className="data-table" style={{ minWidth: 'max-content' }}>
+                    <thead>
+                      <tr>
+                        <th>Employee</th>
+                        {Array.from({ length: days }, (_, i) => <th key={i} style={{ padding: '4px 6px', minWidth: 28, textAlign: 'center' }}>{i + 1}</th>)}
+                        <th>P</th><th>A</th><th>L</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeEmployees.map((employee) => {
+                        let pc = 0, ac = 0, lc = 0;
+                        for (let d = 1; d <= days; d++) {
+                          const s = attendance?.[employee.id]?.[dateKey(d)] || '';
+                          if (s === 'P') pc++; else if (s === 'A') ac++; else if (s === 'L') lc++;
+                        }
+                        return (
+                          <tr key={employee.id}>
+                            <td className="font-medium">{employee.name}</td>
+                            {Array.from({ length: days }, (_, i) => {
+                              const d = i + 1;
+                              const s = attendance?.[employee.id]?.[dateKey(d)] || '';
+                              return (
+                                <td key={d} style={{ padding: '2px', textAlign: 'center' }}>
+                                  <button type="button"
+                                    onClick={() => cycleAttendance(employee.id, dateKey(d))}
+                                    title={`${employee.name} · ${dateKey(d)}: ${s || 'unmarked'}`}
+                                    style={{ width: 26, height: 26, borderRadius: 4, border: '1px solid var(--border)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700,
+                                      background: s === 'P' ? '#16a34a' : s === 'A' ? '#dc2626' : s === 'L' ? '#f59e0b' : 'transparent',
+                                      color: s ? '#fff' : 'var(--text-muted)' }}>
+                                    {s}
+                                  </button>
+                                </td>
+                              );
+                            })}
+                            <td style={{ textAlign: 'center', color: '#16a34a', fontWeight: 700 }}>{pc}</td>
+                            <td style={{ textAlign: 'center', color: '#dc2626', fontWeight: 700 }}>{ac}</td>
+                            <td style={{ textAlign: 'center', color: '#f59e0b', fontWeight: 700 }}>{lc}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.75rem' }}>
+              Attendance is saved per employee per day and included in app backups. It is meant as an HR record to help keep payroll accurate — it does not automatically change payslips.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

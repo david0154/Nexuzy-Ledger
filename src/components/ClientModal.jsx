@@ -16,6 +16,11 @@ export default function ClientModal({ show, onClose, onSave, client, isEditing, 
     preferredPaperSize: '',   // '' | 'a4' | 'a5' | 'thermal80' | ...
     preferredCurrency: '',    // '' | 'INR' | 'USD' | ...
     autoPrint: false,          // per-client auto-print override
+    // v1.10.x — party-wise billing defaults: a % discount off the whole
+    // bill and a price list (retail vs wholesale). Both auto-apply when a
+    // new invoice is created for this client.
+    defaultDiscount: '',
+    priceList: '',
   };
   const [form, setForm] = useState({ ...emptyForm });
   const [taxIdWarning, setTaxIdWarning] = useState('');
@@ -30,6 +35,8 @@ export default function ClientModal({ show, onClose, onSave, client, isEditing, 
         preferredPaperSize: client.preferredPaperSize || '',
         preferredCurrency: client.preferredCurrency || '',
         autoPrint: !!client.autoPrint,
+        defaultDiscount: client.defaultDiscount ?? '',
+        priceList: client.priceList || '',
       });
     } else if (show) {
       setForm({ ...emptyForm });
@@ -155,6 +162,35 @@ export default function ClientModal({ show, onClose, onSave, client, isEditing, 
               </label>
             </div>
           )}
+
+          {/* v1.10.x — party-wise billing defaults (discount + price list). */}
+          <div className="form-group" style={{ gridColumn: 'span 2', paddingTop: '0.5rem', borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
+              Billing defaults (optional) <HelpButton title="Party-wise defaults" doc="clients#billing-defaults" size={16} />
+            </div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0 0 0.5rem' }}>
+              Auto-applied when you create a new invoice for this client.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: 3 }}>Default discount (whole bill %)</label>
+                <input type="number" min="0" max="100" step="any" className="form-input"
+                  style={{ fontSize: '0.8rem', padding: '0.35rem' }}
+                  value={form.defaultDiscount}
+                  onChange={e => setForm(prev => ({ ...prev, defaultDiscount: e.target.value }))}
+                  placeholder="e.g. 5" title="A % discount off the whole bill, pre-filled on new invoices for this client." />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: 3 }}>Price list</label>
+                <select className="form-input" style={{ fontSize: '0.8rem', padding: '0.35rem' }}
+                  value={form.priceList}
+                  onChange={e => setForm(prev => ({ ...prev, priceList: e.target.value }))}>
+                  <option value="">Retail (default)</option>
+                  <option value="wholesale">Wholesale (uses product's wholesale price)</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           {/* v1.9.1 — per-client print preferences. All optional; leave blank
               to use the app-wide defaults from Settings. When set, they

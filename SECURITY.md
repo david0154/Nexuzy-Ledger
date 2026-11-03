@@ -1,6 +1,6 @@
 # Security Policy
 
-Free GST Billing Software handles invoices, GSTINs and client records for
+Nexuzy Ledger Software handles invoices, GSTINs and client records for
 real businesses. Reports are taken seriously.
 
 ## Supported versions

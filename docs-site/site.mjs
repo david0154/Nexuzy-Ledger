@@ -20,7 +20,7 @@ export const SITE = {
 // Other pages use their own title and the first ~155 characters of their lead.
 export const SEO = {
   index: {
-    title: 'Nexuzy Ledger: Free GST Billing Software for India | User Guide',
+    title: 'Nexuzy Ledger: Nexuzy Ledger Software for India | User Guide',
     description: 'Free, open-source GST billing software for Windows, Mac and Linux. Make GST invoices, track payments and stock, and prepare GSTR-1 and GSTR-3B. No signup, works offline.',
   },
   install: {

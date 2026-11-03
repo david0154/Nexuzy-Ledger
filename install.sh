@@ -1,5 +1,5 @@
 #!/bin/sh
-# Free GST Billing - one-line install, update and repair for macOS and Linux.
+# Nexuzy Ledger - one-line install, update and repair for macOS and Linux.
 #
 #   Open Terminal, paste this line, press Return:
 #   curl -fsSL https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/install.sh | bash
@@ -177,8 +177,8 @@ JS
 make_mac_app() {
   if [ -n "$TEST" ]; then APP="$TEST/Nexuzy Ledger.app"; else APP="$HOME/Applications/Nexuzy Ledger.app"; fi
   rm -rf "$APP"
-  if [ -n "$TEST" ]; then rm -rf "$TEST/Free GST Billing.app"
-  else rm -rf "$HOME/Applications/Free GST Billing.app"; fi
+  if [ -n "$TEST" ]; then rm -rf "$TEST/Nexuzy Ledger.app"
+  else rm -rf "$HOME/Applications/Nexuzy Ledger.app"; fi
   mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
   printf '#!/bin/sh\nexec /bin/sh "%s/open-app.sh"\n' "$SYS" > "$APP/Contents/MacOS/launch"
   chmod 755 "$APP/Contents/MacOS/launch"
@@ -317,7 +317,7 @@ install_app() {
     || fail "The download could not be unpacked ($(tail -n 1 "$WORK/unpack.err")). It may be damaged, or the disk is full." 'Run the install line again.'
   NEW_SYS=$(find "$WORK/unpacked" -maxdepth 2 -type d -name _system | head -n 1)
   if [ -z "$NEW_SYS" ] || [ ! -f "$NEW_SYS/server.js" ] || [ ! -f "$NEW_SYS/node_modules/express/package.json" ]; then
-    fail 'The download is not a complete Free GST Billing package.' 'Run the install line again. If it happens again: https://github.com/david0154/Nexuzy-Ledger/issues'
+    fail 'The download is not a complete Nexuzy Ledger package.' 'Run the install line again. If it happens again: https://github.com/david0154/Nexuzy-Ledger/issues'
   fi
   BACKUP=''
   [ -z "$IS_UPDATE" ] || backup_data
@@ -334,7 +334,7 @@ install_app() {
     case "$name" in data | 'Saved Invoices' | Trash | node | node-dir.txt) continue ;; esac
     [ -e "$NEW_SYS/$name" ] || rm -rf "${SYS:?}/$name"
   done
-  for f in "$DIR"/'Free GST Billing - '* "$DIR/READ ME FIRST.txt"; do
+  for f in "$DIR"/'Nexuzy Ledger - '* "$DIR/READ ME FIRST.txt"; do
     [ -f "$f" ] || continue
     [ -e "$(dirname "$NEW_SYS")/$(basename "$f")" ] || rm -f "$f"
   done
@@ -396,9 +396,9 @@ uninstall_app() {
   printf '\n  Removing Nexuzy Ledger from %s\n' "$DIR"
   stop_app
   if [ -z "$TEST" ]; then
-    rm -rf "$HOME/Applications/Nexuzy Ledger.app" "$HOME/Applications/Free GST Billing.app" "$(menu_file)" "$(autostart_file)"
+    rm -rf "$HOME/Applications/Nexuzy Ledger.app" "$HOME/Applications/Nexuzy Ledger.app" "$(menu_file)" "$(autostart_file)"
   else
-    rm -rf "$TEST/Nexuzy Ledger.app" "$TEST/Free GST Billing.app" "$TEST/applications" "$TEST/autostart"
+    rm -rf "$TEST/Nexuzy Ledger.app" "$TEST/Nexuzy Ledger.app" "$TEST/applications" "$TEST/autostart"
   fi
   # The program goes; the books stay unless the user says otherwise.
   for entry in "$SYS"/* "$SYS"/.[!.]*; do
@@ -409,7 +409,7 @@ uninstall_app() {
   # Only the app's own files beside _system: the folder may be one the user
   # chose (FREEGSTBILL_DIR, a NAS share) with their own files in it. The same
   # rule as uninstall-unix.sh.
-  for entry in "$DIR"/'Free GST Billing - '* "$DIR/READ ME FIRST.txt"; do
+  for entry in "$DIR"/'Nexuzy Ledger - '* "$DIR/READ ME FIRST.txt"; do
     [ -e "$entry" ] && rm -rf "$entry"
   done
   printf '  The app and its icons are removed.\n'
@@ -440,8 +440,8 @@ main() {
   DIR=${FREEGSTBILL_DIR:-$default_dir}
   if [ -z "${FREEGSTBILL_DIR:-}" ] && [ "$OS" = Darwin ] \
     && [ ! -f "$DIR/_system/server.js" ] \
-    && [ -f "$HOME/Applications/Free GST Billing/_system/server.js" ]; then
-    DIR="$HOME/Applications/Free GST Billing"
+    && [ -f "$HOME/Applications/Nexuzy Ledger/_system/server.js" ]; then
+    DIR="$HOME/Applications/Nexuzy Ledger"
   fi
   # A copy unzipped by hand, with invoices in it, is updated rather than
   # starting a second, empty one next to it (ERR-038).

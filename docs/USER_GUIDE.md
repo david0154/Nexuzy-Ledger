@@ -4,8 +4,8 @@ A plain-language guide for everyone who uses this app — no coding background
 needed. If you only have 2 minutes, jump to [Quick Start](#quick-start).
 
 > **TL;DR**
-> 1. [Download the ZIP](https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip), **extract it**, and double-click **Free GST Billing - WINDOWS** once.
-> 2. Click **Install Node & App**, then **Open App**. A desktop icon appears called *Free GST Billing*. Use it from then on.
+> 1. [Download the ZIP](https://github.com/david0154/Nexuzy-Ledger/releases/latest/download/Nexuzy-Ledger.zip), **extract it**, and double-click **Nexuzy Ledger - WINDOWS** once.
+> 2. Click **Install Node & App**, then **Open App**. A desktop icon appears called *Nexuzy Ledger*. Use it from then on.
 > 3. Your data lives in the `_system\data\` folder inside the app folder. Back that folder up and you have backed up everything.
 
 ---
@@ -68,13 +68,13 @@ internet, your data stays on your machine, and there is no monthly fee — ever.
    folder and the launcher will tell you the `_system` folder is missing —
    even though you can plainly see it in the window behind. Extract first.)
 
-3. **Open the extracted folder and double-click `Free GST Billing - WINDOWS`.**
+3. **Open the extracted folder and double-click `Nexuzy Ledger - WINDOWS`.**
    (Each launcher is named after the system it is for, so there is nothing to
    work out — Mac and Linux users pick theirs.)
    A small window opens with buttons. Click **Install Node & App**.
    - It installs Node.js for you if it is not already on your computer.
    - It installs the app's dependencies (one-time, takes ~2 minutes).
-   - It creates a *Free GST Billing* shortcut on your Desktop and in the
+   - It creates a *Nexuzy Ledger* shortcut on your Desktop and in the
      Start Menu.
 
 4. **Click `Open App`.** Your browser opens straight to the app. From now on,
@@ -94,17 +94,19 @@ The installer downloads the latest published release from
 If no release has been published yet, the download cannot start; check the
 Releases page and run the command again when one is available.
 
-It installs to `%LOCALAPPDATA%\Programs\Free GST Billing`. To pick your own
-folder, run `$env:FREEGSTBILL_DIR = 'D:\Apps\Free GST Billing'` first.
+It installs to `%LOCALAPPDATA%\Programs\Nexuzy Ledger`. To pick your own
+folder, run `$env:FREEGSTBILL_DIR = 'D:\Apps\Nexuzy Ledger'` first.
 
-> **First-run wizard:** The first time you open the app, a 4-step wizard asks
-> for your business name, country, bank details, and so on. Pick *India*,
-> *Outside India*, or *Both* on the welcome screen — the rest of the form
-> adapts to your choice.
+> **First-run wizard:** The first time you open the app, a 4-step wizard helps
+> you choose a business type, add your business name and invoice details,
+> choose paper size and language, and review the setup. The business name is
+> required; address, contact details, GSTIN, PAN, and logo are optional and can
+> also be changed later in **Settings**. Use **Skip setup** to configure these
+> details later.
 
 ### macOS / Linux users
-The `.hta` launcher is Windows-only — use `Free GST Billing - MAC.command` or
-`Free GST Billing - LINUX.sh` from the same ZIP, or run it from source:
+The `.hta` launcher is Windows-only — use `Nexuzy Ledger - MAC.command` or
+`Nexuzy Ledger - LINUX.sh` from the same ZIP, or run it from source:
 ```bash
 git clone https://github.com/david0154/Nexuzy-Ledger.git
 cd Free-GST-Billing-Software
@@ -237,7 +239,7 @@ On the **old** computer:
    somewhere portable (USB drive, email to yourself, Google Drive).
 
 On the **new** computer:
-1. Install the app fresh (extract the ZIP, run `Free GST Billing - WINDOWS`, click
+1. Install the app fresh (extract the ZIP, run `Nexuzy Ledger - WINDOWS`, click
    **Install Node & App**).
 2. Skip or fill in the welcome wizard — doesn't matter, the import will
    overwrite.
@@ -363,7 +365,7 @@ installer is plain text — you can open it in Notepad and read every line
 before running. To proceed:
 
 - **SmartScreen blue screen** → click **More info** → **Run anyway**
-- **"File came from another computer"** → right-click `Free GST Billing - WINDOWS`
+- **"File came from another computer"** → right-click `Nexuzy Ledger - WINDOWS`
   → **Properties** → tick **Unblock** at the bottom → OK
 - **Antivirus quarantine** → add the project folder to your AV's exclusion
   list, then re-run the installer
@@ -397,7 +399,7 @@ backup to `Documents\FreeGSTBill Backups\` before it started. Either:
    so it survives).
 
 ### The launcher says "`_system` folder is missing"
-You opened `Free GST Billing - WINDOWS` while still looking **inside** the ZIP.
+You opened `Nexuzy Ledger - WINDOWS` while still looking **inside** the ZIP.
 Windows unpacks just that one file to a temp folder and runs it there, so the
 rest of the app really is missing — from the temp folder, not from your
 download. Close the launcher, right-click the ZIP in your Downloads folder,

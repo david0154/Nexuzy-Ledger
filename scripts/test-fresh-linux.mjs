@@ -30,7 +30,7 @@ const inner = [
   'set -e',
   'apt-get update -qq >/dev/null && apt-get install -y -qq unzip >/dev/null',
   'mkdir -p /app && cd /app && unzip -q /in/app.zip && cd /app/Nexuzy-Ledger',
-  'chmod +x "Free GST Billing - LINUX.sh" _system/*.sh',
+  'chmod +x "Nexuzy Ledger - LINUX.sh" _system/*.sh',
   'mkdir -p _system/data && echo 47431 > _system/data/port.txt',
   'echo "  Node $(node -v), starting the app with its own start script..."',
   'FREEGSTBILL_TEST=1 sh _system/open-app.sh',

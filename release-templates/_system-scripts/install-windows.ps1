@@ -1,4 +1,4 @@
-# Free GST Billing - Windows installer.
+# Nexuzy Ledger - Windows installer.
 #
 # Invoked by the HTA launcher on first run. Idempotent - safe to
 # re-run any time. Installs Node.js if missing, runs npm install
@@ -29,7 +29,7 @@ function Find-OtherInstall {
   $here = $RootDir.TrimEnd('\')
   $roots = @()
   foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
-    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
       try {
         $lnk = Join-Path $dir $name
         if (-not (Test-Path -LiteralPath $lnk)) { continue }
@@ -43,7 +43,7 @@ function Find-OtherInstall {
     }
   }
   $roots += Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
-  $roots += Join-Path $env:LOCALAPPDATA 'Programs\Free GST Billing'
+  $roots += Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
   foreach ($r in $roots) {
     if (-not $r -or $r.TrimEnd('\') -eq $here) { continue }
     if ((Test-Path -LiteralPath (Join-Path $r '_system\server.js')) -and (Test-Path -LiteralPath (Join-Path $r '_system\node_modules'))) { return $r }
@@ -131,7 +131,7 @@ Write-Host '  Creating the Desktop and Start Menu icons...'
 foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) {
   try {
     New-AppShortcut (Join-Path $dir 'Nexuzy Ledger.lnk') $SystemDir
-    $legacy = Join-Path $dir 'Free GST Billing.lnk'
+    $legacy = Join-Path $dir 'Nexuzy Ledger.lnk'
     if (Test-Path -LiteralPath $legacy) {
       $legacyArgs = [string](New-Object -ComObject WScript.Shell).CreateShortcut($legacy).Arguments
       $legacyTarget = if ($legacyArgs -match '"([^"]+)"') { $Matches[1] } else { $legacyArgs.Trim() }

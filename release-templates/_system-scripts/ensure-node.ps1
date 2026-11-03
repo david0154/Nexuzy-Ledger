@@ -1,4 +1,4 @@
-# Free GST Billing - check this PC has what the app needs, fix what can be
+# Nexuzy Ledger - check this PC has what the app needs, fix what can be
 # fixed safely, and say in plain words what to do about the rest.
 #
 # Dot-sourced by install-windows.ps1, update-windows.ps1 and start-windows.ps1.
@@ -88,7 +88,7 @@ function Find-GoodNode {
 function Test-WindowsVersion {
   if ([Environment]::OSVersion.Version.Major -ge 10) { return $true }
   Write-Problem 'This version of Windows is too old.' @(
-    'Free GST Billing needs Windows 10 or Windows 11.',
+    'Nexuzy Ledger needs Windows 10 or Windows 11.',
     'Node.js, which the app runs on, no longer works on Windows 7 or 8.')
   return $false
 }

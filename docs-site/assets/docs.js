@@ -1,4 +1,4 @@
-/* Free GST Billing docs - search, menu, theme, copy buttons, contents highlight.
+/* Nexuzy Ledger docs - search, menu, theme, copy buttons, contents highlight.
    No libraries; works from any folder. */
 (function () {
   'use strict';
@@ -142,7 +142,7 @@
         var people = n(d.supporters, 1e7);
         $('.supporters-total', sup).textContent = total > 0
           ? inr(total) + ' received so far' + (people ? ' from ' + Math.floor(people) + ' supporter' + (people === 1 ? '' : 's') : '') + '.'
-          : 'Be the first to support Free GST Billing.';
+          : 'Be the first to support Nexuzy Ledger.';
         var updated = /^\d{4}-\d{2}-\d{2}$/.test(String(d.updated || '')) ? new Date(d.updated + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
         $('.supporters-meta', sup).textContent = 'Every rupee goes into fixes and new features.' + (updated ? ' Updated ' + updated + '.' : '');
         var goal = d.goal && n(d.goal.amount, 1e10);

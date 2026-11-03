@@ -1,4 +1,4 @@
-# Free GST Billing - Windows stop-server.
+# Nexuzy Ledger - Windows stop-server.
 #
 # Finds any node.exe process listening on our port and kills it.
 # Safe if nothing is running (no error, quick exit).

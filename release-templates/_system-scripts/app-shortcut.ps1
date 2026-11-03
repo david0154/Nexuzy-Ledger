@@ -1,4 +1,4 @@
-# Free GST Billing - the app's Desktop / Start Menu icon (v1.10.83).
+# Nexuzy Ledger - the app's Desktop / Start Menu icon (v1.10.83).
 # Dot-sourced by install-windows.ps1 and start-windows.ps1. install.ps1 (the
 # one-line install) has its own copy of New-AppShortcut: keep the two alike.
 #

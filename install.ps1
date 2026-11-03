@@ -1,4 +1,4 @@
-# Free GST Billing - one-line install, update and repair for Windows.
+# Nexuzy Ledger - one-line install, update and repair for Windows.
 #
 #   Press Windows + R, paste this line, press Enter:
 #   powershell -ExecutionPolicy Bypass -c "[Net.ServicePointManager]::SecurityProtocol='Tls12'; irm https://raw.githubusercontent.com/david0154/Nexuzy-Ledger/main/install.ps1 | iex"
@@ -61,7 +61,7 @@ function Get-IconFolders {
 }
 
 # The app folder a Nexuzy Ledger shortcut opens. The launcher's runs
-# "...\Free GST Billing - WINDOWS.hta", this installer's runs
+# "...\Nexuzy Ledger - WINDOWS.hta", this installer's runs
 # "...\_system\start-windows.ps1": the first quoted path either way.
 function Get-LinkRoot([string]$lnk) {
   $a = [string](New-Object -ComObject WScript.Shell).CreateShortcut($lnk).Arguments
@@ -81,7 +81,7 @@ function Find-Install {
   foreach ($dir in @($f.Desktop, $f.Programs)) {
     # One unreadable shortcut must not stop the other being checked.
     try {
-      foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+      foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
         $lnk = Join-Path $dir $name
         if (-not (Test-Path -LiteralPath $lnk)) { continue }
         $r = Get-LinkRoot $lnk
@@ -90,7 +90,7 @@ function Find-Install {
     } catch { }
   }
   $newInstall = Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
-  $legacyInstall = Join-Path $env:LOCALAPPDATA 'Programs\Free GST Billing'
+  $legacyInstall = Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
   foreach ($candidate in @($newInstall, $legacyInstall)) {
     if (Test-Path -LiteralPath (Join-Path $candidate '_system\server.js')) { return $candidate }
   }
@@ -316,7 +316,7 @@ function Install-App {
     } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
     $rootNames = @(Get-ChildItem -LiteralPath $inner.FullName -File -Force | ForEach-Object { $_.Name })
     Get-ChildItem -LiteralPath $dest -File -Force | Where-Object {
-      ($_.Name -like 'Free GST Billing - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
+      ($_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
     } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue }
     foreach ($f in Get-ChildItem -LiteralPath $inner.FullName -File -Force) {
       Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name) -Force
@@ -351,7 +351,7 @@ function Install-App {
     New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys
   }
   foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
-    $legacy = Join-Path $d 'Free GST Billing.lnk'
+    $legacy = Join-Path $d 'Nexuzy Ledger.lnk'
     try {
       if ((Test-Path -LiteralPath $legacy) -and ((Get-LinkRoot $legacy) -eq $dest.TrimEnd('\'))) {
         if ($d -eq $f.Startup) { New-AppShortcut (Join-Path $d 'Nexuzy Ledger.lnk') $sys }
@@ -384,7 +384,7 @@ function Uninstall-App {
   Stop-App $sys
   $f = Get-IconFolders
   foreach ($d in @($f.Desktop, $f.Programs, $f.Startup)) {
-    foreach ($name in @('Nexuzy Ledger.lnk', 'Free GST Billing.lnk')) {
+    foreach ($name in @('Nexuzy Ledger.lnk', 'Nexuzy Ledger.lnk')) {
       $lnk = Join-Path $d $name
       try { if ((Test-Path -LiteralPath $lnk) -and ((Get-LinkRoot $lnk) -eq $dest.TrimEnd('\'))) { Remove-Item -LiteralPath $lnk -Force } } catch { }
     }
@@ -395,7 +395,7 @@ function Uninstall-App {
   # Only the app's own files beside _system: the folder may be one the user
   # chose (FREEGSTBILL_DIR, D:\, Documents) with their own files in it. The
   # same rule as uninstall-windows.ps1.
-  Get-ChildItem -LiteralPath $dest -Force | Where-Object { $_.Name -like 'Free GST Billing - *' -or $_.Name -eq 'READ ME FIRST.txt' } | Remove-Item -Recurse -Force
+  Get-ChildItem -LiteralPath $dest -Force | Where-Object { $_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt' } | Remove-Item -Recurse -Force
   Write-Host '  The app and its icons are removed.' -ForegroundColor Green
   Write-Host ''
   Write-Host "  Your invoices, clients and settings are still in $sys"

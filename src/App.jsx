@@ -378,7 +378,7 @@ function App() {
   // v1.10.83 - the "Install as Desktop App" banner is gone. The browser icon
   // it made opens only a browser window: it cannot start the app's server, so
   // after a restart it showed "Needs a Quick Start". The installers' own
-  // Free GST Billing icon starts the server and opens the app.
+  // Nexuzy Ledger icon starts the server and opens the app.
 
   useEffect(() => {
     sessionStorage.setItem('gst_currentView', currentView);
@@ -835,7 +835,13 @@ function App() {
 
   return (
     <div className={`app-layout${sidebarAutoHide ? ' sidebar-autohide' : ''}`}>
-      {showWizard && <SetupWizard onClose={() => setShowWizard(false)} />}
+      {showWizard && profile && (
+        <SetupWizard
+          profile={profile}
+          onSaved={setProfile}
+          onClose={() => setShowWizard(false)}
+        />
+      )}
       {showResumeSetupPill && (
         <button type="button"
           onClick={() => setShowWizard(true)}

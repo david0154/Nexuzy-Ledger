@@ -194,7 +194,7 @@
 </footer>
 
 <script>
-  // Free GST Billing - HTA Launcher (v1.10.69)
+  // Nexuzy Ledger - HTA Launcher (v1.10.69)
   //
   // The one file a Windows user ever double-clicks. It installs the app,
   // opens it, and updates it - so it only ever shows what makes sense now:
@@ -347,7 +347,7 @@
     var places = [shell.SpecialFolders('Desktop'), shell.SpecialFolders('Programs')];
     for (var i = 0; i < places.length; i++) {
       for (var n = 0; n < 2; n++) {
-        var linkName = n === 0 ? 'Nexuzy Ledger.lnk' : 'Free GST Billing.lnk';
+        var linkName = n === 0 ? 'Nexuzy Ledger.lnk' : 'Nexuzy Ledger.lnk';
         var lnk = places[i] + '\\' + linkName;
         if (!fso.FileExists(lnk)) continue;
         try {
@@ -363,7 +363,7 @@
       }
     }
     roots.push(shell.ExpandEnvironmentStrings('%LOCALAPPDATA%\\Programs\\Nexuzy Ledger'));
-    roots.push(shell.ExpandEnvironmentStrings('%LOCALAPPDATA%\\Programs\\Free GST Billing'));
+    roots.push(shell.ExpandEnvironmentStrings('%LOCALAPPDATA%\\Programs\\Nexuzy Ledger'));
     for (var j = 0; j < roots.length; j++) {
       var r = roots[j];
       if (!r || r.toLowerCase() === here || !installedAt(r)) continue;
@@ -589,7 +589,7 @@
           '<ol>' +
           '<li>Close this window.</li>' +
           '<li>Right-click the <b>Nexuzy-Ledger</b> ZIP and choose <b>Extract All&hellip;</b>.</li>' +
-          '<li>Open the new folder and double-click <b>Free GST Billing - WINDOWS</b>.</li>' +
+          '<li>Open the new folder and double-click <b>Nexuzy Ledger - WINDOWS</b>.</li>' +
           '</ol>');
         setMore([{ label: 'Download the app again', run: openGitHub }]);
         return;

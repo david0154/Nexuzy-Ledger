@@ -30,7 +30,7 @@ delete the lines that do not apply — but never delete the section.
 **Current version:** <OLD>  →  **New version:** <NEW>
 
 ### If the in-app Update button works for you
-1. Open the Free GST Billing launcher.
+1. Open the Nexuzy Ledger launcher.
 2. Click **Update**.
 3. Wait for "Update complete", then click **Stop Server**, then **Open App**.
 
@@ -39,7 +39,7 @@ That is all — your data is not touched.
 ### If the Update button does not work (or you are unsure)
 1. Download `Nexuzy-Ledger-v<NEW>.zip` from the Assets section below.
 2. Close the app completely (click **Stop Server** first if it is running).
-3. Extract the ZIP over your existing Free GST Billing folder, replacing
+3. Extract the ZIP over your existing Nexuzy Ledger folder, replacing
    files when Windows asks.
 4. Double-click the launcher again.
 

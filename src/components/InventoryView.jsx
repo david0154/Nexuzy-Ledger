@@ -22,6 +22,7 @@ import BarcodeScanner from './BarcodeScanner';
 const emptyForm = {
   // kind: v1.10.83 (#121) - 'goods' or 'service' (a service has no stock).
   kind: 'goods', name: '', hsn: '', barcode: '', purchasePrice: '', sellingPrice: '', taxPercent: '', unit: 'Pcs', stock: '', description: '',
+  wholesalePrice: '', variantLabel: '', // v1.10.x — price-list + size/colour variant
   madeHere: false, bom: [],
 };
 
@@ -91,6 +92,8 @@ export default function InventoryView() {
       barcode: product.barcode || '',
       purchasePrice: product.purchasePrice ?? '',
       sellingPrice: product.sellingPrice ?? product.rate ?? '',
+      wholesalePrice: product.wholesalePrice ?? '',
+      variantLabel: product.variantLabel || '',
       taxPercent: product.taxPercent || '',
       unit: product.unit || 'Nos',
       stock: product.stock ?? '', // v1.10.74 - was `|| ''`, which blanked a stock of 0
@@ -147,6 +150,8 @@ export default function InventoryView() {
         purchasePrice,
         sellingPrice,
         rate: sellingPrice, // mirror for legacy readers
+        wholesalePrice: form.wholesalePrice === '' ? undefined : parseFloat(form.wholesalePrice),
+        variantLabel: form.variantLabel.trim(),
         taxPercent: form.taxPercent ? parseFloat(form.taxPercent) : 0,
         unit: form.unit,
         kind: service ? 'service' : 'goods',
@@ -304,6 +309,19 @@ export default function InventoryView() {
                   title="What you charge the customer. Auto-fills on new Invoices." />
               </div>
               <div className="form-group">
+                <label className="form-label">Wholesale Price</label>
+                <input type="number" className="form-input" value={form.wholesalePrice}
+                  onChange={e => updateField('wholesalePrice', e.target.value)}
+                  placeholder="0.00" min="0" step="any"
+                  title="Optional discount price for your wholesale/retail price list. When an invoice's price list is set to Wholesale, this price auto-fills instead of the selling price." />
+              </div>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <label className="form-label">Size / Colour Variant (optional)</label>
+                <input type="text" className="form-input" value={form.variantLabel}
+                  onChange={e => updateField('variantLabel', e.target.value)}
+                  placeholder='e.g. "M / Blue" or "500 ml"' title="Helps track item variants like size or colour. When added to an invoice line, it appears next to the product name." />
+              </div>
+              <div className="form-group">
                 <label className="form-label">GST %</label>
                 <input type="number" className="form-input" value={form.taxPercent}
                   onChange={e => updateField('taxPercent', e.target.value)} placeholder="18" min="0" max="100" />
@@ -351,8 +369,8 @@ export default function InventoryView() {
           <h3>Products & Services <HelpButton title="The product list" doc="products#product-list" size={16} /></h3>
           {!bulkEdit && (
             <TableExport title="Products" filename="Products"
-              headers={['Name', 'Type', 'HSN/SAC', 'Barcode', 'Purchase price', 'Selling price', 'GST %', 'Unit', 'Stock']}
-              rows={filtered.map((p) => [p.name, isServiceProduct(p) ? 'Service' : 'Goods', p.hsn || '', p.barcode || '', Number(p.purchasePrice) || 0, Number(p.sellingPrice ?? p.rate) || 0, Number(p.taxPercent) || 0, p.unit || 'Nos', trackedStock(p) ?? ''])} />
+              headers={['Name', 'Variant', 'Type', 'HSN/SAC', 'Barcode', 'Purchase price', 'Selling price', 'Wholesale', 'GST %', 'Unit', 'Stock']}
+              rows={filtered.map((p) => [p.name, p.variantLabel || '', isServiceProduct(p) ? 'Service' : 'Goods', p.hsn || '', p.barcode || '', Number(p.purchasePrice) || 0, Number(p.sellingPrice ?? p.rate) || 0, Number(p.wholesalePrice) || 0, Number(p.taxPercent) || 0, p.unit || 'Nos', trackedStock(p) ?? ''])} />
           )}
         </div>
         {bulkEdit && filtered.length > 0 ? (

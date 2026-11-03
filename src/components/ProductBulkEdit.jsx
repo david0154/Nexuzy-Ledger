@@ -16,6 +16,8 @@ const FIELDS = [
   ['hsn', 'HSN/SAC', 'text', 90],
   ['purchasePrice', 'Purchase price', 'number', 100],
   ['sellingPrice', 'Selling price', 'number', 100],
+  ['wholesalePrice', 'Wholesale', 'number', 90],
+  ['variantLabel', 'Variant', 'text', 110],
   ['taxPercent', 'GST %', 'number', 70],
   ['unit', 'Unit', 'unit', 90],
   ['stock', 'Stock', 'number', 80],

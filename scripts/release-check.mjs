@@ -64,7 +64,7 @@ else {
   if (e) {
     check('every path uses "/" (ERR-014, ERR-061)', !e.some((x) => x.name.includes('\\')), 'Backslash paths unpack as flat files on Linux / Mac. Build with npm run release:zip, never Compress-Archive.');
     check('server.js is at Nexuzy-Ledger/_system/', e.some((x) => x.name === 'Nexuzy-Ledger/_system/server.js'), 'The layout is wrong; the launchers will not find the app.');
-    for (const l of ['Free GST Billing - WINDOWS.hta', 'Free GST Billing - MAC.command', 'Free GST Billing - LINUX.sh', 'READ ME FIRST.txt']) {
+    for (const l of ['Nexuzy Ledger - WINDOWS.hta', 'Nexuzy Ledger - MAC.command', 'Nexuzy Ledger - LINUX.sh', 'READ ME FIRST.txt']) {
       check(`${l} is in the ZIP`, e.some((x) => x.name === `Nexuzy-Ledger/${l}`), `${l} is missing from the ZIP.`);
     }
     const scripts = e.filter((x) => /\.(command|sh)$/.test(x.name));
@@ -92,7 +92,7 @@ console.log('\nScripts that users run');
 const tdir = join(ROOT, 'release-templates', '_system-scripts');
 const nonAscii = readdirSync(tdir).filter((f) => f.endsWith('.ps1') && /[^\x00-\x7F]/.test(readFileSync(join(tdir, f), 'latin1')));
 check('every .ps1 is plain ASCII (ERR-001: Windows PowerShell misreads it)', !nonAscii.length, `Non-ASCII in ${nonAscii.join(', ')}.`);
-const unixScripts = [...readdirSync(tdir).filter((f) => f.endsWith('.sh')).map((f) => join(tdir, f)), join(ROOT, 'release-templates', 'Free GST Billing - MAC.command'), join(ROOT, 'release-templates', 'Free GST Billing - LINUX.sh'), join(ROOT, 'install.sh')];
+const unixScripts = [...readdirSync(tdir).filter((f) => f.endsWith('.sh')).map((f) => join(tdir, f)), join(ROOT, 'release-templates', 'Nexuzy Ledger - MAC.command'), join(ROOT, 'release-templates', 'Nexuzy Ledger - LINUX.sh'), join(ROOT, 'install.sh')];
 const crlf = unixScripts.filter((f) => readFileSync(f, 'latin1').includes('\r'));
 check('every .sh / .command uses LF line endings (ERR-014)', !crlf.length, `CRLF in ${crlf.join(', ')}.`);
 check('READ ME FIRST.txt is plain ASCII', !/[^\x00-\x7F]/.test(read('release-templates/READ ME FIRST.txt')), 'Notepad on some PCs garbles other characters.');
@@ -100,7 +100,7 @@ check('READ ME FIRST.txt is plain ASCII', !/[^\x00-\x7F]/.test(read('release-tem
 // Errors users reported, each with the cheapest check that would catch it
 // coming back (the 30 Oct 2026 guard audit of docs/KNOWN_ERRORS.md).
 console.log('\nErrors users reported stay fixed');
-const hta = read('release-templates/Free GST Billing - WINDOWS.hta');
+const hta = read('release-templates/Nexuzy Ledger - WINDOWS.hta');
 check('ERR-002 the launcher says UTF-8 and is plain ASCII', /charset=utf-8/i.test(hta) && !/[^\x00-\x7F]/.test(hta), 'Its text turns into garbage on Indian-locale Windows.');
 check('ERR-017 the launcher spots being run from inside the ZIP', hta.includes("'\\\\appdata\\\\local\\\\temp\\\\'"), 'Run from the ZIP it said "_system missing" instead of "extract first".');
 const csp = (/http-equiv="Content-Security-Policy" content="([^"]*)"/.exec(read('src/index.html')) || [])[1] || '';

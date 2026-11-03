@@ -1,4 +1,4 @@
-# Free GST Billing - Windows start-server + open-browser.
+# Nexuzy Ledger - Windows start-server + open-browser.
 #
 # Invoked by the HTA launcher's "Open App" button and by the
 # Desktop shortcut. Idempotent - safe to click multiple times.
@@ -18,8 +18,8 @@ $Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SystemDir = $ScriptDir
 
-# v1.10.69 - the Windows launcher was renamed from "Free GST Billing.hta" to
-# "Free GST Billing - WINDOWS.hta". An update to this version is carried out
+# v1.10.69 - the Windows launcher was renamed from "Nexuzy Ledger.hta" to
+# "Nexuzy Ledger - WINDOWS.hta". An update to this version is carried out
 # by the PREVIOUS version's updater, which copies the new launcher in but
 # knows nothing of the rename: it leaves the old file beside the new one, and
 # the Desktop and Start-Menu shortcuts still pointing at the old one. That
@@ -34,8 +34,8 @@ $SystemDir = $ScriptDir
 # broken shortcut.
 function Move-ToRenamedLauncher {
   $RootDir = Split-Path -Parent $SystemDir
-  $oldHta = Join-Path $RootDir 'Free GST Billing.hta'
-  $newHta = Join-Path $RootDir 'Free GST Billing - WINDOWS.hta'
+  $oldHta = Join-Path $RootDir 'Nexuzy Ledger.hta'
+  $newHta = Join-Path $RootDir 'Nexuzy Ledger - WINDOWS.hta'
   if (-not ((Test-Path -LiteralPath $oldHta) -and (Test-Path -LiteralPath $newHta))) { return }
   try {
     $wsh = New-Object -ComObject WScript.Shell
@@ -70,7 +70,7 @@ Move-ToRenamedLauncher
 # app icons. Others (another copy, anything the user made) are left alone.
 function Move-IconsToApp {
   if ((Split-Path -Leaf $SystemDir) -ne '_system') { return }
-  $hta = Join-Path (Split-Path -Parent $SystemDir) 'Free GST Billing - WINDOWS.hta'
+  $hta = Join-Path (Split-Path -Parent $SystemDir) 'Nexuzy Ledger - WINDOWS.hta'
   $startScript = Join-Path $SystemDir 'start-windows.ps1'
   try {
     . (Join-Path $SystemDir 'app-shortcut.ps1')
@@ -84,7 +84,7 @@ function Move-IconsToApp {
         $target = if ($quotedTarget.Success) { $quotedTarget.Groups[1].Value } else { $arguments.Trim() }
         if ($target -ne $hta -and $target -ne $startScript) { continue }
         $shortcutPath = $lnk.FullName
-        if ($lnk.Name -eq 'Free GST Billing.lnk' -and $dir -ne $taskbar) {
+        if ($lnk.Name -eq 'Nexuzy Ledger.lnk' -and $dir -ne $taskbar) {
           $shortcutPath = Join-Path $dir 'Nexuzy Ledger.lnk'
         }
         New-AppShortcut $shortcutPath $SystemDir
@@ -108,7 +108,7 @@ function Remove-ObsoleteFiles {
   # own folder.
   if ((Split-Path -Leaf $SystemDir) -ne '_system') { return }
   $RootDir = Split-Path -Parent $SystemDir
-  $hta = Join-Path $RootDir 'Free GST Billing - WINDOWS.hta'
+  $hta = Join-Path $RootDir 'Nexuzy Ledger - WINDOWS.hta'
   if (-not (Test-Path -LiteralPath $hta)) { return }   # not the current layout: leave everything
   # Anything a shortcut still points at stays (an old Start-Menu or Startup
   # shortcut would otherwise be left pointing at nothing).
@@ -124,15 +124,15 @@ function Remove-ObsoleteFiles {
   } catch { return }   # cannot tell what is still in use: leave everything
   $obsolete = @(
     # renamed launchers (v1.10.69); the old .hta is handled above, once no shortcut uses it
-    @{ old = 'Free GST Billing.command'; now = 'Free GST Billing - MAC.command' },
-    @{ old = 'Free GST Billing.sh';      now = 'Free GST Billing - LINUX.sh' },
+    @{ old = 'Nexuzy Ledger.command'; now = 'Nexuzy Ledger - MAC.command' },
+    @{ old = 'Nexuzy Ledger.sh';      now = 'Nexuzy Ledger - LINUX.sh' },
     # batch launchers from before the one-file launcher (v1.10.44)
-    @{ old = 'Install FreeGSTBill.bat';  now = 'Free GST Billing - WINDOWS.hta' },
-    @{ old = 'Start FreeGSTBill.bat';    now = 'Free GST Billing - WINDOWS.hta' },
-    @{ old = 'Stop FreeGSTBill.bat';     now = 'Free GST Billing - WINDOWS.hta' },
-    @{ old = 'Update FreeGSTBill.bat';   now = 'Free GST Billing - WINDOWS.hta' },
-    @{ old = 'start-freegstbill.bat';    now = 'Free GST Billing - WINDOWS.hta' },
-    @{ old = 'start-server-silent.bat';  now = 'Free GST Billing - WINDOWS.hta' }
+    @{ old = 'Install FreeGSTBill.bat';  now = 'Nexuzy Ledger - WINDOWS.hta' },
+    @{ old = 'Start FreeGSTBill.bat';    now = 'Nexuzy Ledger - WINDOWS.hta' },
+    @{ old = 'Stop FreeGSTBill.bat';     now = 'Nexuzy Ledger - WINDOWS.hta' },
+    @{ old = 'Update FreeGSTBill.bat';   now = 'Nexuzy Ledger - WINDOWS.hta' },
+    @{ old = 'start-freegstbill.bat';    now = 'Nexuzy Ledger - WINDOWS.hta' },
+    @{ old = 'start-server-silent.bat';  now = 'Nexuzy Ledger - WINDOWS.hta' }
   )
   foreach ($f in $obsolete) {
     $oldPath = Join-Path $RootDir $f.old

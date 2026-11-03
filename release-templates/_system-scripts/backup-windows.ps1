@@ -1,4 +1,4 @@
-# Free GST Billing - Windows backup.
+# Nexuzy Ledger - Windows backup.
 #
 # Zips the entire data/ folder into
 #   %USERPROFILE%\Documents\FreeGSTBill Backups\YYYY-MM-DD_HH-mm-ss.zip

@@ -7,9 +7,9 @@
 // with the "one visible file" flat layout the user asked for:
 //
 //   Nexuzy-Ledger/
-//   ├── Free GST Billing - WINDOWS.hta
-//   ├── Free GST Billing - MAC.command
-//   ├── Free GST Billing - LINUX.sh
+//   ├── Nexuzy Ledger - WINDOWS.hta
+//   ├── Nexuzy Ledger - MAC.command
+//   ├── Nexuzy Ledger - LINUX.sh
 //   └── _system/
 //       ├── package.json
 //       ├── server.js
@@ -42,7 +42,7 @@ const APP_FOLDER = 'Nexuzy-Ledger';
 const STAGING = join(OUT_DIR, APP_FOLDER);
 const SYSTEM = join(STAGING, '_system');
 
-console.log('\n  Free GST Billing — Release ZIP Builder\n');
+console.log('\n  Nexuzy Ledger — Release ZIP Builder\n');
 
 // --- Sanity checks ---
 const distPath = join(REPO_ROOT, 'dist');
@@ -369,7 +369,7 @@ assertPortableZip(zipPath);
 
 /**
  * v1.10.82 (#120) - Windows has no "executable" bit, so tar.exe stores every
- * file as 0666. macOS then refused the launcher: "Free GST Billing -
+ * file as 0666. macOS then refused the launcher: "Nexuzy Ledger -
  * MAC.command could not be executed because you do not have appropriate
  * access privileges" (Archive Utility restores the mode stored in the ZIP),
  * and the Linux launcher and scripts came out the same. The Unix mode lives in

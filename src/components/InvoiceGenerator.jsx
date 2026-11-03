@@ -701,6 +701,13 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
   // Enter commits, Escape closes. -1 = no highlight yet.
   const [clientPickerIdx, setClientPickerIdx] = useState(-1);
   const [selectedClientId, setSelectedClientId] = useState(null);
+  // v1.10.x — price list for this invoice: 'retail' uses the selling price,
+  // 'wholesale' uses each product's wholesale price. A party's saved price
+  // list is applied when their saved client is selected.
+  const [priceList, setPriceList] = useState('retail');
+  // v1.10.x — becomes true the moment the user edits the whole-bill discount,
+  // so an auto-applied client default never overrides a manual choice.
+  const [discountTouched, setDiscountTouched] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
   const [modalClient, setModalClient] = useState(null);
   const [isEditingClient, setIsEditingClient] = useState(false);
@@ -1505,19 +1512,24 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
   const selectProduct = useCallback((itemId, product) => {
     // v1.10.29 — Prefer sellingPrice for sales invoices (falls back to
     // legacy `rate` for pre-v1.10.29 products).
-    const salePrice = product.sellingPrice ?? product.rate ?? 0;
+    let salePrice = product.sellingPrice ?? product.rate ?? 0;
+    if (priceList === 'wholesale' && Number(product.wholesalePrice) >= 0) salePrice = product.wholesalePrice;
+    // v1.10.x — carry the product's size/colour variant onto the line so it
+    // prints with the name ("T-shirt — M / Blue").
+    const lineName = product.variantLabel ? `${product.name} — ${product.variantLabel}` : product.name;
     setItems(prev => prev.map(item => item.id === itemId ? {
       ...item,
-      name: product.name,
+      name: lineName,
       hsn: product.hsn || '',
       rate: salePrice,
       unit: product.unit || item.unit || 'Nos',
       taxPercent: product.taxPercent ?? defaultTaxRate,
       productId: product.id,
+      variant: product.variantLabel || '',
       isCharge: false, // a product picked on the delivery line makes it a product line
     } : item));
     setProductSearch({ itemId: null, query: '' });
-  }, [countryTaxRates]);
+  }, [countryTaxRates, priceList]);
 
   const openBarcodeScanner = useCallback((itemId) => {
     setBarcodeItemId(itemId);
@@ -1681,8 +1693,15 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
         ...currencyPatch(prev, currencyForClient(cli, profile, { preferred: cli.preferredCurrency, lastForeign: prev.lastForeignCurrency })),
         // v1.10.5 — client-level auto-print override (see original comment).
         clientAutoPrint: !!cli.autoPrint,
+        // v1.10.x — party-wise default discount (whole bill %), applied only
+        // when the invoice has no discount typed in yet.
+        ...(Number(cli.defaultDiscount) > 0 && !discountTouched && !prev.invoiceDiscountValue ? { invoiceDiscountValue: Number(cli.defaultDiscount), invoiceDiscountType: 'percent' } : {}),
       }));
     }
+    if (!editingBill && Number(cli.defaultDiscount) > 0 && !discountTouched) {
+      setWholeDiscountOpen(true); // reveal the discount row so the applied % is visible
+    }
+    setPriceList(cli.priceList || 'retail');
     toast(`Loaded client: ${cli.name}`, 'info');
   };
 
@@ -4657,6 +4676,17 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
           <div className="glass-panel p-6 mb-6">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <h3 className="section-title" style={{ margin: 0 }}>Line Items <HelpButton title="Line Items" doc="invoices#items" size={16} /></h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>Price list</span>
+                {[['retail', 'Retail'], ['wholesale', 'Wholesale']].map(([v, label]) => (
+                  <button key={v} type="button" onClick={() => setPriceList(v)}
+                    style={{ padding: '0.15rem 0.55rem', fontSize: '0.76rem', borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer',
+                      background: priceList === v ? 'var(--primary)' : 'transparent', color: priceList === v ? '#fff' : 'var(--text)', fontWeight: 600 }}>
+                    {label}
+                  </button>
+                ))}
+                <HelpButton title="Controls which price is used when a product is added (Retail = selling price, Wholesale = wholesale price)" doc="invoices#price-list" size={16} />
+              </div>
               {showGST && (
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', cursor: 'pointer', userSelect: 'none' }}>
                   <input type="checkbox" checked={taxInclusive} onChange={e => setTaxInclusive(e.target.checked)}
@@ -4724,11 +4754,11 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
               <input type="number" min="0" step="any" className="form-input"
                 value={invoiceOptions.invoiceDiscountValue || ''}
                 onFocus={(e) => e.target.select()}
-                onChange={(e) => setInvoiceOptions(prev => ({ ...prev, invoiceDiscountValue: clampNonNeg(e.target.value) }))}
+                onChange={(e) => { setDiscountTouched(true); setInvoiceOptions(prev => ({ ...prev, invoiceDiscountValue: clampNonNeg(e.target.value) })); }}
                 style={{ width: 100 }} placeholder="0" />
               <select className="form-input"
                 value={invoiceOptions.invoiceDiscountType === 'percent' ? 'percent' : 'fixed'}
-                onChange={(e) => setInvoiceOptions(prev => ({ ...prev, invoiceDiscountType: e.target.value }))}
+                onChange={(e) => { setDiscountTouched(true); setInvoiceOptions(prev => ({ ...prev, invoiceDiscountType: e.target.value })); }}
                 style={{ width: 128 }}>
                 <option value="fixed">{currencySymbolFor(invoiceOptions.currency)} (fixed)</option>
                 <option value="percent">% of total</option>

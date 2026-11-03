@@ -617,7 +617,7 @@ export default [
 <p>Records in the file <b>replace the matching records</b> in the app; records the file does not have are left alone, and parts you did not tick are untouched. Export your current data first, just in case.</p>
 <h3>Something wrong?</h3>
 <ul>
-  <li><b>"This file doesn't look like a Free GST Billing backup"</b>: you picked a different file. Backups are named <code>freegstbill-backup-<i>date</i>.json</code>. A ZIP from the Control Panel is restored there, with ${ui('Choose Backup ZIP')}.</li>
+  <li><b>"This file doesn't look like a Nexuzy Ledger backup"</b>: you picked a different file. Backups are named <code>freegstbill-backup-<i>date</i>.json</code>. A ZIP from the Control Panel is restored there, with ${ui('Choose Backup ZIP')}.</li>
   <li><b>Restored, but I do not see it</b>: reload the page, and check the business selected at the top of the sidebar.</li>
 </ul>
 </section>
@@ -776,7 +776,7 @@ export default [
   <li>Finish and save any bill you are typing. Then click ${ui('Stop Server')}.</li>
   <li><b>Windows:</b> it finds the app's process on your port and ends it. <b>Mac and Linux:</b> the app stops itself a moment after replying; the result panel says <b>Stopped. Open the app again from its icon or launcher.</b></li>
   <li>The browser page will then show errors such as "Failed to fetch". That is normal.</li>
-  <li>Open the app again: double-click <b>Free GST Billing</b> on your Desktop (Mac: <b>Free GST Billing - MAC</b>; Linux: your start command).</li>
+  <li>Open the app again: double-click <b>Nexuzy Ledger</b> on your Desktop (Mac: <b>Nexuzy Ledger - MAC</b>; Linux: your start command).</li>
 </ol>
 <p><b>Is it safe?</b> Yes. Everything is saved as you work, so nothing already saved is lost. A bill still being typed and not saved is not kept. If the app runs as a service or in Docker, it may start again by itself.</p>
 <p><b>Something wrong?</b> If it will not start again, see <a href="troubleshooting.html#cannot-connect">Failed to fetch, App Not Running</a> and <a href="troubleshooting.html#not-answered">the server has not answered</a>. Mac and Linux: <a href="troubleshooting.html#mac">Mac</a>, <a href="troubleshooting.html#linux">Linux and NAS</a>.</p>
@@ -784,7 +784,7 @@ export default [
 
 <section id="remove">
 <h3>Remove the App</h3>
-<p><b>What it does.</b> Uninstalls Free GST Billing from this computer in one go: the app, its Desktop and Start-menu icons (Mac: the app in Applications; Linux: the menu entry) and the start-with-computer entry. You choose what else goes.</p>
+<p><b>What it does.</b> Uninstalls Nexuzy Ledger from this computer in one go: the app, its Desktop and Start-menu icons (Mac: the app in Applications; Linux: the menu entry) and the start-with-computer entry. You choose what else goes.</p>
 <ol>
   <li>Click ${ui('Remove…')}. A list opens below the cards. (On Windows the launcher window has the same: <b>More options</b> → ${ui('Remove the app...')}.)</li>
   <li>Tick what to delete as well. Nothing is ticked at first, so by default <b>only the program goes and your books stay</b>:

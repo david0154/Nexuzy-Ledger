@@ -1,9 +1,9 @@
-# Free GST Billing - Windows "Move to Another PC" export.
+# Nexuzy Ledger - Windows "Move to Another PC" export.
 #
 # Zips just the data folder - matching the backup format - and drops
 # it on the user's Desktop with a "MOVE" prefix + timestamp.
 # User copies that file to the new PC (USB, email, drive), installs
-# Free GST Billing there (fresh HTA launcher install), then uses
+# Nexuzy Ledger there (fresh HTA launcher install), then uses
 # Restore Backup to pull their invoices in.
 
 $ErrorActionPreference = 'Stop'
@@ -33,7 +33,7 @@ Write-Host "  [OK] Export ready - $sizeMB MB" -ForegroundColor Green
 Write-Host "     $out"
 Write-Host ''
 Write-Host '  How to import on the new PC:'
-Write-Host '    1. Install Free GST Billing on the new PC (double-click the HTA launcher there).'
+Write-Host '    1. Install Nexuzy Ledger on the new PC (double-click the HTA launcher there).'
 Write-Host '    2. Copy this ZIP over (USB / email / drive).'
 Write-Host '    3. Open the launcher on the new PC -> click "Restore Backup" -> pick this ZIP.'
 Write-Host ''

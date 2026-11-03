@@ -86,7 +86,7 @@ testing in `pwsh` gives a false pass.
 **Symptom:** launcher window shows `â€"` and garbled button icons
 instead of `—` and emoji.
 
-**Cause:** `Free GST Billing.hta` declared no charset, so MSHTML fell
+**Cause:** `Nexuzy Ledger.hta` declared no charset, so MSHTML fell
 back to the system codepage.
 
 **Rule**
@@ -782,8 +782,8 @@ planned with the 7 Nov guards.
 **Reported by:** the maintainer (2026-10-30): the icon "should have all things
 like running server" when opened next time.
 
-**Symptom** - after the computer was restarted, a Free GST Billing Software
-icon on the Desktop opened a window saying *Free GST Billing Software Needs a
+**Symptom** - after the computer was restarted, a Nexuzy Ledger Software
+icon on the Desktop opened a window saying *Nexuzy Ledger Software Needs a
 Quick Start*, and nothing started.
 
 **Cause** - that icon was not the installer's. It was made by Chrome or Edge
@@ -796,14 +796,14 @@ easier one.
 
 **Rule** - the only icon the app offers is the installer's: Windows
 `app-shortcut.ps1` (`New-AppShortcut`, which runs start-windows.ps1
--AppWindow -Hidden; install.ps1 has a copy), Mac `Free GST Billing.app`, Linux
+-AppWindow -Hidden; install.ps1 has a copy), Mac `Nexuzy Ledger.app`, Linux
 `free-gst-billing.desktop`. Never offer the browser's install prompt again.
 
 **Automated (30 Oct 2026):** `npm run release:check` fails if `beforeinstallprompt` appears anywhere in src/ ("ERR-072 ...").
 
 **Guard** - start-windows.ps1 `Move-IconsToApp` turns old launcher icons into
 app icons; the "Needs a Quick Start" screen tells anyone with a browser icon
-to use the Free GST Billing icon instead.
+to use the Nexuzy Ledger icon instead.
 
 ---
 
@@ -1047,8 +1047,8 @@ if a known problem links to a missing Troubleshooting section.
 **Version:** since v1.10.66 (ZIP built with Windows tar) · fixed in v1.10.82
 **Reported by:** saraiwalaneeraj-cell, issue #120
 
-**Symptom** - double-clicking `Free GST Billing - MAC.command` showed *"The file
-"Free GST Billing - MAC.command" could not be executed because you do not have
+**Symptom** - double-clicking `Nexuzy Ledger - MAC.command` showed *"The file
+"Nexuzy Ledger - MAC.command" could not be executed because you do not have
 appropriate access privileges."* Get Info showed it as a plain, non-executable
 file.
 
@@ -1367,7 +1367,7 @@ quotation is not".
 **Version:** since the wizard was added · fixed in v1.10.77
 **Reported by:** @sangwanmail-eng (#84 items 1 and 4)
 
-**Symptom** - the "Welcome to Free GST Billing" wizard appeared again and
+**Symptom** - the "Welcome to Nexuzy Ledger" wizard appeared again and
 again, and Region set to India came back as Both / Auto after restarting.
 
 **Cause** - these settings lived only in the browser's localStorage. Some
@@ -1637,7 +1637,7 @@ function). By hand: one export without GSTIN must appear only in 3.1(b).
 **Version:** since the continuous server check · fixed in v1.10.73
 **Reported by:** found by the release test on a machine at 100% CPU
 
-**Symptom** - mid-session, the whole app was replaced by "Free GST Billing
+**Symptom** - mid-session, the whole app was replaced by "Nexuzy Ledger
 Software Needs a Quick Start ... Starting..." although the server was running
 and answered in milliseconds a moment later.
 
