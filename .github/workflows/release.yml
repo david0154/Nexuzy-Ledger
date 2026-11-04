@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag, for example v1.10.93"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -27,6 +33,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -39,7 +47,9 @@ jobs:
 
       - name: Ensure tag matches package version
         run: |
-          node -e "const v = require('./package.json').version; if (process.env.GITHUB_REF_NAME !== 'v' + v) throw new Error('Release tag must be v' + v)"
+          node -e "const v=require('./package.json').version; const tag=process.env.RELEASE_TAG; if(tag!== 'v'+v) throw new Error('Release tag '+tag+' must match package version v'+v)"
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
       - name: Install Firefox for packaged smoke tests
         if: matrix.target == 'win'
@@ -91,7 +101,8 @@ jobs:
       - name: Publish release and attach app and staff installers
         uses: softprops/action-gh-release@v2
         with:
-          name: Nexuzy Ledger ${{ github.ref_name }}
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          name: Nexuzy Ledger ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           generate_release_notes: true
           make_latest: true
           files: |

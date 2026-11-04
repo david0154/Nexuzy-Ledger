@@ -48,6 +48,7 @@ fs.writeFileSync(path.join(stage, 'package.json'), `${JSON.stringify({
   version,
   description: 'Nexuzy Lab offline LAN client for Nexuzy Ledger staff accounts.',
   author: 'Nexuzy Lab <info@nexuzy.in>',
+  homepage: 'https://nexuzy.in',
   license: 'MIT',
   type: 'commonjs',
   main: 'main.cjs',
