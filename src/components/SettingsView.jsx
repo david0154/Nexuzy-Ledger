@@ -24,6 +24,7 @@ import { rekeyCentres } from '../utils/costCentres';
 import InvoiceNumberSettings from './InvoiceNumberSettings';
 import SignatureImages, { SIGN_LAYOUTS } from './SignatureImages';
 import { PURPOSE_CODES } from '../utils/purposeCodes';
+import AccountAccessSettings from './AccountAccessSettings';
 import { getBackupsList, restoreBackup, triggerBackup, deleteBackup, getTrashedBills, restoreTrashedBill, purgeTrashedBill, runUpdateNow, saveBill, applyStockChanges, getBackupFolder, setBackupFolder } from '../store';
 
 // v1.10.36 — Section order for the jump-nav pill bar. Keeping this at
@@ -45,6 +46,7 @@ const JUMP_NAV_SECTIONS = [
   ['section-cloud',    'Google Drive'],
   ['section-data',     'Import/Export'],
   ['section-updates',  'Updates'],
+  ['section-access', 'Users & devices'],
 ];
 // v1.10.83 - the ? button opens the guide for the tab that is open.
 // Each card inside a tab has its own ? next to its title too. The docs build
@@ -56,6 +58,7 @@ const SETTINGS_TAB_DOCS = {
   'section-stock': 'settings#stock', 'section-region': 'settings#region', 'section-lock': 'settings#lock', 'section-privacy': 'security#offline-mode',
   'section-backups': 'backup#automatic-backups', 'section-cloud': 'settings#google-drive', 'section-data': 'backup#export-import',
   'section-updates': 'settings#updates',
+  'section-access': 'settings#users-and-devices',
 };
 
 export default function SettingsView({ onSaved }) {
@@ -1787,9 +1790,9 @@ export default function SettingsView({ onSaved }) {
         <div className="notice notice-info" style={{ marginBottom: '1rem' }}>
           <span className="notice-icon">🔒</span>
           <div>
-            <strong>Your data is on this computer only.</strong> Nothing is uploaded to
-            us, our servers, or any third party — not invoices, not clients, not
-            settings. Your data leaves this computer only if you send it to{' '}
+            <strong>Your data stays on the host computer.</strong> Nothing is uploaded to
+            Nexuzy or any third party. When you enable Users &amp; devices, signed-in
+            devices on your trusted local network can use the host's data. Outside the local network, data leaves the host only if you send it to{' '}
             <strong>your own</strong> Google Drive (<em>Save to Drive</em> below, or
             with each PDF once Drive is set up). See Privacy &amp; internet for
             everything the app uses the internet for.
@@ -1806,6 +1809,10 @@ export default function SettingsView({ onSaved }) {
           <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}><Upload size={18} /> Import Backup…</button>
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImportPick} style={{ display: 'none' }} />
         </div>
+      </div>
+
+      <div id="section-access" style={{ order: 12 }}>
+        <AccountAccessSettings />
       </div>
 
       {/* ----------------------- Export modal ----------------------- */}

@@ -22,12 +22,15 @@
  */
 import { firefox } from 'playwright';
 import { spawn } from 'child_process';
-import { readFileSync } from 'fs';
+import { mkdtempSync, readFileSync, rmSync } from 'fs';
+import os from 'os';
+import path from 'path';
 import { PDFDocument } from 'pdf-lib';
 import { setTimeout as sleep } from 'timers/promises';
 
 const results = [];
 let serverProc = null;
+let smokeDataDir = null;
 
 const check = (name, pass, detail = '') => {
   results.push({ name, pass, detail });
@@ -41,12 +44,16 @@ const localDateISO = (date = new Date()) => (
 /** Boot the app unless the caller pointed us at a running one. */
 async function startServer() {
   if (process.env.APP_URL) return process.env.APP_URL;
-  serverProc = spawn(process.execPath, ['server.js'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  smokeDataDir = mkdtempSync(path.join(os.tmpdir(), 'nexuzy-smoke-test-'));
+  serverProc = spawn(process.execPath, ['server.js'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, NEXUZY_DATA_DIR: smokeDataDir, NEXUZY_PORT: '0' },
+  });
   const url = await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('server did not report a port within 30s')), 30_000);
     serverProc.stdout.on('data', (d) => {
       const m = String(d).match(/http:\/\/localhost:(\d+)/);
-      if (m) { clearTimeout(timer); resolve(m[0]); }
+      if (m) { clearTimeout(timer); resolve(`http://127.0.0.1:${m[1]}`); }
     });
     serverProc.on('error', reject);
   });
@@ -179,6 +186,24 @@ await page.route('**/api/profile', async (route) => {
 
 try {
   await page.goto(APP, { waitUntil: 'networkidle' });
+  const accountStatus = await page.evaluate(async () => {
+    try {
+      const response = await fetch('/api/auth/status', { cache: 'no-store' });
+      return { ok: response.ok, status: response.status, body: await response.json() };
+    } catch (error) {
+      return { ok: false, error: String(error) };
+    }
+  });
+  check('account setup endpoint works from the IPv4 loopback app address',
+    accountStatus.ok && typeof accountStatus.body?.setupRequired === 'boolean',
+    JSON.stringify(accountStatus));
+  if (await page.getByRole('button', { name: 'Create administrator' }).isVisible().catch(() => false)) {
+    await page.getByLabel('Username').fill('smoke-owner');
+    await page.getByLabel('Password', { exact: true }).fill('smoke_test_admin_2026');
+    await page.getByLabel('Confirm password').fill('smoke_test_admin_2026');
+    await page.getByRole('button', { name: 'Create administrator' }).click();
+    await page.waitForSelector('.app-layout', { timeout: 15000 });
+  }
   await sleep(2000);
   check('setup wizard appears for a blank business profile despite a saved onboarding flag',
     await page.getByText('What kind of business do you run?').isVisible().catch(() => false));
@@ -186,6 +211,26 @@ try {
   check('first-run setup can be dismissed',
     await page.evaluate(() => !!document.querySelector('.nav-btn')));
 
+  const accountMenu = page.locator('.account-session');
+  const accountMenuLayout = await accountMenu.evaluate((element) => {
+    const menu = element.getBoundingClientRect();
+    const sidebar = element.closest('.sidebar').getBoundingClientRect();
+    return {
+      insideSidebar: !!element.closest('.sidebar'),
+      position: getComputedStyle(element).position,
+      withinSidebar: menu.left >= sidebar.left && menu.right <= sidebar.right,
+    };
+  }).catch(() => null);
+  check('account controls stay in the sidebar instead of covering dashboard actions',
+    accountMenuLayout?.insideSidebar && accountMenuLayout.position === 'relative' && accountMenuLayout.withinSidebar,
+    JSON.stringify(accountMenuLayout));
+  if (accountMenuLayout) {
+    await accountMenu.locator('summary').click();
+    check('password and sign-out actions are available from the account menu',
+      await accountMenu.getByRole('button', { name: 'Change password' }).isVisible()
+        && await accountMenu.getByRole('button', { name: 'Sign out' }).isVisible());
+    await accountMenu.locator('summary').click();
+  }
   // ---- App loads without breaking its own security policy ----------------
   // ERR-004 / ERR-007: the CSP blocked the print iframe and, separately,
   // the app's own stylesheet inside html2canvas's clone — so PDFs rendered
@@ -545,7 +590,10 @@ try {
   // passes trivially when NOTHING is on screen. Assert against the invoice
   // list itself, not the whole page.
   await page.getByText('Dashboard', { exact: false }).first().click();
-  await sleep(2500);
+  await page.waitForFunction(() => {
+    const table = document.querySelector('table');
+    return table?.innerText.includes('SMOKE-MINE/1');
+  }, null, { timeout: 15000 });
   const visible = await page.evaluate(() => {
     const table = document.querySelector('table');
     return table ? table.innerText : document.body.innerText;
@@ -710,7 +758,8 @@ try {
       const b = [...document.querySelectorAll('button')].find((x) => x.innerText.trim() === 'GSTR-3B');
       if (b) b.click();
     });
-    await sleep(1200);
+    await page.waitForFunction(() => [...document.querySelectorAll('tr')]
+      .some((row) => row.innerText.trim().startsWith('Net ITC Available')), null, { timeout: 15000 });
     return page.evaluate(() => {
       const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.trim().startsWith('Net ITC Available'));
       return row ? [...row.querySelectorAll('td')].slice(1)
@@ -936,12 +985,12 @@ try {
   check('#59 desktop keeps the fixed sidebar and shows no phone menu bar',
     desk.bar === 'none' && desk.left === 0 && desk.width > 200, JSON.stringify(desk));
 
-  const phone = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  const mob = await phone.newPage();
+  const mob = page;
+  const desktopViewport = mob.viewportSize();
+  await mob.setViewportSize({ width: 390, height: 844 });
   try {
-    await mob.goto(APP, { waitUntil: 'networkidle' });
-    await sleep(2000);
     await dismissFirstRun(mob);
+    await sleep(500);
     const menuBox = () => mob.evaluate(() => {
       const r = document.querySelector('.sidebar').getBoundingClientRect();
       return { left: Math.round(r.left), right: Math.round(r.right) };
@@ -954,7 +1003,7 @@ try {
     check('#59 on a phone the menu starts hidden behind a menu button',
       barShownOnPhone && startBox.right <= 1, `bar=${barShownOnPhone} menu=${JSON.stringify(startBox)}`);
     if (barShownOnPhone) {
-      await mob.getByRole('button', { name: 'Open menu' }).click();
+      await mob.getByRole('button', { name: 'Open menu' }).click({ timeout: 5000 });
       await sleep(700);
       const openBox = await menuBox();
       check('#59 the menu button slides the menu in', openBox.left >= 0 && openBox.right > 200, JSON.stringify(openBox));
@@ -962,7 +1011,11 @@ try {
         const b = [...document.querySelectorAll('.sidebar .nav-btn')].find((x) => x.innerText.trim() === 'Expenses');
         if (b) b.click();
       });
-      await sleep(1800);
+      await mob.waitForFunction(() => {
+        const title = document.querySelector('.page-title')?.innerText || '';
+        const sidebar = document.querySelector('.sidebar');
+        return /Expenses/.test(title) && sidebar?.getBoundingClientRect().right <= 1;
+      }, null, { timeout: 15000 });
       const pickedBox = await menuBox();
       const title = await mob.evaluate(() => document.querySelector('.page-title')?.innerText || '');
       check('#59 picking a page opens it and closes the menu',
@@ -971,7 +1024,8 @@ try {
       check('#59 pages get the full phone width', width >= 380, `${width}px`);
     }
   } finally {
-    await phone.close();
+    await openView('Dashboard');
+    await mob.setViewportSize(desktopViewport);
   }
 
   // ======================================================================
@@ -1893,7 +1947,67 @@ try {
         && await donationLink.count() > 0);
   }
 
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('link', { name: 'Users & devices' }).click();
+  check('Admin can open Users & devices and see Add staff',
+    await page.getByRole('heading', { name: 'Users & device access' }).isVisible()
+        && await page.getByRole('button', { name: 'Add staff' }).isVisible()
+        && await page.getByRole('checkbox', { name: 'Billing' }).isVisible()
+        && await page.getByRole('checkbox', { name: 'Read-only' }).isVisible());
+
   // Put the real business details back.
+  await page.evaluate(async (prof) => {
+    await fetch('/api/profile', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(prof),
+    });
+  }, originalProfile);
+
+  // Setup is an administrator task. A staff account must not see the
+  // business setup wizard, its resume button, or the owner onboarding card.
+  const staffLogin = await page.evaluate(async () => {
+    const profile = await (await fetch('/api/profile')).json();
+    const savedProfile = { ...profile, businessName: '' };
+    const profileResponse = await fetch('/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(savedProfile),
+    });
+    if (!profileResponse.ok) throw new Error('Could not prepare the staff setup-visibility test.');
+    const username = `smoke${Date.now()}`;
+    const response = await fetch('/api/auth/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: 'SmokeStaff26!', roles: ['billing'] }),
+    });
+    if (!response.ok) throw new Error(`Could not create the staff setup-visibility test account (${response.status}).`);
+    return { username, password: 'SmokeStaff26!' };
+  });
+  const staffCtx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  staffCtx.setDefaultNavigationTimeout(120000);
+  staffCtx.setDefaultTimeout(60000);
+  await staffCtx.addInitScript(() => {
+    let settings = {};
+    try { settings = JSON.parse(localStorage.getItem('gst_printSettings') || '{}'); } catch { /* use test defaults */ }
+    localStorage.setItem('gst_printSettings', JSON.stringify({
+      ...settings, onboardingComplete: true, onboardingSkipped: true,
+    }));
+    localStorage.removeItem('freegstbill_startedDismissed');
+    sessionStorage.setItem('gst_currentView', 'dashboard');
+  });
+  const staffPage = await staffCtx.newPage();
+  await staffPage.goto(APP, { waitUntil: 'networkidle' });
+  await staffPage.getByLabel('Username').fill(staffLogin.username);
+  await staffPage.getByLabel('Password', { exact: true }).fill(staffLogin.password);
+  await staffPage.getByRole('button', { name: 'Sign in' }).click();
+  await staffPage.waitForSelector('.app-layout', { timeout: 15000 });
+  await sleep(1200);
+  const staffHasGettingStarted = await staffPage.evaluate(() =>
+    [...document.querySelectorAll('.section-title')].some((heading) => heading.innerText.trim() === 'Getting started'));
+  check('Staff do not see administrator business setup or onboarding prompts',
+    !(await staffPage.getByText('What kind of business do you run?').isVisible().catch(() => false))
+      && !(await staffPage.getByRole('button', { name: /Finish setup/ }).isVisible().catch(() => false))
+      && !staffHasGettingStarted);
+  await staffCtx.close();
   await page.evaluate(async (prof) => {
     await fetch('/api/profile', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(prof),
@@ -1920,7 +2034,14 @@ try {
     }).catch(() => {});
   }
   await browser.close();
-  if (serverProc) serverProc.kill();
+  if (serverProc) {
+    serverProc.kill('SIGTERM');
+    await new Promise((resolve) => {
+      if (serverProc.exitCode !== null) return resolve();
+      serverProc.once('exit', resolve);
+    });
+  }
+  if (smokeDataDir) rmSync(smokeDataDir, { recursive: true, force: true });
 }
 
 const failed = results.filter((r) => !r.pass);

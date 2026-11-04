@@ -64,7 +64,7 @@ const PRELUDE = [
   'fail() { printf "FAIL\\t%s\\t%s\\n" "$1" "${2:-}" >> "$R"; }',
   'version_of() { node -p "require(\'$1/package.json\').version"; }',
   'set_version() { node -e \'const f=process.argv[1];const p=require(f);p.version=process.argv[2];require("fs").writeFileSync(f,JSON.stringify(p,null,2))\' "$1/package.json" "$2"; }',
-  'backups() { ls "$HOME/Documents/FreeGSTBill Backups" 2>/dev/null | wc -l | tr -d " "; }',
+  'backups() { ls "$HOME/Documents/Nexuzy Ledger  Backups" 2>/dev/null | wc -l | tr -d " "; }',
   'export HOME=/tmp/home',
 ];
 const KEEP = '\'{"id":"keep-me"}\'';
@@ -91,20 +91,20 @@ const ALPINE = [...PRELUDE,
   'V=$(version_of "$S"); if [ "$V" = "$NEWVER" ]; then pass "1 installed version is now v$NEWVER"; else fail "1 installed version is now v$NEWVER" "got v$V"; fi',
   'if grep -q OLD "$S/dist/index.html"; then fail "1 app files were replaced" "dist/index.html is still the old one"; else pass "1 app files were replaced"; fi',
   `if [ "$(cat "$S/data/bills/keep-me.json")" = ${KEEP} ]; then pass "1 data/ is untouched"; else fail "1 data/ is untouched"; fi`,
-  'B=$(ls "$HOME/Documents/FreeGSTBill Backups/"pre-update-*.tar.gz 2>/dev/null | head -n 1)',
+  'B=$(ls "$HOME/Documents/Nexuzy Ledger  Backups/"pre-update-*.tar.gz 2>/dev/null | head -n 1)',
   'if [ -n "$B" ] && tar -tzf "$B" | grep -q "data/bills/keep-me.json"; then pass "1 data was backed up before the update"; else fail "1 data was backed up before the update" "no backup holding the data"; fi',
   'if grep -q "All [0-9]* entries extracted completely" /work/alpine-1.log; then pass "1 every file was checked against the ZIP"; else fail "1 every file was checked against the ZIP"; fi',
   'if [ ! -e "$S/.update-previous" ]; then pass "1 rollback copy removed afterwards"; else fail "1 rollback copy removed afterwards"; fi',
   'if [ ! -e "$S/old-script-v1.sh" ] && [ ! -e "$S/old-folder" ]; then pass "1 files the new version no longer has are removed"; else fail "1 files the new version no longer has are removed"; fi',
   'if [ ! -e "$T/old/Free-GST-Billing/Nexuzy Ledger - OLD LAUNCHER.sh" ]; then pass "1 old launchers are removed"; else fail "1 old launchers are removed"; fi',
   'if [ -f "$S/Saved Invoices/INV-1.pdf" ]; then pass "1 Saved Invoices is kept"; else fail "1 Saved Invoices is kept"; fi',
-  'if [ -d "$S/node_modules/express" ]; then pass "1 dependencies installed"; else fail "1 dependencies installed"; fi',
+  'if [ -f "$S/server-bundle.json" ]; then pass "1 bundled server is installed"; else fail "1 bundled server is installed"; fi',
   'if grep -q "Reinstalling dependencies" /work/alpine-1.log; then fail "1 shipped packages used, npm not run"; else pass "1 shipped packages used, npm not run"; fi',
   '(cd "$S" && node server.js > /tmp/server.log 2>&1 &)',
   'up=""; i=0',
   'while [ $i -lt 30 ]; do',
   '  PORT=$(grep -o "localhost:[0-9]*" /tmp/server.log 2>/dev/null | head -n 1 | cut -d: -f2)',
-  '  if [ -n "$PORT" ] && node -e "fetch(\'http://127.0.0.1:$PORT/api/profile\').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then up="$PORT"; break; fi',
+  '  if [ -n "$PORT" ] && node -e "fetch(\'http://127.0.0.1:$PORT/api/health\').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then up="$PORT"; break; fi',
   '  sleep 1; i=$((i+1))',
   'done',
   'if [ -n "$up" ]; then pass "1 the updated server boots and answers" "port $up"; else fail "1 the updated server boots and answers" "$(tail -c 300 /tmp/server.log)"; fi',
@@ -125,7 +125,7 @@ const ALPINE = [...PRELUDE,
   'if grep -q "back in place" /work/alpine-3.log; then pass "3 the user is told the old version is back"; else fail "3 the user is told the old version is back"; fi',
   'if [ ! -e "$S/.update-previous" ]; then pass "3 rollback copy removed afterwards"; else fail "3 rollback copy removed afterwards"; fi',
   `if [ "$(cat "$S/data/bills/keep-me.json")" = ${KEEP} ]; then pass "3 data/ is untouched"; else fail "3 data/ is untouched"; fi`,
-  'if node -e "require(\'$S/node_modules/express\')" 2>/dev/null; then pass "3 dependencies still load"; else fail "3 dependencies still load"; fi',
+  'if [ -f "$S/server-bundle.json" ] && [ -f "$S/server.js" ]; then pass "3 bundled server is restored"; else fail "3 bundled server is restored"; fi',
   '',
   '# 4 --- a truncated download',
   'N=$(backups)',
@@ -204,9 +204,9 @@ try {
   pkg.dependencies = { ...pkg.dependencies, 'fgsb-this-package-does-not-exist': '0.0.1' };
   writeFileSync(join(brokenSystem, 'package.json'), JSON.stringify(pkg, null, 2));
   writeFileSync(join(brokenSystem, 'dist', 'index.html'), '<!-- BROKEN PACKAGE -->');
-  // v1.10.83 - release ZIPs ship node_modules, so the updater runs npm only for
-  // a package without them. This one has none, so npm runs, fails, and the
-  // rollback is exercised as before.
+  // This package has neither a bundle manifest nor node_modules, so npm fails
+  // and exercises the updater rollback path.
+  rmSync(join(brokenSystem, 'server-bundle.json'), { force: true });
   rmSync(join(brokenSystem, 'node_modules'), { recursive: true, force: true });
   makeZip(join(work, 'broken-src'), join(work, 'broken.zip'));
 

@@ -123,7 +123,7 @@ function Get-PublishedZipUrl {
     $releases = Invoke-RestMethod -Uri 'https://api.github.com/repos/david0154/Nexuzy-Ledger/releases?per_page=10' -Headers @{ 'User-Agent' = 'NexuzyLedger-Installer' } -TimeoutSec 20
     $release = @($releases | Where-Object { -not $_.draft } | Select-Object -First 1)[0]
     if (-not $release) { throw 'No published GitHub release was found.' }
-    $asset = @($release.assets | Where-Object { $_.name -match '\.zip$' } | Select-Object -First 1)[0]
+    $asset = @($release.assets | Where-Object { $_.name -match '^Nexuzy-Ledger(?:-v[\d.]+)?\.zip$' } | Select-Object -First 1)[0]
     if ($asset) { return $asset.browser_download_url }
     $attachment = [regex]::Match([string]$release.body, 'https://github\.com/user-attachments/files/[^\s)<>]+\.zip(?=[)\s]|$)')
     if ($attachment.Success) { return $attachment.Value }
@@ -213,11 +213,45 @@ function Stop-App([string]$sys) {
 function Backup-Data([string]$sys) {
   $data = Join-Path $sys 'data'
   if (@(Get-ChildItem -LiteralPath $data -Recurse -File -Force -ErrorAction SilentlyContinue).Count -eq 0) { return $null }
-  $home_ = if ($Test) { Join-Path $Test 'Backups' } else { Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'FreeGSTBill Backups' }
+  $home_ = if ($Test) { Join-Path $Test 'Backups' } else { Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Nexuzy Ledger  Backups' }
   New-Item -ItemType Directory -Path $home_ -Force | Out-Null
   $zip = Join-Path $home_ "pre-update-$(Get-Date -Format 'yyyy-MM-dd_HH-mm-ss').zip"
   Compress-Archive -Path (Join-Path $data '*') -DestinationPath $zip -Force
   return $zip
+}
+
+function Sync-AppFiles([string]$source, [string]$destination, [string]$temporary) {
+  New-Item -ItemType Directory -Path $destination -Force | Out-Null
+  $hiddenBackup = Join-Path $temporary 'hidden-system-items'
+  New-Item -ItemType Directory -Path $hiddenBackup -Force | Out-Null
+  $hiddenItems = @(Get-ChildItem -LiteralPath $destination -Force | Where-Object { $_.Name.StartsWith('.') })
+  foreach ($item in $hiddenItems) {
+    Move-Item -LiteralPath $item.FullName -Destination $hiddenBackup -Force -ErrorAction Stop
+  }
+
+  try {
+    $excludedDirs = @('data', 'Saved Invoices', 'Trash', 'node')
+    $excludedDirs += @($excludedDirs | ForEach-Object { Join-Path $destination $_ })
+    $excludedFiles = @('node-dir.txt', (Join-Path $destination 'node-dir.txt'))
+    $robocopyArgs = @(
+      $source, $destination, '/MIR', '/MT:16', '/R:2', '/W:1', '/IS', '/IT',
+      '/COPY:DAT', '/DCOPY:DAT', '/XJ', '/NFL', '/NDL', '/NJH', '/NJS',
+      '/XD'
+    ) + $excludedDirs + @('/XF') + $excludedFiles
+    & robocopy.exe @robocopyArgs
+    $result = $LASTEXITCODE
+    if ($result -ge 8) {
+      Fail "The app files could not be installed (copy error $result)." 'Close Nexuzy Ledger, check free disk space, then run the install line again. Your business data was not changed.'
+    }
+  } finally {
+    foreach ($item in $hiddenItems) {
+      $saved = Join-Path $hiddenBackup $item.Name
+      if (-not (Test-Path -LiteralPath $saved)) { continue }
+      $target = Join-Path $destination $item.Name
+      if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction Stop }
+      Move-Item -LiteralPath $saved -Destination $destination -Force -ErrorAction Stop
+    }
+  }
 }
 
 # The icon opens the app in its own window. The console is minimised and
@@ -290,36 +324,25 @@ function Install-App {
       Fail 'The downloaded file could not be unpacked (damaged download, or the disk is full).' 'Run the same line again.'
     }
     $inner = Get-ChildItem -LiteralPath $unpacked -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName '_system\server.js') } | Select-Object -First 1
-    if (-not $inner -or -not (Test-Path -LiteralPath (Join-Path $inner.FullName '_system\node_modules\express\package.json'))) {
+    if (-not $inner -or -not (
+      (Test-Path -LiteralPath (Join-Path $inner.FullName '_system\server-bundle.json')) -or
+      (Test-Path -LiteralPath (Join-Path $inner.FullName '_system\node_modules\express\package.json'))
+    )) {
       Fail 'The downloaded file is not a complete Nexuzy Ledger package.' 'Run the same line again. If it happens again, report it: https://github.com/david0154/Nexuzy-Ledger/issues'
     }
     $newSys = Join-Path $inner.FullName '_system'
     $backup = if ($isUpdate) { Backup-Data $sys } else { $null }
     Stop-App $sys
 
-    # Every app file is replaced, node_modules included; the books, saved PDFs,
-    # the bin and Node.js stay. A half-done earlier install is repaired the
-    # same way.
-    New-Item -ItemType Directory -Path $sys -Force | Out-Null
-    $keep = @('data', 'Saved Invoices', 'Trash', 'node')
-    $newNames = @(Get-ChildItem -LiteralPath $newSys -Force | ForEach-Object { $_.Name })
-    foreach ($item in Get-ChildItem -LiteralPath $newSys -Force) {
-      if ($keep -contains $item.Name) { continue }
-      $target = Join-Path $sys $item.Name
-      if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force }
-      Move-Item -LiteralPath $item.FullName -Destination $target
-    }
-    # A clean update: what an older version had and this one does not goes.
-    # Never the books, saved PDFs, the bin or Node.js.
-    Get-ChildItem -LiteralPath $sys -Force | Where-Object {
-      $newNames -notcontains $_.Name -and ($keep + 'node-dir.txt') -notcontains $_.Name -and -not $_.Name.StartsWith('.')
-    } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+    # Mirror the package with native parallel copy. Keep business data,
+    # saved PDFs, the portable Node.js folder and its location marker.
+    Sync-AppFiles $newSys $sys $tmp
     $rootNames = @(Get-ChildItem -LiteralPath $inner.FullName -File -Force | ForEach-Object { $_.Name })
     Get-ChildItem -LiteralPath $dest -File -Force | Where-Object {
       ($_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
-    } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue }
+    } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction Stop }
     foreach ($f in Get-ChildItem -LiteralPath $inner.FullName -File -Force) {
-      Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name) -Force
+      Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $dest $f.Name) -Force -ErrorAction Stop
     }
     New-Item -ItemType Directory -Path (Join-Path $sys 'data') -Force | Out-Null
     $portFile = Join-Path $sys 'data\port.txt'

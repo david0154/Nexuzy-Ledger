@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cleanEmployee, cleanPayRun, netSalary, payrollBusinessKey, validateEmployee, validatePayRun } from '../src/utils/payroll.js';
+import { attendanceDayCounts, cleanEmployee, cleanPayRun, cycleAttendanceStatus, netSalary, payrollBusinessKey, validateEmployee, validatePayRun } from '../src/utils/payroll.js';
 
 const employee = cleanEmployee({
   id: 'e1', name: 'Asha Rao', employeeCode: 'E-01', pan: 'ABCDE1234F', monthlySalary: 30000,
@@ -8,6 +8,8 @@ assert.equal(validateEmployee(employee), '');
 assert.equal(validateEmployee({ ...employee, pan: 'INVALID' }), 'Enter a valid PAN or leave it blank');
 assert.equal(payrollBusinessKey({ gstin: '27ABCDE1234F1Z5', businessName: 'Shop' }), 'gstin:27ABCDE1234F1Z5');
 assert.equal(payrollBusinessKey({ businessName: '  My Shop ' }), 'name:my shop');
+assert.deepEqual(['', 'P', 'A', 'L'].map(cycleAttendanceStatus), ['P', 'A', 'L', '']);
+assert.deepEqual(attendanceDayCounts(['P', 'A', 'L', '', 'P']), { present: 2, absent: 1, leave: 1 });
 
 const run = cleanPayRun({
   employeeId: 'e1', month: '2026-11', basic: 30000, allowances: 2000, bonus: 500,

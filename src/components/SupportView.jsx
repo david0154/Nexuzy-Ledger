@@ -7,6 +7,7 @@ import { SafePrivateSection } from './SafePrivateNote';
 const REPO = 'https://github.com/david0154/Nexuzy-Ledger';
 const DONATION_URL = 'https://razorpay.me/@nexuzylab';
 const EMAIL = 'info@nexuzy.in';
+const WEBSITE = 'https://nexuzy.in';
 
 const SERVICES = [
   { icon: Code, title: 'Custom software & web apps', text: 'Websites, web apps and business tools built for how you work.' },
@@ -46,6 +47,10 @@ export default function SupportView() {
             It is designed to help Indian businesses manage invoices and accounting records.
             Your business data stays on this computer; contributions are optional and do not unlock features.
           </p>
+          <a href={WEBSITE} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'inline-block', marginTop: 10, color: 'var(--primary)', fontWeight: 600 }}>
+            Visit Nexuzy Lab · nexuzy.in
+          </a>
         </div>
       </div>
 

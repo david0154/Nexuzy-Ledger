@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pencil, Plus, Printer, Save, UserRound, X } from 'lucide-react';
 import { getPayrollData, savePayrollData } from '../store';
 import { formatCurrency, localToday } from '../utils';
-import { cleanEmployee, cleanPayRun, netSalary, payrollBusinessKey, validateEmployee, validatePayRun } from '../utils/payroll';
+import { attendanceDayCounts, cleanEmployee, cleanPayRun, cycleAttendanceStatus, netSalary, payrollBusinessKey, validateEmployee, validatePayRun } from '../utils/payroll';
 import { toast } from './Toast';
 import HelpButton from './HelpButton';
 import TableExport from './TableExport';
@@ -75,6 +75,7 @@ export default function Payroll({ profile }) {
   const [showAttendance, setShowAttendance] = useState(false);
   const [attMonth, setAttMonth] = useState(thisMonth());
   const [attendance, setAttendance] = useState({});
+  const [savingAttendance, setSavingAttendance] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -104,10 +105,19 @@ export default function Payroll({ profile }) {
     setAttendance(nextAttendance);
   };
 
-  const cycleAttendance = (employeeId, date) => {
+  const cycleAttendance = async (employeeId, date) => {
+    if (savingAttendance) return;
     const cur = attendance?.[employeeId]?.[date] || '';
-    const next = cur === '' ? 'P' : cur === 'P' ? 'A' : cur === 'A' ? 'L' : '';
-    persistAttendance({ ...attendance, [employeeId]: { ...(attendance?.[employeeId] || {}), [date]: next } });
+    const next = cycleAttendanceStatus(cur);
+    const nextAttendance = { ...attendance, [employeeId]: { ...(attendance?.[employeeId] || {}), [date]: next } };
+    setSavingAttendance(true);
+    try {
+      await persistAttendance(nextAttendance);
+    } catch {
+      toast('Could not save attendance. Try again.', 'error');
+    } finally {
+      setSavingAttendance(false);
+    }
   };
 
   const activeEmployees = useMemo(() => employees.filter((employee) => employee.active !== false), [employees]);
@@ -324,47 +334,68 @@ export default function Payroll({ profile }) {
             </div>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                Month
+                Attendance month
                 <input type="month" className="form-input" style={{ marginLeft: '0.5rem' }} value={attMonth}
-                  onChange={(e) => setAttMonth(e.target.value)} />
+                  onChange={(e) => setAttMonth(e.target.value)} aria-label="Attendance month" />
               </label>
+              <span role="status" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                {savingAttendance ? 'Saving attendance…' : 'Changes save automatically.'}
+              </span>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Tap a day to cycle: Present (P) → Absent (A) → Leave (L) → blank
+                P = Present · A = Absent · L = Leave · blank = unmarked. Select a day to change it.
               </span>
             </div>
             {activeEmployees.length === 0 ? (
               <p style={{ color: 'var(--text-muted)' }}>Add at least one employee first to mark attendance.</p>
+            ) : !/^\d{4}-(0[1-9]|1[0-2])$/.test(attMonth) ? (
+              <p style={{ color: 'var(--text-muted)' }}>Choose a valid month to view attendance.</p>
             ) : (() => {
               const [y, m] = attMonth.split('-').map(Number);
               const days = new Date(y, m, 0).getDate();
               const dateKey = (d) => `${attMonth}-${String(d).padStart(2, '0')}`;
+              const dayNumbers = Array.from({ length: days }, (_, i) => i + 1);
+              const exportRows = activeEmployees.map((employee) => {
+                const marks = dayNumbers.map((day) => attendance?.[employee.id]?.[dateKey(day)] || '');
+                const counts = attendanceDayCounts(marks);
+                return [
+                  employee.name,
+                  ...marks,
+                  counts.present,
+                  counts.absent,
+                  counts.leave,
+                ];
+              });
               return (
                 <div className="table-scroll">
+                  <div className="table-header" style={{ marginBottom: '0.5rem' }}>
+                    <strong>{monthName(attMonth)} attendance</strong>
+                    <TableExport title={`Attendance register · ${monthName(attMonth)}`}
+                      filename={`Attendance-${attMonth}`}
+                      headers={['Employee', ...dayNumbers.map((day) => `Day ${day}`), 'Present', 'Absent', 'Leave']}
+                      rows={exportRows} />
+                  </div>
                   <table className="data-table" style={{ minWidth: 'max-content' }}>
                     <thead>
                       <tr>
                         <th>Employee</th>
-                        {Array.from({ length: days }, (_, i) => <th key={i} style={{ padding: '4px 6px', minWidth: 28, textAlign: 'center' }}>{i + 1}</th>)}
-                        <th>P</th><th>A</th><th>L</th>
+                        {dayNumbers.map((day) => <th key={day} style={{ padding: '4px 6px', minWidth: 28, textAlign: 'center' }}>{day}</th>)}
+                        <th title="Present">P</th><th title="Absent">A</th><th title="Leave">L</th>
                       </tr>
                     </thead>
                     <tbody>
                       {activeEmployees.map((employee) => {
-                        let pc = 0, ac = 0, lc = 0;
-                        for (let d = 1; d <= days; d++) {
-                          const s = attendance?.[employee.id]?.[dateKey(d)] || '';
-                          if (s === 'P') pc++; else if (s === 'A') ac++; else if (s === 'L') lc++;
-                        }
+                        const counts = attendanceDayCounts(dayNumbers.map((day) => attendance?.[employee.id]?.[dateKey(day)] || ''));
                         return (
                           <tr key={employee.id}>
                             <td className="font-medium">{employee.name}</td>
-                            {Array.from({ length: days }, (_, i) => {
-                              const d = i + 1;
+                            {dayNumbers.map((d) => {
                               const s = attendance?.[employee.id]?.[dateKey(d)] || '';
                               return (
                                 <td key={d} style={{ padding: '2px', textAlign: 'center' }}>
                                   <button type="button"
                                     onClick={() => cycleAttendance(employee.id, dateKey(d))}
+                                    disabled={savingAttendance}
+                                    aria-label={`${employee.name}, ${dateKey(d)}: ${s === 'P' ? 'Present' : s === 'A' ? 'Absent' : s === 'L' ? 'Leave' : 'Unmarked'}. Click to change.`}
                                     title={`${employee.name} · ${dateKey(d)}: ${s || 'unmarked'}`}
                                     style={{ width: 26, height: 26, borderRadius: 4, border: '1px solid var(--border)', cursor: 'pointer', fontSize: '0.72rem', fontWeight: 700,
                                       background: s === 'P' ? '#16a34a' : s === 'A' ? '#dc2626' : s === 'L' ? '#f59e0b' : 'transparent',
@@ -374,9 +405,9 @@ export default function Payroll({ profile }) {
                                 </td>
                               );
                             })}
-                            <td style={{ textAlign: 'center', color: '#16a34a', fontWeight: 700 }}>{pc}</td>
-                            <td style={{ textAlign: 'center', color: '#dc2626', fontWeight: 700 }}>{ac}</td>
-                            <td style={{ textAlign: 'center', color: '#f59e0b', fontWeight: 700 }}>{lc}</td>
+                            <td style={{ textAlign: 'center', color: '#16a34a', fontWeight: 700 }}>{counts.present}</td>
+                            <td style={{ textAlign: 'center', color: '#dc2626', fontWeight: 700 }}>{counts.absent}</td>
+                            <td style={{ textAlign: 'center', color: '#f59e0b', fontWeight: 700 }}>{counts.leave}</td>
                           </tr>
                         );
                       })}

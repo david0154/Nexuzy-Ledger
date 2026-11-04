@@ -16,7 +16,11 @@
 #     copy's own updater. The launcher uses it when it finds the app already
 #     installed elsewhere, instead of installing a second copy.
 
-param([string]$InstallTo = '')
+param(
+  [string]$InstallTo = '',
+  [string]$BackupDirectory = '',
+  [string]$ShortcutTestRoot = ''
+)
 
 $ErrorActionPreference = 'Stop'
 $Host.UI.RawUI.WindowTitle = 'Nexuzy Ledger - Update'
@@ -42,15 +46,19 @@ Write-Host '   Nexuzy Ledger - Update'
 Write-Host '  ============================================================'
 Write-Host ''
 
-# --- Step 1: Belt-and-braces backup of data folder BEFORE anything ---
-$dataDir = Join-Path $SystemDir 'data'
-if (Test-Path $dataDir) {
-  $backupsHome = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'FreeGSTBill Backups'
-  if (-not (Test-Path $backupsHome)) { New-Item -ItemType Directory -Path $backupsHome | Out-Null }
-  $stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
-  $preUpdateBackup = Join-Path $backupsHome "pre-update-$stamp.zip"
-  Write-Host "  Backing up your data to $preUpdateBackup ..."
-  Compress-Archive -Path "$dataDir\*" -DestinationPath $preUpdateBackup -Force
+function Get-AppVersion([string]$directory) {
+  try {
+    return [string](Get-Content -LiteralPath (Join-Path $directory 'package.json') -Raw | ConvertFrom-Json).version
+  } catch {
+    return $null
+  }
+}
+
+function ConvertTo-ComparableVersion([string]$value) {
+  if ($value -match '^\s*v?(\d+(?:\.\d+){1,3})') {
+    try { return [version]$Matches[1] } catch { return $null }
+  }
+  return $null
 }
 
 $tmp = $null
@@ -67,13 +75,20 @@ try {
   $api = @($releases | Where-Object { -not $_.draft } | Select-Object -First 1)[0]
   if (-not $api) { throw 'No published release was found.' }
   $tag = $api.tag_name
-  $zipAsset = @($api.assets | Where-Object { $_.name -match '\.zip$' } | Select-Object -First 1)[0]
+  $zipAsset = @($api.assets | Where-Object { $_.name -match '^Nexuzy-Ledger(?:-v[\d.]+)?\.zip$' } | Select-Object -First 1)[0]
   if ($zipAsset) {
     $zipUrl = $zipAsset.browser_download_url
   } else {
     $attachment = [regex]::Match([string]$api.body, 'https://github\.com/user-attachments/files/[^\s)<>]+\.zip(?=[)\s]|$)')
     if (-not $attachment.Success) { throw "Release $tag has no downloadable app ZIP." }
     $zipUrl = $attachment.Value
+  }
+  $installedVersion = ConvertTo-ComparableVersion (Get-AppVersion $SystemDir)
+  $publishedVersion = ConvertTo-ComparableVersion $tag
+  if ($installedVersion -and $publishedVersion -and $publishedVersion -le $installedVersion) {
+    Write-Host "  Nexuzy Ledger v$installedVersion is already current. No files or data were changed." -ForegroundColor Green
+    Read-Host '  Press Enter to close'
+    exit 0
   }
   Write-Host "  Latest: $tag"
 } catch {
@@ -82,8 +97,9 @@ try {
   exit 1
 }
 
-# --- Step 3: Download + extract to a staging folder ---
-$tmp = Join-Path $env:TEMP "fgstbill-update-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
+# --- Step 3: Download + extract on the install drive ---
+# Keeping staging beside the installation avoids a second cross-drive copy.
+$tmp = Join-Path $RootDir ".nexuzy-update-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
 New-Item -ItemType Directory -Path $tmp | Out-Null
 $zipPath = Join-Path $tmp 'update.zip'
 Write-Host '  Downloading update...'
@@ -97,51 +113,91 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # The extract contains the release structure (root has the launchers and
 # _system/). GitHub source archives are never used as app updates.
-$extracted = Get-ChildItem -Path $tmp -Directory | Select-Object -First 1
+$extracted = Get-ChildItem -Path $tmp -Directory | Where-Object {
+  Test-Path -LiteralPath (Join-Path $_.FullName '_system\server.js')
+} | Select-Object -First 1
+if (-not $extracted) {
+  throw 'The downloaded ZIP does not contain a Nexuzy Ledger release. Nothing was changed.'
+}
 $candidateSystem = Join-Path $extracted.FullName '_system'
 if (Test-Path $candidateSystem) {
   $sourceRoot = $extracted.FullName
   $newSystem  = $candidateSystem
-} else {
-  # Zipball layout - treat the extracted folder itself as the "new _system"
-  $sourceRoot = $extracted.FullName
-  $newSystem  = $extracted.FullName
 }
 }
 
-# --- Step 4: Copy everything EXCEPT data/ over the current _system/ ---
+if (-not $tmp) {
+  $tmp = Join-Path $RootDir ".nexuzy-update-$([Guid]::NewGuid().ToString('N').Substring(0,8))"
+  New-Item -ItemType Directory -Path $tmp | Out-Null
+}
+
+# --- Step 4: Validate the package and back up data before changing files ---
+if (-not (Test-Path -LiteralPath (Join-Path $newSystem 'server.js')) -or
+    -not (Test-Path -LiteralPath (Join-Path $newSystem 'package.json')) -or
+    -not (Test-Path -LiteralPath (Join-Path $newSystem 'dist\index.html'))) {
+  throw 'The downloaded package is incomplete (server.js, package.json or dist/index.html is missing). Nothing was changed.'
+}
+
+$dataDir = Join-Path $SystemDir 'data'
+if (Test-Path -LiteralPath $dataDir) {
+  $dataFiles = @(Get-ChildItem -LiteralPath $dataDir -Recurse -File -Force -ErrorAction Stop)
+  if ($dataFiles.Count -gt 0) {
+    $backupsHome = if ($BackupDirectory) { $BackupDirectory } else {
+      Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Nexuzy Ledger  Backups'
+    }
+    New-Item -ItemType Directory -Path $backupsHome -Force | Out-Null
+    $stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss-fff'
+    $preUpdateBackup = Join-Path $backupsHome "pre-update-$stamp.zip"
+    Write-Host "  Backing up your data to $preUpdateBackup ..."
+    Compress-Archive -Path (Join-Path $dataDir '*') -DestinationPath $preUpdateBackup -Force
+  }
+}
+
+# --- Step 5: Apply the package without touching business data ---
 Write-Host '  Applying update (your data folder is untouched)...'
-# Never replaced: the books, saved PDFs, the trash, Node.js and installed
-# packages. (A folder the user extracted and opened may hold its own empty
-# copies of these; they must not land on top of the real ones.)
-$keep = @('data', 'node_modules', 'node', 'Saved Invoices', 'Trash')
-# v1.10.83 - a release that ships its packages replaces node_modules too, and
-# then nothing needs npm. Older packages (or the source zipball) still do.
-$shipped = Test-Path -LiteralPath (Join-Path $newSystem 'node_modules\express\package.json')
-if ($shipped) { $keep = $keep | Where-Object { $_ -ne 'node_modules' } }
-Get-ChildItem -Path $newSystem -Force | Where-Object { $keep -notcontains $_.Name } | ForEach-Object {
-  $dest = Join-Path $SystemDir $_.Name
-  if (Test-Path $dest) { Remove-Item $dest -Recurse -Force -ErrorAction SilentlyContinue }
-  Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force
+$shipped = (Test-Path -LiteralPath (Join-Path $newSystem 'server-bundle.json')) -or
+  (Test-Path -LiteralPath (Join-Path $newSystem 'node_modules\express\package.json'))
+$excludedDirs = @('data', 'Saved Invoices', 'Trash', 'node')
+if (-not $shipped) { $excludedDirs += 'node_modules' }
+$excludedDirs += @($excludedDirs | ForEach-Object { Join-Path $SystemDir $_ })
+$excludedFiles = @('node-dir.txt', (Join-Path $SystemDir 'node-dir.txt'))
+$hiddenBackup = Join-Path $tmp 'hidden-system-items'
+New-Item -ItemType Directory -Path $hiddenBackup -Force | Out-Null
+$hiddenItems = @(Get-ChildItem -LiteralPath $SystemDir -Force | Where-Object { $_.Name.StartsWith('.') })
+foreach ($item in $hiddenItems) {
+  Move-Item -LiteralPath $item.FullName -Destination $hiddenBackup -Force -ErrorAction Stop
 }
-# If the new release ships new launcher/HTA files at root, refresh those too
-Get-ChildItem -Path $sourceRoot -File | Where-Object { $_.Extension -match '\.(hta|command|sh)$' -or $_.Name -match '^Nexuzy Ledger' } | ForEach-Object {
-  Copy-Item -Path $_.FullName -Destination (Join-Path $RootDir $_.Name) -Force
+try {
+  $robocopyArgs = @(
+    $newSystem, $SystemDir, '/MIR', '/MT:16', '/R:2', '/W:1', '/IS', '/IT',
+    '/COPY:DAT', '/DCOPY:DAT', '/XJ', '/NFL', '/NDL', '/NJH', '/NJS',
+    '/XD'
+  ) + $excludedDirs + @('/XF') + $excludedFiles
+  & robocopy.exe @robocopyArgs
+  $copyCode = $LASTEXITCODE
+  if ($copyCode -ge 8) {
+    throw "Robocopy could not apply the update (exit code $copyCode). Close Nexuzy Ledger and try again. Your data was not changed."
+  }
+} finally {
+  foreach ($item in $hiddenItems) {
+    $saved = Join-Path $hiddenBackup $item.Name
+    if (-not (Test-Path -LiteralPath $saved)) { continue }
+    $target = Join-Path $SystemDir $item.Name
+    if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Recurse -Force -ErrorAction Stop }
+    Move-Item -LiteralPath $saved -Destination $SystemDir -Force -ErrorAction Stop
+  }
 }
-# v1.10.83 - a clean update: files an older version had and this one does not
-# are removed. Only for a full release package (never a source zipball, which
-# has no built app), and never the books, saved PDFs, the bin or Node.js.
-if ($shipped) {
-  $shippedNames = @(Get-ChildItem -Path $newSystem -Force | ForEach-Object { $_.Name })
-  $protected = @('data', 'Saved Invoices', 'Trash', 'node', 'node-dir.txt')
-  Get-ChildItem -Path $SystemDir -Force | Where-Object {
-    $shippedNames -notcontains $_.Name -and $protected -notcontains $_.Name -and -not $_.Name.StartsWith('.')
-  } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue }
-  $rootNames = @(Get-ChildItem -Path $sourceRoot -File | ForEach-Object { $_.Name })
-  Get-ChildItem -Path $RootDir -File | Where-Object {
-    ($_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
-  } | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue }
+
+$launchers = @(Get-ChildItem -LiteralPath $sourceRoot -File -Force | Where-Object {
+  $_.Extension -match '^\.(hta|command|sh)$' -or $_.Name -match '^Nexuzy Ledger' -or $_.Name -eq 'READ ME FIRST.txt'
+})
+foreach ($launcher in $launchers) {
+  Copy-Item -LiteralPath $launcher.FullName -Destination (Join-Path $RootDir $launcher.Name) -Force -ErrorAction Stop
 }
+$rootNames = @($launchers | ForEach-Object { $_.Name })
+Get-ChildItem -LiteralPath $RootDir -File -Force | Where-Object {
+  ($_.Name -like 'Nexuzy Ledger - *' -or $_.Name -eq 'READ ME FIRST.txt') -and $rootNames -notcontains $_.Name
+} | Remove-Item -Force -ErrorAction Stop
 
 # --- Step 5: Reinstall dependencies (safest - new package.json may add packages) ---
 if (-not $shipped) { Write-Host '  Re-installing dependencies...' }
@@ -169,6 +225,29 @@ if (-not $npmOk) {
   Write-Host '  then open the app from its icon: it finishes the install by itself.'
   Read-Host '  Press Enter to close'
   exit 1
+}
+
+# A manual ZIP update can be the first successful install on a computer with
+# a missing or stale shortcut. Create working shortcuts only after the new
+# server files are ready.
+$shortcutScript = Join-Path $SystemDir 'app-shortcut.ps1'
+if (Test-Path -LiteralPath $shortcutScript) {
+  . $shortcutScript
+  $shortcutDirs = if ($ShortcutTestRoot) {
+    @((Join-Path $ShortcutTestRoot 'Desktop'), (Join-Path $ShortcutTestRoot 'Programs'))
+  } else {
+    @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))
+  }
+  foreach ($dir in $shortcutDirs) {
+    try {
+      if (-not (Test-Path -LiteralPath $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force -ErrorAction Stop | Out-Null
+      }
+      New-AppShortcut (Join-Path $dir 'Nexuzy Ledger.lnk') $SystemDir
+    } catch {
+      Write-Host "  WARNING: could not create the Nexuzy Ledger shortcut in $dir ($($_.Exception.Message))."
+    }
+  }
 }
 
 # --- Cleanup ---

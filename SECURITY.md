@@ -101,6 +101,6 @@ advisory, unless you would rather stay anonymous.
   Copies hosted anywhere else are not published by us and have not been
   checked.
 - Keep automatic backups on — the updater writes one to
-  `Documents\FreeGSTBill Backups\` before applying any update.
+  `Documents\Nexuzy Ledger  Backups\` before applying any update.
 - Your data never leaves your machine unless you explicitly export it or
   turn on Google Drive backup.

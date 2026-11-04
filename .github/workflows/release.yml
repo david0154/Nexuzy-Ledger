@@ -9,8 +9,21 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            target: win
+            name: windows
+          - runner: macos-latest
+            target: mac
+            name: macos
+          - runner: ubuntu-latest
+            target: linux
+            name: linux
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -29,17 +42,61 @@ jobs:
           node -e "const v = require('./package.json').version; if (process.env.GITHUB_REF_NAME !== 'v' + v) throw new Error('Release tag must be v' + v)"
 
       - name: Install Firefox for packaged smoke tests
+        if: matrix.target == 'win'
         run: npx playwright install firefox
 
       - name: Build and verify the release ZIP
+        if: matrix.target == 'win'
         run: npm run release:zip
 
-      - name: Publish release and attach ZIPs
+      - name: Build staff desktop installer
+        run: node scripts/build-staff-desktop.mjs ${{ matrix.target }}
+
+      - name: Upload staff desktop packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: staff-${{ matrix.name }}
+          path: |
+            release-build/staff-desktop/Nexuzy-Ledger-Staff-*
+            release-build/Nexuzy-Ledger-Staff-*
+          if-no-files-found: error
+
+      - name: Verify all staff package names for this platform
+        shell: bash
+        run: |
+          node -e "const fs=require('fs'); const p='release-build'; const target=process.env.TARGET; const required=target==='win'?['Nexuzy-Ledger-Staff-Windows-Setup.exe']:target==='mac'?['Nexuzy-Ledger-Staff-macOS.dmg']:['Nexuzy-Ledger-Staff-Linux.deb','Nexuzy-Ledger-Staff-Linux.AppImage']; const missing=required.filter(f=>!fs.existsSync(p+'/'+f)); if(missing.length) throw new Error('Missing staff packages: '+missing.join(', ')); console.log('Staff packages verified:', required.join(', '));"
+        env:
+          TARGET: ${{ matrix.target }}
+
+      - name: Upload main application ZIPs
+        if: matrix.target == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: main-app
+          path: |
+            release-build/Nexuzy-Ledger.zip
+            release-build/Nexuzy-Ledger-${{ github.ref_name }}.zip
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all platform packages
+        uses: actions/download-artifact@v4
+        with:
+          path: release-build
+          merge-multiple: true
+
+      - name: Publish release and attach app and staff installers
         uses: softprops/action-gh-release@v2
         with:
           name: Nexuzy Ledger ${{ github.ref_name }}
           generate_release_notes: true
           make_latest: true
           files: |
-            release-build/Nexuzy-Ledger.zip
-            release-build/Nexuzy-Ledger-${{ github.ref_name }}.zip
+            release-build/Nexuzy-Ledger*.zip
+            release-build/Nexuzy-Ledger-Staff-Windows-Setup*.exe
+            release-build/Nexuzy-Ledger-Staff-macOS*.dmg
+            release-build/Nexuzy-Ledger-Staff-Linux*.deb
+            release-build/Nexuzy-Ledger-Staff-Linux*.AppImage

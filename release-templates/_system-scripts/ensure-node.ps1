@@ -259,6 +259,10 @@ function Test-PackagesBroken {
 # 7+ always leaves node_modules\.package-lock.json; the npm 3 that broke
 # installs in ERR-060 never does, so its half-done folders still get redone.
 function Test-PackagesReady([string]$systemDir = $PSScriptRoot) {
+  if ((Test-Path -LiteralPath (Join-Path $systemDir 'server.js')) -and
+      (Test-Path -LiteralPath (Join-Path $systemDir 'server-bundle.json'))) {
+    return $true
+  }
   $nm = Join-Path $systemDir 'node_modules'
   return (Test-Path -LiteralPath (Join-Path $nm 'express\package.json')) -and (Test-Path -LiteralPath (Join-Path $nm '.package-lock.json'))
 }

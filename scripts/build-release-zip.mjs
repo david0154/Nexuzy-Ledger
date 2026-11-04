@@ -13,10 +13,8 @@
 //   └── _system/
 //       ├── package.json
 //       ├── server.js
-//       ├── src/           (source, for parity with the dev repo)
+//       ├── server-bundle.json
 //       ├── dist/          (pre-built app so the user doesn't need `npm run build`)
-//       ├── scripts/
-//       ├── public/
 //       ├── README.md
 //       ├── LICENSE
 //       └── (all install/start/update/backup scripts flattened in)
@@ -29,18 +27,18 @@
 // This script will refuse to proceed if dist/ is missing so users
 // don't get a broken release.
 
-import { readdirSync, statSync, existsSync, mkdirSync, rmSync, copyFileSync, readFileSync, writeFileSync } from 'fs';
+import { readdirSync, statSync, existsSync, mkdirSync, rmSync, copyFileSync, readFileSync, writeFileSync, mkdtempSync } from 'fs';
 import { join, resolve, basename } from 'path';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { tmpdir } from 'os';
+import { build as buildWithEsbuild } from 'esbuild';
 
 const __filename = fileURLToPath(import.meta.url);
 const REPO_ROOT = resolve(__filename, '..', '..');
 const outArg = process.argv.find(a => a.startsWith('--outDir='));
 const OUT_DIR = resolve(REPO_ROOT, outArg ? outArg.split('=')[1] : 'release-build');
 const APP_FOLDER = 'Nexuzy-Ledger';
-const STAGING = join(OUT_DIR, APP_FOLDER);
-const SYSTEM = join(STAGING, '_system');
 
 console.log('\n  Nexuzy Ledger — Release ZIP Builder\n');
 
@@ -57,14 +55,14 @@ if (!existsSync(templates)) {
 }
 const pkgJson = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'));
 const version = pkgJson.version;
+// Build in an isolated temporary directory. Reusing release-build/Nexuzy-Ledger
+// failed on Windows when someone had the previous staging launcher open.
+const BUILD_ROOT = mkdtempSync(join(tmpdir(), 'nexuzy-ledger-release-'));
+const STAGING = join(BUILD_ROOT, APP_FOLDER);
+const SYSTEM = join(STAGING, '_system');
 
-// --- Refresh only this app package; preserve other release-build artifacts ---
+// Keep existing release ZIPs until the new archive has passed structural checks.
 mkdirSync(OUT_DIR, { recursive: true });
-if (existsSync(STAGING)) rmSync(STAGING, { recursive: true, force: true });
-for (const name of [`Nexuzy-Ledger-v${version}.zip`, 'Nexuzy-Ledger.zip']) {
-  const previous = join(OUT_DIR, name);
-  if (existsSync(previous)) rmSync(previous, { force: true });
-}
 mkdirSync(SYSTEM, { recursive: true });
 
 // --- Copy launcher files to root of staging ---
@@ -114,15 +112,9 @@ if (existsSync(scriptsSrc)) {
 }
 assertAsciiOnly(REPO_ROOT, readdirSync(REPO_ROOT));
 
-// --- Copy application build + runtime deps into _system/ ---
-// v1.10.44.1 — Ship only what the RUNTIME needs. Previously we
-// also copied `public/` (Vite source assets, ~15 MB of Tesseract
-// WASM) and `src/` (React source), doubling the ZIP size because
-// `dist/` already contains everything from `public/` (Vite copies
-// it during build). Users don't need the source — they have
-// dist/ (built app) + server.js + package.json. Postinstall
-// regenerates public/tesseract/ from node_modules on first
-// install if anything else needs it.
+// --- Copy application build and metadata into _system/ ---
+// The server is bundled below; the browser application assets are already
+// built into dist/. Neither source trees nor node_modules belong in the ZIP.
 console.log('  → Copying app build + runtime files into _system/…');
 const includeAtSystem = [
   'package.json',
@@ -149,115 +141,47 @@ for (const f of includeAtSystem) {
 // before binding, which the launcher reported only as "Server did not
 // respond in 15s" — no mention of the real cause.
 //
-// src/utils.js is standalone (it imports nothing), so shipping that single
-// file is the whole fix. The rest of src/ stays out.
-mkdirSync(join(SYSTEM, 'src'), { recursive: true });
-copyFileSync(join(REPO_ROOT, 'src', 'utils.js'), join(SYSTEM, 'src', 'utils.js'));
-// v1.10.83 - the server redacts errors.log lines with the Problem log's own
-// rules (standalone too). assertServerImportsResolve() below checks it.
-mkdirSync(join(SYSTEM, 'src', 'utils'), { recursive: true });
-copyFileSync(join(REPO_ROOT, 'src', 'utils', 'errorReport.js'), join(SYSTEM, 'src', 'utils', 'errorReport.js'));
-// The cash book endpoints check entries with the form's own rules (imports ../utils.js only).
-copyFileSync(join(REPO_ROOT, 'src', 'utils', 'cashBook.js'), join(SYSTEM, 'src', 'utils', 'cashBook.js'));
-// Supplier payments are checked on save (#123): purchasePayments.js imports
-// purchaseOrders.js, which imports ../utils.js only.
-for (const f of ['purchasePayments.js', 'purchaseOrders.js']) {
-  copyFileSync(join(REPO_ROOT, 'src', 'utils', f), join(SYSTEM, 'src', 'utils', f));
-}
-
 copyDirRecursive(join(REPO_ROOT, 'dist'), join(SYSTEM, 'dist'));
-// Only ship the scripts that postinstall / release-time need — not the
-// dev-only helpers (tax-test, discount-modes-test, generate-icons,
-// build-release-zip). Keeps ZIP lean and reduces attack surface.
-const runtimeScripts = ['bundle-tesseract-assets.mjs'];
+// Needed only if an older updater falls back to npm install; the normal
+// bundled release does not install dependencies on the user's computer.
 mkdirSync(join(SYSTEM, 'scripts'), { recursive: true });
-for (const s of runtimeScripts) {
-  const src = join(REPO_ROOT, 'scripts', s);
-  if (existsSync(src)) copyFileSync(src, join(SYSTEM, 'scripts', s));
-}
+copyFileSync(join(REPO_ROOT, 'scripts', 'bundle-tesseract-assets.mjs'),
+  join(SYSTEM, 'scripts', 'bundle-tesseract-assets.mjs'));
 
 // --- Create empty data folder so first-run doesn't need to mkdir ---
 mkdirSync(join(SYSTEM, 'data'), { recursive: true });
 
-// v1.10.83 - ship the production packages INSIDE the ZIP, so no user's PC
-// runs npm. Every install failure reported so far happened during
-// `npm install` on the user's machine: an old npm (ERR-060), no internet,
-// an office proxy blocking registry.npmjs.org, antivirus stopping npm half
-// way. All production packages are plain JavaScript, so one copy works on
-// every OS with Node.js 18+. `npm ci` follows package-lock.json exactly;
-// --no-bin-links leaves out node_modules/.bin (nothing runs those);
-// --ignore-scripts because the only install script is our own postinstall,
-// which does nothing in an installed copy anyway.
-console.log('  → Installing the production packages into _system/node_modules…');
+// Bundle the server and its runtime dependencies into one portable ESM file.
+// The injected createRequire preserves Node built-in and dynamic CommonJS
+// requires (for example, Express's optional tty detection) in the ESM bundle.
+console.log('  → Bundling the server and runtime dependencies…');
 try {
-  execFileSync('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund', '--no-bin-links', '--ignore-scripts', '--loglevel=error'],
-    { cwd: SYSTEM, stdio: 'inherit', shell: process.platform === 'win32' });
+  await buildWithEsbuild({
+    entryPoints: [join(REPO_ROOT, 'server.js')],
+    outfile: join(SYSTEM, 'server.js'),
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    target: 'node18',
+    packages: 'bundle',
+    banner: {
+      js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+    },
+  });
 } catch (e) {
-  console.error(`  x npm ci failed in the staging folder: ${e.message}`);
+  console.error(`  x Server bundling failed: ${e.message}`);
   process.exit(1);
 }
-// The updaters and launchers treat this file as "the packages are complete".
-if (!existsSync(join(SYSTEM, 'node_modules', 'express', 'package.json')) || !existsSync(join(SYSTEM, 'node_modules', '.package-lock.json'))) {
-  console.error('  x _system/node_modules is incomplete after npm ci.');
+writeFileSync(join(SYSTEM, 'server-bundle.json'), `${JSON.stringify({
+  format: 'esbuild',
+  target: 'node18',
+  version,
+}, null, 2)}\n`);
+if (!existsSync(join(SYSTEM, 'server.js')) || !existsSync(join(SYSTEM, 'server-bundle.json'))) {
+  console.error('  x The bundled server or its manifest is missing.');
   process.exit(1);
 }
-
-// v1.10.83 - keep only what the SERVER loads. The app's own code (React,
-// jsPDF, tesseract...) is already built into dist/, so shipping those packages
-// again only made the ZIP 58 MB / 12,000 files: a slow first start (antivirus
-// reads every file) and a several-minute update for the old Windows updater.
-// The packages to keep are found by reading the shipped server files' imports,
-// so a new import can never be left out by a stale list; npm then names
-// everything they depend on.
-{
-  const serverFiles = [join(SYSTEM, 'server.js'), ...readdirSync(join(SYSTEM, 'src'), { recursive: true })
-    .filter((f) => /\.m?js$/.test(String(f))).map((f) => join(SYSTEM, 'src', String(f)))];
-  const BUILTIN = /^(node:|fs$|path$|url$|os$|crypto$|child_process$|http$|https$|zlib$|stream$|util$|events$|net$|readline$|buffer$|assert$|worker_threads$|timers$)/;
-  const wanted = new Set();
-  for (const f of serverFiles) {
-    const code = readFileSync(f, 'utf8');
-    for (const m of code.matchAll(/(?:^|\n)\s*import\s[^'"]*?from\s+['"]([^'".][^'"]*)['"]|import\(\s*['"]([^'".][^'"]*)['"]\s*\)/g)) {
-      const spec = m[1] || m[2];
-      if (BUILTIN.test(spec)) continue;
-      wanted.add(spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0]);
-    }
-  }
-  const nm = join(SYSTEM, 'node_modules');
-  // Walk npm's own record of the install (node_modules/.package-lock.json):
-  // each package's dependencies resolve the way Node resolves them, from its
-  // own nested node_modules up to the top.
-  const installed = JSON.parse(readFileSync(join(nm, '.package-lock.json'), 'utf8')).packages || {};
-  const resolve = (from, name) => {
-    for (let dir = from; ; dir = dir.slice(0, Math.max(0, dir.lastIndexOf('/node_modules/')))) {
-      const key = `${dir ? `${dir}/` : ''}node_modules/${name}`;
-      if (installed[key]) return key;
-      if (!dir) return null;
-    }
-  };
-  const keep = new Set();
-  const visit = (key) => {
-    if (!key || keep.has(key)) return;
-    keep.add(key);
-    const p = installed[key];
-    for (const d of Object.keys({ ...p.dependencies, ...p.optionalDependencies, ...p.peerDependencies })) visit(resolve(key, d));
-  };
-  for (const w of wanted) visit(resolve('', w));
-  // Top-level folder of every kept package ("express", "@scope/name").
-  const keepTop = new Set([...keep].map((k) => k.split('node_modules/')[1].replace(/\/$/, '')));
-  let removed = 0;
-  for (const entry of readdirSync(nm)) {
-    if (entry.startsWith('.')) continue;
-    const names = entry.startsWith('@') ? readdirSync(join(nm, entry)).map((s) => `${entry}/${s}`) : [entry];
-    for (const name of names) {
-      if (!keepTop.has(name)) { rmSync(join(nm, name), { recursive: true, force: true }); removed += 1; }
-    }
-    if (entry.startsWith('@') && readdirSync(join(nm, entry)).length === 0) rmSync(join(nm, entry), { recursive: true, force: true });
-  }
-  for (const w of wanted) {
-    if (!existsSync(join(nm, w, 'package.json'))) { console.error(`  x The server needs "${w}" but it is not in the package.`); process.exit(1); }
-  }
-  console.log(`  → Server packages: ${[...wanted].join(', ')} (+ ${keepTop.size - wanted.size} they need); ${removed} app-only packages left out`);
-}
+console.log(`  → Bundled server: ${(statSync(join(SYSTEM, 'server.js')).size / 1024 / 1024).toFixed(2)} MB; no node_modules shipped`);
 
 // v1.10.63 (#54) — Refuse to ship a server that cannot start.
 //
@@ -337,7 +261,7 @@ assertNoDeadProtocolLinks();
 
 // --- ZIP it up ---
 const zipName = `Nexuzy-Ledger-v${version}.zip`;
-const zipPath = join(OUT_DIR, zipName);
+const zipPath = join(BUILD_ROOT, zipName);
 console.log(`  → Creating ${zipName}…`);
 assertUnixLineEndings([STAGING, SYSTEM]);
 try {
@@ -355,10 +279,10 @@ try {
       process.exit(1);
     }
     // Argument arrays, no shell: nothing in a path is ever interpreted.
-    execFileSync(tarExe, ['-a', '-c', '-f', zipPath, '-C', OUT_DIR, APP_FOLDER], { stdio: 'inherit' });
+    execFileSync(tarExe, ['-a', '-c', '-f', zipPath, '-C', BUILD_ROOT, APP_FOLDER], { stdio: 'inherit' });
   } else {
     // Use system zip if available (macOS + most Linux).
-    execFileSync('zip', ['-qr', zipName, APP_FOLDER], { cwd: OUT_DIR, stdio: 'inherit' });
+    execFileSync('zip', ['-qr', zipPath, APP_FOLDER], { cwd: BUILD_ROOT, stdio: 'inherit' });
   }
 } catch (e) {
   console.error('  ❌ Zip step failed:', e.message);
@@ -425,7 +349,7 @@ function assertUnixLineEndings(dirs) {
  * opens cleanly: every entry name must use "/" (the ZIP specification's only
  * separator) and the server must be where the launchers look for it.
  */
-function assertPortableZip(file) {
+function assertPortableZip(file, requiredEntry = `${APP_FOLDER}/_system/server.js`) {
   const buf = readFileSync(file);
   const eocd = buf.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
   if (eocd < 0) {
@@ -459,23 +383,26 @@ function assertPortableZip(file) {
     console.error('\n    Linux, macOS and NAS unzip tools cannot unpack that into folders.\n');
     process.exit(1);
   }
-  if (!names.includes(`${APP_FOLDER}/_system/server.js`)) {
-    console.error(`\n  x ${APP_FOLDER}/_system/server.js is not in the ZIP - the layout is wrong.\n`);
+  if (!names.includes(requiredEntry)) {
+    console.error(`\n  x ${requiredEntry} is not in the ZIP - the layout is wrong.\n`);
     process.exit(1);
   }
   console.log(`  → Verified ${names.length} ZIP entries use portable "/" paths`);
 }
 
 const sizeMB = (statSync(zipPath).size / 1024 / 1024).toFixed(2);
+copyFileSync(zipPath, join(OUT_DIR, zipName));
 const latestZipPath = join(OUT_DIR, 'Nexuzy-Ledger.zip');
 copyFileSync(zipPath, latestZipPath);
 console.log(`\n  ✅ Release built — ${sizeMB} MB`);
+rmSync(BUILD_ROOT, { recursive: true, force: true });
 console.log(`     ${zipPath}\n`);
 console.log(`     Latest-release asset: ${latestZipPath}\n`);
 console.log('  Next steps:');
 console.log('   1. Test locally: extract the ZIP, double-click the launcher for your OS.');
 console.log('   2. Upload the fixed-name asset to GitHub Releases: gh release create v' + version + ' "' + latestZipPath + '" --title "Nexuzy Ledger v' + version + '" --generate-notes');
 console.log('   3. README and installer links automatically follow the latest release.\n');
+rmSync(BUILD_ROOT, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 });
 
 function copyDirRecursive(src, dst) {
   if (!existsSync(src)) return;

@@ -659,6 +659,88 @@ html:not([data-theme="dark"]) .sidebar-free { color: #16a34a; }
   flex: 1;
 }
 
+.account-session {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0.75rem 0.25rem 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.85rem;
+}
+.account-session > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.55rem 0.6rem;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.07);
+  color: #e2e8f0;
+  cursor: pointer;
+  list-style: none;
+}
+.account-session > summary::-webkit-details-marker { display: none; }
+.account-session > summary:hover,
+.account-session[open] > summary { background: rgba(255,255,255,0.13); }
+.account-session > summary:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+.account-session-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+}
+.account-session-label { display: grid; min-width: 0; flex: 1; }
+.account-session-label strong,
+.account-session-label small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-session-label small { margin-top: 2px; color: #94a3b8; font-size: 0.72rem; }
+.account-session-chevron { margin-left: auto; color: #94a3b8; }
+.account-session-menu {
+  position: absolute;
+  z-index: 1250;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #1e293b;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+.account-session-menu button {
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #e2e8f0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.account-session-menu button:hover,
+.account-session-menu button:focus-visible { background: rgba(255,255,255,0.1); }
+@media (min-width: 769px) {
+  .app-layout.sidebar-autohide > .sidebar:not(:hover):not(:has(:focus-visible)) .account-session {
+    margin-right: 0;
+    margin-left: 0;
+    padding-top: 0.5rem;
+  }
+  .app-layout.sidebar-autohide > .sidebar:not(:hover):not(:has(:focus-visible)) .account-session > summary {
+    justify-content: center;
+    padding: 0.35rem 0;
+  }
+  .app-layout.sidebar-autohide > .sidebar:not(:hover):not(:has(:focus-visible)) .account-session-label,
+  .app-layout.sidebar-autohide > .sidebar:not(:hover):not(:has(:focus-visible)) .account-session-chevron {
+    display: none;
+  }
+}
+
 /* Business profile switcher */
 .profile-switcher {
   margin: 0.5rem 0.75rem 0.25rem;

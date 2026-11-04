@@ -277,6 +277,11 @@ export default defineConfig({
       '/api': {
         target: `http://localhost:${activeExpressPort}`,
         changeOrigin: true,
+        configure(proxy) {
+          proxy.on('proxyReq', (proxyReq, req) => {
+            if (req.headers.origin) proxyReq.setHeader('Origin', `http://localhost:${activeExpressPort}`);
+          });
+        },
       }
     }
   }

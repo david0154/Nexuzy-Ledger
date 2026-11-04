@@ -46,7 +46,7 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$SYSTEM_DIR/node_modules" ]; then
+if { [ ! -f "$SYSTEM_DIR/server-bundle.json" ] || [ ! -f "$SYSTEM_DIR/server.js" ]; } && [ ! -d "$SYSTEM_DIR/node_modules" ]; then
   echo "  ℹ  App dependencies not installed yet."
   echo "     This will run: npm install  (2–3 minutes, one-time)"
   echo

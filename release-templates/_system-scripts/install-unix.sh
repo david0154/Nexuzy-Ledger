@@ -15,6 +15,12 @@ if [ -f "$SYSTEM_DIR/check-node.sh" ]; then
   registry_ok || exit 1
 fi
 
+if [ -f "$SYSTEM_DIR/server-bundle.json" ] && [ -f "$SYSTEM_DIR/server.js" ]; then
+  echo ""
+  echo "  The server and its dependencies are already bundled."
+  exit 0
+fi
+
 echo ""
 echo "  Installing app dependencies (npm install)…"
 cd "$SYSTEM_DIR"

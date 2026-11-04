@@ -23,6 +23,18 @@ export const netSalary = (run) => r2(
   - Number(run?.deductions) - Number(run?.tds),
 );
 
+export const cycleAttendanceStatus = (status) => {
+  const sequence = ['', 'P', 'A', 'L'];
+  return sequence[(sequence.indexOf(String(status || '')) + 1) % sequence.length];
+};
+
+export const attendanceDayCounts = (statuses) => statuses.reduce((counts, status) => {
+  if (status === 'P') counts.present += 1;
+  else if (status === 'A') counts.absent += 1;
+  else if (status === 'L') counts.leave += 1;
+  return counts;
+}, { present: 0, absent: 0, leave: 0 });
+
 export function validateEmployee(employee) {
   if (!employee || typeof employee !== 'object' || Array.isArray(employee)) return 'Enter employee details';
   if (!String(employee.name || '').trim()) return 'Employee name is required';

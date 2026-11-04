@@ -1,11 +1,24 @@
-# Running Nexuzy Ledger online: not supported
+# Internet hosting is not supported
 
-An earlier version of this page described hosting the app on Railway, Render, Fly.io, Vercel + Supabase, a VPS or a Cloudflare Tunnel. **Don't follow those steps.** They do not work with the app as it is, and they are not safe:
+Do not host Nexuzy Ledger on Railway, Render, Fly.io, Vercel, a VPS, a public
+IP address, or a Cloudflare Tunnel. The app stores its books as files on one
+host computer and is designed for local business use, not public internet
+access.
 
-- **There is no login on the server.** The app was made for one computer. Anyone who found the web address could read, change or delete every invoice, client and bank detail. The PIN lock only locks the screen in the browser.
-- **The server only listens on the computer it runs on** (`127.0.0.1`), so a hosting service cannot reach it without a code change that removes that protection.
-- **There is no database.** The app saves its books as files in its `data` folder, so Supabase would not be used. On most free hosting plans those files are wiped every time the service restarts.
+## Optional trusted local network access
 
-The full answer, with what to do instead, is in the guide: [Can I put it online?](https://ledger.nexuzy.in/security.html#host-online)
+For staff using more than one device in the same office, an administrator can
+enable **Settings → Users & devices → Enable secure LAN access**. The app then
+serves the same books over HTTPS using a local certificate. Create a separate
+staff account for each person and install the certificate as trusted on every
+device before signing in. The host computer must remain on and reachable; the
+internet is not required.
 
-Nexuzy Ledger is intended for use on the computer where it is installed. It does not provide network access, user accounts or multi-user permissions. Do not expose it to the internet or another device.
+Keep the feature off unless it is needed. If enabled, use a trusted private
+Wi-Fi or wired network, allow the app through the host firewall on private
+networks only, and use a DHCP reservation for a stable host address. Do not
+configure router port forwarding or expose this service to the public internet.
+Turn LAN access off in Settings when it is no longer needed.
+
+See the [user guide](./USER_GUIDE.md#accounts-and-multiple-devices) for setup
+and certificate-trust instructions.

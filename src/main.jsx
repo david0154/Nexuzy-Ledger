@@ -2,12 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
+import AccountGate from './components/AccountGate.jsx'
 import AppLockGate from './components/AppLock.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { toast } from './components/Toast.jsx'
 import { logProblem } from './utils/problemLog'
 import { isChunkLoadError } from './utils/errorReport'
-import { restorePrefs, startMirroring } from './utils/prefsMirror'
+import { restorePrefs, setPrefsMirroringEnabled, startMirroring } from './utils/prefsMirror'
 // v1.10.83 - Inter from the app's own files, not Google Fonts. Each file holds
 // every alphabet with a unicode-range, so the browser fetches only the parts it
 // needs (Latin; Latin-extended has the ₹ sign).
@@ -173,18 +174,34 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // v1.10.77 (#84) - settings the browser has lost come back from the data
 // folder before the first render (the wizard and Region read them on start).
-restorePrefs().then((restored) => {
-  startMirroring(restored)
+let prefsMirroringStarted = false;
+const restoreAndMirrorPrefs = async (event) => {
+  if (event?.type === 'nexuzy-authenticated') {
+    setPrefsMirroringEnabled(event.detail?.role !== 'staff');
+  }
+  if (prefsMirroringStarted) return;
+  const restored = await restorePrefs();
+  if (restored && !prefsMirroringStarted && event?.detail?.role !== 'staff') {
+    prefsMirroringStarted = true;
+    startMirroring(true);
+  }
+};
+const stopPrefsMirroring = () => setPrefsMirroringEnabled(false);
+window.addEventListener('nexuzy-authenticated', restoreAndMirrorPrefs);
+window.addEventListener('nexuzy-unauthenticated', stopPrefsMirroring);
+restoreAndMirrorPrefs().then(() => {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       {/* v1.10.83 - two last lines against a white screen: around the
           PIN gate, and around the app inside it. */}
       <ErrorBoundary>
-        <AppLockGate>
-          <ErrorBoundary>
-            <App />
-          </ErrorBoundary>
-        </AppLockGate>
+        <AccountGate>
+          <AppLockGate>
+            <ErrorBoundary>
+              <App />
+            </ErrorBoundary>
+          </AppLockGate>
+        </AccountGate>
       </ErrorBoundary>
     </StrictMode>,
   )

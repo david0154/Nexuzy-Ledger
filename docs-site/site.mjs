@@ -9,7 +9,7 @@ export const SITE = {
   // social previews and llms.txt, which all need full addresses.
   url: 'https://ledger.nexuzy.in/',
   publisher: { name: 'Nexuzy Lab', url: 'mailto:info@nexuzy.in' },
-  version: '1.10.85',
+  version: '1.10.93',
   repo: 'https://github.com/david0154/Nexuzy-Ledger',
   // Always the newest release: GitHub resolves this to the latest release's
   // file of exactly this name (see docs/RELEASE_CHECKLIST.md, step 4b).

@@ -136,7 +136,7 @@ export default function ControlPanel() {
             </p>
           )}
           {removed.data && !removed.backups && (
-            <p>A last copy of your data was saved in <code>Documents/FreeGSTBill Backups</code> as <code>before-removal-…</code>.</p>
+            <p>A last copy of your data was saved in <code>Documents/Nexuzy Ledger  Backups</code> as <code>before-removal-…</code>.</p>
           )}
         </div>
       </div>
@@ -207,7 +207,7 @@ export default function ControlPanel() {
         <ActionCard
           icon={<Download size={22} />}
           title="Backup Data" doc="control-panel#backup"
-          body="Zips your data folder into ~/Documents/FreeGSTBill Backups/ with a timestamp."
+          body="Zips your data folder into ~/Documents/Nexuzy Ledger  Backups/ with a timestamp."
           buttonLabel={label('backup', 'Create Backup', 'Backing up…')}
           disabled={!!busy || !can('backup')}
           onClick={() => runAction('backup')}
@@ -239,7 +239,7 @@ export default function ControlPanel() {
         <ActionCard
           icon={<FolderOpen size={22} />}
           title="Open Backups Folder"
-          body="Opens ~/Documents/FreeGSTBill Backups/ where every automatic and manual backup ZIP is stored."
+          body="Opens ~/Documents/Nexuzy Ledger  Backups/ where every automatic and manual backup ZIP is stored."
           buttonLabel="Open"
           disabled={!!busy}
           onClick={() => runAction('open-backups-folder')}
@@ -287,7 +287,7 @@ export default function ControlPanel() {
             {[
               ['data', 'My invoices, clients, products and settings (and the daily backups inside the app)'],
               ['pdfs', 'Saved invoice PDFs (the Saved Invoices and Trash folders)'],
-              ['backups', 'All backup files in Documents/FreeGSTBill Backups'],
+              ['backups', 'All backup files in Documents/Nexuzy Ledger  Backups'],
             ].map(([key, text]) => (
               <label key={key}>
                 <input type="checkbox" checked={removeOpts[key]}
@@ -296,7 +296,7 @@ export default function ControlPanel() {
             ))}
           </div>
           {removeOpts.data && !removeOpts.backups && (
-            <p style={{ fontSize: '0.82rem', margin: '0.8rem 0 0' }}>A last copy of your data is saved in <code>Documents/FreeGSTBill Backups</code> first.</p>
+            <p style={{ fontSize: '0.82rem', margin: '0.8rem 0 0' }}>A last copy of your data is saved in <code>Documents/Nexuzy Ledger  Backups</code> first.</p>
           )}
           {removeOpts.data && removeOpts.backups && (
             <p style={{ fontSize: '0.82rem', margin: '0.8rem 0 0', color: '#ef4444' }}><b>Nothing will be left. This cannot be undone.</b> Export a backup first if you may want your books again.</p>

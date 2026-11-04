@@ -14,13 +14,14 @@ needed. If you only have 2 minutes, jump to [Quick Start](#quick-start).
 
 1. [What is this?](#what-is-this)
 2. [Quick Start (Windows)](#quick-start)
-3. [Daily use — making your first invoice](#first-invoice)
-4. [India users vs International users](#india-vs-international)
-5. [Backing up your data](#backup)
-6. [Moving to a new computer](#migrate)
-7. [Common questions (FAQ)](#faq)
-8. [Troubleshooting](#troubleshooting)
-9. [For developers](#developers)
+3. [Accounts and multiple devices](#accounts-and-multiple-devices)
+4. [Daily use — making your first invoice](#first-invoice)
+5. [India users vs International users](#india-vs-international)
+6. [Backing up your data](#backup)
+7. [Moving to a new computer](#migrate)
+8. [Common questions (FAQ)](#faq)
+9. [Troubleshooting](#troubleshooting)
+10. [For developers](#developers)
 
 ---
 
@@ -28,7 +29,7 @@ needed. If you only have 2 minutes, jump to [Quick Start](#quick-start).
 ## 1. What is this?
 
 A free billing & invoicing app you run on your own computer. It works without
-internet, your data stays on your machine, and there is no monthly fee — ever.
+internet, your data stays on the host computer, and there is no monthly fee — ever.
 
 **It can do:**
 - Create tax invoices, quotations / proforma invoices, credit notes, bills of
@@ -43,8 +44,9 @@ internet, your data stays on your machine, and there is no monthly fee — ever.
   for the NIC portal.
 
 **It will not:**
-- Send your data anywhere. There's no signup, no cloud sync (unless you
-  explicitly turn on Google Drive backup), no analytics.
+- Send your data to Nexuzy. There is no cloud account or cloud sync (unless you
+  explicitly turn on Google Drive backup), and no analytics. You can optionally
+  allow signed-in devices on your trusted local network to use the host's data.
 - Charge you. There is no paid tier.
 
 ---
@@ -73,7 +75,8 @@ internet, your data stays on your machine, and there is no monthly fee — ever.
    work out — Mac and Linux users pick theirs.)
    A small window opens with buttons. Click **Install Node & App**.
    - It installs Node.js for you if it is not already on your computer.
-   - It installs the app's dependencies (one-time, takes ~2 minutes).
+   - The release already includes the server and its dependencies, so no npm
+     install or first-run package download is needed.
    - It creates a *Nexuzy Ledger* shortcut on your Desktop and in the
      Start Menu.
 
@@ -103,6 +106,45 @@ folder, run `$env:FREEGSTBILL_DIR = 'D:\Apps\Nexuzy Ledger'` first.
 > required; address, contact details, GSTIN, PAN, and logo are optional and can
 > also be changed later in **Settings**. Use **Skip setup** to configure these
 > details later.
+>
+> **Administrator account:** On first launch, create a local administrator
+> username and a strong password (12 or more characters). This account is
+> required before anyone can access business records. The password is stored
+> as a salted hash, not as readable text.
+
+<a id="accounts-and-multiple-devices"></a>
+## 3. Accounts and multiple devices
+
+The app remains local-only until the administrator turns on **Settings →
+Users & devices → Enable secure LAN access**. On the host, add a separate staff
+account for each person. Staff can create and update business records but
+cannot open Settings, manage users, change company settings, or back up/restore
+the books. The administrator can deactivate a staff account or reset its
+password; each person can also change their own password.
+
+When LAN access is enabled:
+
+1. Keep the host computer on and connected to the same trusted Wi-Fi or wired
+   network. The host stores the only copy of the books; other devices do not
+   synchronize separate databases.
+2. From **Settings → Users & devices**, download the local certificate. Copy
+   it to each device and install it in that device's trusted root certificate
+   store. On Windows, open the certificate, choose **Install Certificate**,
+   select **Current User**, and place it in **Trusted Root Certification
+   Authorities**. On macOS, add it to Keychain Access and set it to **Always
+   Trust**. On phones/tablets, use the device's certificate installation and
+   trust settings.
+3. Open one of the `https://` addresses shown in Settings and sign in with
+   your own account. Use the browser's **Install app** or **Add to Home
+   Screen** option if you want a shortcut.
+4. If a device cannot connect, allow Nexuzy Ledger through the host's firewall
+   on **Private networks only**. A DHCP reservation for the host is recommended
+   so its address remains stable.
+
+This works without internet access, but all devices must be able to reach the
+host over the local network. Do not configure router port forwarding or expose
+the app to the public internet. Turn LAN access off in Settings when it is no
+longer needed.
 
 ### macOS / Linux users
 The `.hta` launcher is Windows-only — use `Nexuzy Ledger - MAC.command` or
@@ -129,7 +171,7 @@ pages get the whole screen.
 ---
 
 <a id="first-invoice"></a>
-## 3. Daily use — making your first invoice
+## 4. Daily use — making your first invoice
 
 1. Click **+ New Invoice** in the top bar.
 2. Pick the invoice type (Tax Invoice / Proforma / Credit Note / Bill of
@@ -138,7 +180,7 @@ pages get the whole screen.
    address and tax ID auto-suggested.
    - Typing the client's **GSTIN** fills in their **State** for you — the first
      two digits of a GSTIN are the state it is registered in. This works with
-     no internet and no account anywhere.
+     no internet lookup or external account.
    - If you mistype a digit, the app says so: every GSTIN carries a checksum
      over its own characters, so a wrong one is caught here instead of when
      your return is rejected. The state and city are never guessed — only the
@@ -167,7 +209,7 @@ choose *OK* to save and exit, or *Cancel* to keep editing.
 ---
 
 <a id="india-vs-international"></a>
-## 4. India users vs International users
+## 5. India users vs International users
 
 The app has a **Region Preference** in *Settings → Region Preference*:
 
@@ -183,7 +225,7 @@ tax label they had when you created them.
 ---
 
 <a id="backup"></a>
-## 5. Backing up your data
+## 6. Backing up your data
 
 **Everything you create is stored in two places:**
 
@@ -213,9 +255,9 @@ To restore: **Settings → Import Data** reads the file back.
 
 ### The manual way (techies)
 
-Just copy the entire app folder somewhere safe. The `_system\data\` and `Saved
-Invoices/` folders are the only thing that matters — `node_modules/` and
-`dist/` can always be regenerated.
+For a complete copy, preserve the entire app folder. At minimum, back up
+`_system\data\` and `Saved Invoices/`; the app bundle and `dist/` can be
+downloaded again from the release ZIP.
 
 ### Automatic Google Drive backup
 
@@ -227,7 +269,7 @@ Drive in a folder of your choosing. Your `_system\data\` JSON files stay local
 ---
 
 <a id="migrate"></a>
-## 6. Moving to a new computer
+## 7. Moving to a new computer
 
 You have three good options. Pick whichever fits.
 
@@ -273,7 +315,7 @@ app on both machines at the same time** — that can corrupt files.
 ---
 
 <a id="faq"></a>
-## 7. Common questions
+## 8. Common questions
 
 **Q: Where exactly is my data?**
 A: In the `_system\data\` folder inside where you installed the app. Plain
@@ -282,7 +324,8 @@ JSON files — you can open them in Notepad if you ever want to inspect them.
 
 **Q: Is anything sent to the internet?**
 A: Only if you turn on Google Drive backup, or click *Update* to fetch a new
-version. Otherwise nothing leaves your computer.
+version. LAN access shares records with signed-in devices on your local network,
+not with the internet.
 
 **Q: I'm not GST-registered. Can I still use this?**
 A: Yes. Pick *Bill of Supply* as the invoice type — no GST is charged. Or set
@@ -356,7 +399,7 @@ feature came from a user named Apurba, for example).
 ---
 
 <a id="troubleshooting"></a>
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### Windows shows "Windows protected your PC" or my antivirus blocked the installer
 
@@ -391,7 +434,7 @@ launcher again and click **Install App**.
 
 ### Update broke something
 Your data folder is untouched, so your bills are safe — and the updater took a
-backup to `Documents\FreeGSTBill Backups\` before it started. Either:
+backup to `Documents\Nexuzy Ledger  Backups\` before it started. Either:
 1. Run the update again — most updates self-heal on a second run.
 2. Or download the previous version from the
    [Releases page](https://github.com/david0154/Nexuzy-Ledger/releases)
@@ -429,7 +472,7 @@ the shipping bill details — a red notice at the top of GST Returns lists them.
 ---
 
 <a id="developers"></a>
-## 9. For developers
+## 10. For developers
 
 The code is React 19 + Vite 7 on the frontend, Express 5 on the backend, all
 in JavaScript (no TypeScript). Persistence is plain JSON files in `data/`.

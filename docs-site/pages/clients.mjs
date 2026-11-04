@@ -74,6 +74,16 @@ export default [
 <p>Changing a client's details does not change invoices already made: each invoice keeps the details it was saved with. To correct one, open it, pick the client again under <b>Client Name</b>, and save.</p>
 </section>
 
+<section id="billing-defaults">
+<h2>Party-wise billing defaults</h2>
+<p>In the client's form, <b>Billing defaults</b> can set a whole-bill discount and a price list for new invoices. Both are optional and apply when you select this client on a new invoice; they do not change invoices already saved.</p>
+<ul>
+  <li><b>Default discount</b>: a percentage from 0 to 100, pre-filled as the whole-bill discount on new invoices for this client. Leave it blank if there is no default discount.</li>
+  <li><b>Price list</b>: <b>Retail (default)</b> uses the product's retail price. <b>Wholesale</b> uses its wholesale price when one is set.</li>
+</ul>
+<p>Set the product's wholesale price in <a href="products.html#add-product">Products</a>. You can still change the discount and item prices on an individual invoice.</p>
+</section>
+
 <section id="foreign-client">
 <h3>Clients abroad</h3>
 <p>Pick the client's country. For a country other than India:</p>

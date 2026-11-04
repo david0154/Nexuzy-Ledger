@@ -14,7 +14,7 @@
 
 **Create GST-compliant invoices, prepare GSTR-1 / GSTR-3B data, reconcile GSTR-2B, track TDS / TCS, bill international clients in 22 currencies and manage inventory — all without paying a single rupee. Ever.**
 
-**Free forever. Works on your computer, even offline. No tracking. No ads. No signup.**
+**Free forever. Works on your computer, even offline. No tracking. No ads. No online signup.**
 
 Your data never leaves your computer. No cloud and no limits. Open source, so you can [check every claim yourself](#dont-trust-us-check-it-in-2-minutes).
 
@@ -34,9 +34,9 @@ Your data never leaves your computer. No cloud and no limits. Open source, so yo
 
 ## 🔒 Is it safe? Yes — here is why
 
-- **Your data never leaves your computer.** Invoices, clients and settings are plain files in the app's own folder. No cloud server of ours, nothing to leak.
-- **No account, no login, no ads, no tracking.** No analytics, and none of your business data is ever sent to us.
-- **Other computers cannot open it.** The app's server listens only on `127.0.0.1`, this computer itself, and refuses requests from other websites.
+- **Your data stays on the host computer.** Invoices, clients and settings are plain files in the app's own folder. No cloud server of ours, nothing to leak.
+- **Local accounts, no cloud signup.** Create an administrator account on first launch, then optionally add staff. No analytics, and none of your business data is sent to us.
+- **LAN access is off by default.** The app listens only on `127.0.0.1` unless an administrator explicitly enables HTTPS access for a trusted local network. It is not designed to be exposed to the public internet.
 - **Open source — check every line.** The full code is right here under the MIT licence; the release ZIP is built from it with `npm run release:zip`.
 - **No admin rights needed.** It installs into your own user folder, and your data is backed up automatically every day.
 - **Works offline, and says what it connects to.** On its own it contacts only GitHub for update checks — plus your own Google Drive, only if you connect it. Even its font is built in.
@@ -119,13 +119,13 @@ for how to choose a different folder.
 
 The launcher:
 - Detects if Node.js is installed; installs it on Windows automatically if missing
-- Runs `npm install` inside `_system/` (one-time, ~2 min)
+- Ships the server and its dependencies as a single bundled file; no npm install is needed
 - Creates a **Desktop shortcut** + **Start-Menu entry** so you never open the folder again
 - Starts the server and opens your browser at **http://localhost:47371**
 
 From then on, click the **Nexuzy Ledger** icon on your Desktop: it starts the app and opens it in its own window. To update / backup / restore / move to another PC / stop the server, use the in-app **⚙ Control Panel** in the sidebar (or the launcher in the app folder). No batch files, no CMD windows.
 
-> **Can I host it online or open it from another device?** No. Nexuzy Ledger is designed for one computer and listens only on that computer. It has no server-side login or multi-user access, so do not expose it to the internet or your local network.
+> **Can my team use it on more than one device?** Yes. Create individual administrator and staff accounts, then optionally enable secure HTTPS access for trusted devices on your private LAN in **Settings → Users & devices**. The host computer must stay on; internet is not required. LAN access is off by default. Do not expose the app to the public internet. See the [account and device guide](https://ledger.nexuzy.in/security.html#network).
 
 ---
 
@@ -297,7 +297,7 @@ Every 🆕 row below is a feature we shipped in v1.10 that competitors either pa
 | **Offline-first (works without internet)** | ✅ | ✅ | ⚠ Limited | ❌ Cloud | ❌ Cloud |
 | **Your data on YOUR computer (no cloud)** | ✅ | ✅ | ⚠ Cloud sync | ❌ Cloud | ❌ Cloud |
 | **Open-source (MIT licensed)** | ✅ | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary | ❌ Proprietary |
-| **No signup / no email collected** | ✅ | ✅ | ❌ Phone+OTP | ❌ Email login | ❌ Email login |
+| **No online signup / no email collected** | ✅ | ✅ | ❌ Phone+OTP | ❌ Email login | ❌ Email login |
 | **Recurring invoices auto-generation** | ✅ | ✅ | ⚠ Paid | ✅ | ⚠ |
 | 🆕 **9 one-click design presets (Modern / Corporate / Retail Brand / …)** | ✅ | ❌ | ⚠ 2-3 templates (paid tier) | ⚠ Paid | ❌ |
 | 🆕 **Split-view live preview (settings + preview side-by-side)** | ✅ | ❌ | ❌ | ⚠ Small preview | ❌ |
@@ -551,9 +551,13 @@ Every install (the launcher, the one-line command, Mac and Linux) puts a **Nexuz
 
 > Use only this icon. Don't use the browser's own **Install app** button (in Chrome or Edge's address bar): that icon opens a window but cannot start the app, so after a restart it only shows "Needs a Quick Start". If you already have one, right-click it and choose **Uninstall**.
 
-### Online hosting and network access: not supported
+### Public hosting is not supported; secure local-network access is optional
 
-Nexuzy Ledger has no server-side user accounts or roles. Keep it on the computer where it is installed; do not expose it to the internet or other devices. See [Can I put it online?](https://ledger.nexuzy.in/security.html#host-online).
+Nexuzy Ledger includes a local server, administrator and staff accounts, and
+preset staff roles. The administrator can optionally enable HTTPS for trusted
+devices on the same private LAN; the host computer must remain on. This is not
+internet hosting: do not configure router port forwarding or expose the app
+publicly. See the [account and device guide](https://ledger.nexuzy.in/security.html#network).
 
 ## How to Self-File GST Returns
 
@@ -599,6 +603,17 @@ The app includes a **step-by-step interactive filing guide** with screenshots an
 This table describes what is in the current app. “Partial” means the workflow
 needs a manual portal step or only part of the requested capability is present.
 
+### What you can do
+
+| Area | Included features |
+|---|---|
+| **Billing and getting paid** | GST tax invoices, bills of supply, quotations, credit notes and delivery challans; PDF printing; receipts; payment status; overdue alerts and user-triggered WhatsApp reminders. |
+| **GST and tax preparation** | GSTR-1 and GSTR-3B exports, GSTR-2B matching, e-way bills, TDS/TCS reporting, LUT/export invoices, and an ITR-4 filing-summary PDF. Filing and IRN generation still require the relevant government portal. |
+| **Products, purchasing and production** | Product and stock tracking, barcode lookup, purchase bills and purchase orders, and optional bill-of-materials manufacturing that consumes raw-material stock and records production costs. |
+| **Costs and reports** | Expenses, cash book, profit and loss, cost-centre tracking for sales/purchases/expenses, stock reports, and cash-flow/partial working-capital views. The balance snapshot is not a complete or audited balance sheet. |
+| **People and team access** | Employee records, monthly salary runs, printable payslips, and daily present/absent/leave attendance. Local staff accounts have selectable Billing, Accounts, Inventory and Payroll roles, or a read-only role; secure private-LAN device access is optional. |
+| **Backups and data portability** | Automatic and manual backups, restore, business-specific books, and CSV/Excel exports for supported registers. |
+
 | Feature | Current availability |
 |---|---|
 | Bank statement import and ITR summary | Available: common-bank CSV formats plus a generic-column fallback, and an ITR-4 filing-summary PDF. PDF and Excel bank statements are not imported. The PDF is a preparation aid, not a portal-ready ITR return. See [Income Tax Helper](./docs/TAX_HELPER_PLAN.md). |
@@ -612,9 +627,9 @@ needs a manual portal step or only part of the requested capability is present.
 | Payment reminders | In-app overdue notifications and user-triggered WhatsApp reminders are available. Automated email or scheduled WhatsApp reminders are not. |
 | Languages | Some invoice/PDF section labels are available in English, Hindi, Tamil, Marathi and Bengali. The full application UI is not translated; Telugu and Gujarati are not supported. |
 | Barcode scanning | Available for products and invoice line items using a camera in supported browsers. |
-| Multi-user roles, customer portal and payroll | Not available. This is a local, single-user app; there is no shareable customer portal or payroll module. |
+| Multi-user roles, payroll and attendance | Local administrator/staff accounts support Billing, Accounts, Inventory and Payroll roles (one or more per staff account), plus a read-only role. Role checks restrict available sections, record reads and server-side changes. An administrator can opt in to secure HTTPS access from trusted private-LAN devices; the host must remain on. Payroll includes employee records, monthly salary runs, payslips and daily present/absent/leave attendance. There is no customer portal, and this is not public-internet hosting. |
 | Inventory | Stock tracking, barcode lookup and manufacturing features are available. Batch/expiry tracking and warehouse management are not. |
-| Financial reports | Profit & Loss, stock and cash-book reports are available. A formal Balance Sheet and Cash Flow statement are not. |
+| Costing and financial reports | Cost centres track sales, purchases and expenses; bill-of-materials production records material usage and production cost. Profit & Loss, stock and cash-book reports are available, with cash-flow and partial working-capital views. The balance snapshot is not a formal, complete Balance Sheet. |
 | Discounts and price lists | Invoice-level and line-level discount modes are available. Party-specific discount defaults and multiple price lists are not. |
 | Orders and product variants | Purchase orders are available. Sales orders and size/colour variants are not. |
 | WhatsApp | Manual sharing through WhatsApp Web is available. The WhatsApp Business API and automated dispatch are not. |
@@ -667,7 +682,7 @@ Nexuzy Ledger is developed by Nexuzy Lab. It is:
 
 - **Open-source** under the MIT license — fork it, modify it, use it commercially
 - **Community-driven** — features are built based on what users actually need
-- **No hidden charges** — no premium tier, no ads, no data collection, no signup wall
+- **No hidden charges** — no subscription or premium tier, no ads, and no email or business-data collection
 - **No vendor lock-in** — your data is plain JSON files. Take them anywhere, anytime
 
 We believe every business in India deserves professional billing software without paying monthly fees.
@@ -696,33 +711,75 @@ If the app saves you time, you can help keep it going:
 
 | Question | Answer |
 |----------|--------|
-| **Where is my data stored?** | In a `data/` folder on your computer as plain JSON files. No server, no cloud, no database. |
-| **Can anyone access my invoices?** | No. The app runs on `localhost` — not accessible from the internet or other computers. |
+| **Where is my data stored?** | In a `data/` folder on the host computer as plain JSON files. The app has a local server, but there is no Nexuzy-hosted server, cloud sync, or database. |
+| **Can anyone access my invoices?** | By default, only the host computer can connect. An administrator can optionally enable HTTPS for signed-in devices on a trusted local network. Do not expose it to the internet. |
 | **What if I uninstall?** | **Control Panel → Remove…** removes the app and its icons in one click. Tick boxes choose whether your data, PDFs and backups go too; by default your `data/` folder stays, and reinstalling brings everything back. |
-| **Do I need internet?** | Only to download the app and its updates. Everything else works offline. Turn on **Offline mode** (Settings → Privacy & internet) and it never goes online by itself. |
+| **Do I need internet?** | Only to download the app and its updates. A staff computer without Node.js also downloads the official portable runtime once when installing the staff client. After setup, business use and LAN discovery work offline. |
 | **How do I backup?** | Settings → Export Data → save JSON file. Import on any machine. |
 
-### Running on a shop LAN (POS tablets)
+### Create administrator and staff accounts; use multiple devices
 
-Since v1.10.0, the Express server accepts requests only from
-`localhost` (`127.0.0.1`, `[::1]`). If you run the server on one
-machine and access it from a POS tablet on the same Wi-Fi:
+1. On the host computer, launch Nexuzy Ledger. On first launch, create the
+   business **administrator account** when prompted. This is the app's account,
+   not a Windows administrator account. Use it to manage the business and
+   create staff logins.
+2. Sign in as administrator, open **Settings** from the left menu, and choose
+   **Users & devices**.
+3. Under **Staff accounts**, enter a unique username and a temporary password
+   of 6–16 characters, choose one or more access roles, then click
+   **Add staff**. Billing covers invoices and clients; Accounts covers expenses,
+   purchases and reports; Inventory covers products and stock; Payroll covers
+   employee and attendance records. **Read-only** can view sections but cannot
+   change business records, and must be assigned by itself. Existing staff keep
+   their current access until the administrator changes their roles. Give each
+   person their own account; the administrator can later change roles, reset a
+   password or deactivate the account.
+4. Give each staff member their own username and password. Staff sign in to the
+   same business with the role-based access selected by the administrator;
+   they do not create another administrator or a separate set of books.
+5. To connect staff computers, click **Enable secure LAN access** in the same
+   settings section. On the host, click **Trust this host certificate** to add
+   the Nexuzy Lab Local Network CA to Windows or macOS user trust automatically.
+   Install the provided local certificate as trusted on each staff
+   device, then download the separate
+   [Nexuzy Ledger Staff desktop app](https://github.com/david0154/Nexuzy-Ledger/releases/latest)
+   for Windows (Setup EXE), macOS (DMG), or Linux (DEB or AppImage). Install
+   it once and use its desktop icon to open the staff app in its own window,
+   discover the host, and sign in. It does not start a business server or
+   create another administrator. If discovery is blocked, enter the host name
+   (for example `office-pc.local`) and the port shown in Users & devices.
+   Staff do not need to open a browser to use the client.
 
-1. Find the server machine's LAN IP (e.g. `192.168.1.42`).
-2. Open [server.js](server.js), find the CORS middleware near the top
-   (search for `v1.10.0 — CORS lockdown`), and add your LAN origin
-   to the allowlist regex:
+   **Certificate trust details:** The private Nexuzy Lab LAN root is generated
+   locally and never bypasses TLS verification. Keep the root and intermediate
+   certificate stores separate: the Nexuzy root belongs under
+   **Trusted Root Certification Authorities** on Windows. Do not install the
+   separate Smallstep Workloads Intermediate certificate as the root.
 
-   ```js
-   /^https?:\/\/192\.168\.1\.42(:\d+)?$/i.test(origin) ||
-   ```
+   - **Windows host or staff PC:** open **Nexuzy-Lab-LAN-CA.cer**, choose
+     **Install Certificate → Current User → Place all certificates in the
+     following store → Trusted Root Certification Authorities**, then finish.
+     The app can also install the certificate on the host with
+     **Trust this host certificate**.
+   - **macOS:** double-click the downloaded certificate, add it to the login
+     keychain, open **Keychain Access**, then set the certificate's trust to
+     **Always Trust**. The host's automatic button uses the same trust result.
+   - **Linux:** copy the downloaded PEM certificate to
+     `/usr/local/share/ca-certificates/nexuzy-lab-lan-ca.crt`, then run
+     `sudo update-ca-certificates`. Desktop Chromium or Electron may also need
+     to be restarted.
 
-3. Restart the server.
-4. From the tablet's browser, hit `http://192.168.1.42:47371/`.
+   **One-time setup:** Windows Setup creates a desktop shortcut. On macOS,
+   open the DMG, drag the app into **Applications**, and open it once; it
+   creates a desktop alias. On Linux, install the DEB with your software
+   installer (which adds the app launcher), or open the AppImage once to add a
+   desktop launcher.
 
-If you don't lock the middleware to specific IPs, any device on the
-same Wi-Fi (including guests) can hit your server. That's the trade —
-the default is safest, LAN access is opt-in.
+The host computer must stay on; all devices use its one set of books. This
+works without internet but requires the devices to reach the host over the
+same trusted local network. Allow the app through the host firewall on private
+networks if prompted. Do not add a CORS exception, configure router port
+forwarding, or expose the server to the public internet.
 
 ---
 
@@ -790,7 +847,7 @@ Free-GST-Billing-Software/
 
 ## Troubleshooting: fix it yourself
 
-Find the message you see. **None of these touch your invoices**: they stay in the `_system\data` folder inside the app folder, and every update backs them up first to `Documents\FreeGSTBill Backups`.
+Find the message you see. **None of these touch your invoices**: they stay in the `_system\data` folder inside the app folder, and every update backs them up first to `Documents\Nexuzy Ledger  Backups`.
 
 > The `_system` folder is hidden. To see it in File Explorer: **View → Show → Hidden items**.
 
@@ -800,8 +857,8 @@ Find the message you see. **None of these touch your invoices**: they stay in th
 | **"Windows protected your PC"** | The app isn't code-signed (a certificate costs about $300 a year). Click **More info → Run anyway**. |
 | Mac: **"could not be executed because you do not have appropriate access privileges"** | Open **Terminal**, type `chmod +x ` (with a space), drag **Nexuzy Ledger - MAC** into the window, press Enter, and open it again. Downloads from v1.10.82 don't need this. |
 | Mac: **"cannot be opened because Apple cannot check it"** / **"unidentified developer"** | The app isn't signed by Apple. **Control-click** the file → **Open** → **Open**, once. Or **System Settings → Privacy & Security → Open Anyway**. |
-| **"Node.js … is too old"**, **`npm ERR!`**, or a file named **`npm-debug.log`** in `_system` | The PC has an old Node.js. **v1.10.81 and later fix this themselves**: click **Install** or **Open App** again. On an older version: install **Node.js LTS** from [nodejs.org](https://nodejs.org), delete **only** `_system\node_modules`, then click **Install**. Never delete `_system\data`. |
-| **"could not install the app's dependencies"** / **"cannot reach the internet"** | The first install needs the internet. Check the connection; in an office, a proxy or firewall may block `registry.npmjs.org`. Click **Install** again: it carries on where it stopped. |
+| **"Node.js … is too old"** | Install **Node.js LTS** from [nodejs.org](https://nodejs.org), then click **Install** or **Open App** again. Releases from v1.10.89 include the server dependencies and do not run npm on first launch. Never delete `_system\data`. |
+| **`npm ERR!`** or **"could not install the app's dependencies"** | This usually means an older release or a source-code install. Confirm Node.js LTS is installed and internet access is available for npm, then run the installer again. Never delete `_system\data`. |
 | **"Still starting…"** / **"The server has not answered in 90 seconds"** | The first start after an install or update is slow while antivirus checks the new files. Wait a minute and open <http://localhost:47371>. Still nothing? Close the black window and open the app again from its icon. |
 | **"Nexuzy Ledger is already installed on this computer, in: …"** | You extracted a new ZIP into a new folder. Your invoices are in the folder it names: click **Update the installed copy** in the launcher, then delete the new folder. |
 | **"The app cannot write to its own folder"** | Don't keep it in `C:\Program Files`. Move the whole Nexuzy-Ledger folder to Documents or `D:\` and open it from there. |
@@ -847,7 +904,7 @@ Yes. You can add unlimited business profiles (each with its own GSTIN, bank acco
 The `.hta` launcher is Windows-only, but the app itself works on macOS and Linux — a NAS included — from the release ZIP (`Nexuzy Ledger - LINUX.sh`) or via `npm install` + `npm start`. See the [Quick Start](#quick-start--installation) section. From v1.10.66, **Control Panel → Update Now** also works on Linux / NAS installs made from the release ZIP (it needs `unzip` or python3); restart the app, or its container, afterwards.
 
 ### What happens to my data when the app updates?
-Updates only refresh the app code and dependencies. Your `data/` folder (invoices, clients, products, settings) and `Saved Invoices/` PDF archive are **never touched**. The updater also saves a backup ZIP to `Documents\FreeGSTBill Backups` before it changes anything.
+Updates only refresh the app code and dependencies. Your `data/` folder (invoices, clients, products, settings) and `Saved Invoices/` PDF archive are **never touched**. The updater also saves a backup ZIP to `Documents\Nexuzy Ledger  Backups` before it changes anything.
 
 ### Is there a mobile app?
 No. Nexuzy Ledger is a local desktop app and is not designed to be accessed from a phone or tablet over the network.
@@ -882,7 +939,7 @@ This project is licensed under the [MIT License](LICENSE) — free to use, modif
 
 **Nexuzy Ledger** by Nexuzy Lab · MIT Licensed
 
-<sub>Free GST billing software India · Free GST invoice software for small business · Open source GST billing software · Free alternative to Tally Prime Vyapar Zoho Books ClearTax myBillBook Marg ERP · No subscription invoice software · Offline billing software India · GSTR-1 GSTR-3B filing software free · GSTR-2B reconciliation tool free · TDS Form 26Q TCS Form 27EQ software · Section 194Q 206C(1H) TCS calculator with ₹50 lakh threshold · UTGST invoice software · CGST SGST IGST auto calculator · E-way bill JSON generator free · HSN SAC code invoice generator · Bill of Supply generator · Delivery Challan software · Credit Note Debit Note software · Proforma invoice estimate software · Composition scheme invoice · UPI QR invoice maker · Thermal receipt printer software 58mm 80mm · Direct vector thermal print software · POS billing software free India · Retail shop kirana billing software · Restaurant cafe billing software · Freelancer consultant invoice software India · Multi-currency invoice generator (USD EUR GBP AED SGD AUD JPY) 22 countries · Country-aware VAT SST MwSt TVA PPN tax labels · Recurring invoice software · Payment receipt voucher software · Bulk PDF invoice export · Google Drive backup billing software · Automatic daily backup + Trash bin · Multi-business multi-GSTIN switcher · Multi-language invoice Hindi Tamil Marathi Bengali · Dark mode PWA billing app · Rich-text Terms & Conditions with 13 India presets · OCR bill scan tesseract · Ctrl+K command palette · Split-view live PDF preview · Income Tax (ITR) computation old vs new regime 234B 234C · Client credit balance carry-forward · Watermark DUPLICATE DRAFT PDF · Rule 48 multi-copy (Original Duplicate Triplicate) · WhatsApp share invoice PDF · Self-file GST return software · GST invoice software without subscription · No signup no login billing software · Vyapar alternative open source · Tally alternative free · Zoho Books alternative · ClearTax alternative · myBillBook alternative · Marg ERP alternative · Made in India</sub>
+<sub>Free GST billing software India · Free GST invoice software for small business · Open source GST billing software · Free alternative to Tally Prime Vyapar Zoho Books ClearTax myBillBook Marg ERP · No subscription invoice software · Offline billing software India · GSTR-1 GSTR-3B filing software free · GSTR-2B reconciliation tool free · TDS Form 26Q TCS Form 27EQ software · Section 194Q 206C(1H) TCS calculator with ₹50 lakh threshold · UTGST invoice software · CGST SGST IGST auto calculator · E-way bill JSON generator free · HSN SAC code invoice generator · Bill of Supply generator · Delivery Challan software · Credit Note Debit Note software · Proforma invoice estimate software · Composition scheme invoice · UPI QR invoice maker · Thermal receipt printer software 58mm 80mm · Direct vector thermal print software · POS billing software free India · Retail shop kirana billing software · Restaurant cafe billing software · Freelancer consultant invoice software India · Multi-currency invoice generator (USD EUR GBP AED SGD AUD JPY) 22 countries · Country-aware VAT SST MwSt TVA PPN tax labels · Recurring invoice software · Payment receipt voucher software · Bulk PDF invoice export · Google Drive backup billing software · Automatic daily backup + Trash bin · Multi-business multi-GSTIN switcher · Multi-language invoice Hindi Tamil Marathi Bengali · Dark mode PWA billing app · Rich-text Terms & Conditions with 13 India presets · OCR bill scan tesseract · Ctrl+K command palette · Split-view live PDF preview · Income Tax (ITR) computation old vs new regime 234B 234C · Client credit balance carry-forward · Watermark DUPLICATE DRAFT PDF · Rule 48 multi-copy (Original Duplicate Triplicate) · WhatsApp share invoice PDF · Self-file GST return software · GST invoice software without subscription · Local accounts no cloud signup billing software · Vyapar alternative open source · Tally alternative free · Zoho Books alternative · ClearTax alternative · myBillBook alternative · Marg ERP alternative · Made in India</sub>
 
 Made in India · Developed by Nexuzy Lab · [Optional donation](https://razorpay.me/@nexuzylab) · [info@nexuzy.in](mailto:info@nexuzy.in)
 

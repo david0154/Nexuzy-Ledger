@@ -178,8 +178,13 @@ if (Test-Path $portFile) {
 function TestServerUp {
   param([int]$p)
   try {
-    Invoke-WebRequest -Uri "http://127.0.0.1:$p/api/profile" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop | Out-Null
-    return $true
+    $response = Invoke-WebRequest -Uri "http://127.0.0.1:$p/api/health" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+    $health = $response.Content | ConvertFrom-Json -ErrorAction Stop
+    if ($health.ok -ne $true -or -not $health.pid) { return $false }
+    $serverPid = [int]$health.pid
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$serverPid" -ErrorAction Stop
+    $expectedServer = (Join-Path $SystemDir 'server.js').ToLowerInvariant()
+    return ($process.Name -ieq 'node.exe' -and $process.CommandLine -and $process.CommandLine.ToLowerInvariant().Contains($expectedServer))
   } catch { return $false }
 }
 
@@ -187,7 +192,7 @@ function TestServerUp {
 # or address bar, so the app looks like a program. Otherwise: a browser tab.
 # FREEGSTBILL_TEST (the installer's test mode) opens nothing.
 function Open-App([int]$p) {
-  $url = "http://localhost:$p/"
+  $url = "http://127.0.0.1:$p/"
   if ($env:FREEGSTBILL_TEST) { Write-Host "  (test mode: would open $url)"; return }
   if ($AppWindow) {
     foreach ($d in @(${env:ProgramFiles(x86)}, $env:ProgramFiles, $env:LOCALAPPDATA)) {

@@ -269,6 +269,12 @@ export default [
 <p><b>A column such as HSN or Discount is missing.</b> It is turned off under ${ui('Customize')}, in <a href="invoice-options.html#show-items">Items table</a>.</p></div>
 </section>
 
+<section id="price-list">
+<h2>Retail and wholesale price lists</h2>
+<p>At the top of the Line Items card, choose <b>Retail</b> or <b>Wholesale</b> before adding a product. Retail uses the product's selling price; Wholesale uses its wholesale price when one is saved. If a product has no wholesale price, its retail price is used instead.</p>
+<p>The choice affects products you add after selecting it; it does not change prices already entered on the invoice. To set a client's default list, use <a href="clients.html#billing-defaults">Billing defaults</a> in that client's form.</p>
+</section>
+
 <section id="delivery-charges">
 <h3>Delivery charges</h3>
 <p>${ui('Delivery charges')} adds one <b>Delivery charges</b> line with SAC 996812. Type the amount in its <b>Rate</b>. The button goes away once the line is there; remove the line with its bin to add it again.</p>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Home, FileText, Settings, Plus, Users, Package, BarChart3, Wallet, RefreshCw, Receipt, BookOpen, Moon, Sun, Download, X, ShoppingCart, ChevronDown, Building2, Pencil, HelpCircle, Search, Command, Bell, Calculator, HardDrive, Menu, Heart, Banknote } from 'lucide-react';
 import { getAllProfiles, saveProfile, getEnabledModules, getMenuOrder, onMenuChanged, getAllBills, getAllProducts, getStockAlertSettings, getAllClients, runUpdateNow, getLockStatus } from './store';
 import { isModuleEnabled, getUpcomingFilings, countsAsSales, localToday, toLocalIsoDate, DOCS_URL, findLowStock, trackedStock } from './utils';
@@ -41,8 +41,11 @@ const SupportView = lazy(() => import('./components/SupportView'));
 import StarBanner from './components/StarBanner';
 import AppFooter from './components/AppFooter';
 import LockButton from './components/LockButton';
+import { AccountSessionMenu } from './components/AccountGate';
 import OfflineModeButton from './components/OfflineModeButton';
 import { isOfflineMode } from './utils/offlineMode';
+import { useAuth } from './utils/authContext';
+import { canOpenRoleView, userHasModuleAccess } from './utils/accessRoles';
 import HelpButton from './components/HelpButton';
 import { lockNow } from './utils/appLock';
 import { getPrintSettings } from './utils/printSettings';
@@ -69,11 +72,13 @@ function ViewLoading() {
 const MENU_BRAND_KEY = 'gst_menuBrand';
 
 function App() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   // v1.9.3 — Setup Wizard shown on first-run (before onboardingComplete = true)
   const [showWizard, setShowWizard] = useState(() => {
     try { return !getPrintSettings().onboardingComplete; } catch { return false; }
   });
-  const [currentView, setCurrentView] = useState(() => {
+  const [currentView, setCurrentViewState] = useState(() => {
     // PWA manifest "shortcuts" deep-link in via ?view=X (e.g. right-clicking
     // the pinned taskbar icon → "New Invoice" opens /?view=new). Honour that
     // before falling back to whatever the user was last looking at.
@@ -86,13 +91,28 @@ function App() {
         // Strip the query string so a refresh doesn't keep snapping back to
         // the shortcut target — only the *first* navigation honours it.
         window.history.replaceState({}, '', window.location.pathname);
+        if (!canOpenRoleView(user, v)) return 'dashboard';
         return v;
       }
     } catch { /* sandboxed history API — fall through */ }
     // 'guide' was the built-in User Guide (removed in v1.10.75).
     const last = sessionStorage.getItem('gst_currentView');
-    return last && last !== 'guide' ? last : 'dashboard';
+    return last && last !== 'guide' && canOpenRoleView(user, last) ? last : 'dashboard';
   });
+  const setCurrentView = useCallback((nextView) => {
+    if (typeof nextView === 'function') {
+      setCurrentViewState((current) => {
+        const target = nextView(current);
+        return canOpenRoleView(user, target) ? target : current;
+      });
+      return;
+    }
+    if (!canOpenRoleView(user, nextView)) {
+      toast('Your account does not have permission to open that section.', 'error');
+      return;
+    }
+    setCurrentViewState(nextView);
+  }, [user]);
   const [profile, setProfile] = useState(null);
   // v1.10.83 - the menu's own name and logo, as last shown (see `brand` below).
   const [menuBrandCache] = useState(() => {
@@ -347,10 +367,6 @@ function App() {
             profileLoaded.current = true;
             const p = await res.json();
             setProfile(p);
-            if (!p.businessName) {
-              setShowWizard(true);
-              if (!localStorage.getItem('freegstbill_onboarded')) setShowWelcome(true);
-            }
           }
           return;
         }
@@ -374,6 +390,12 @@ function App() {
       if (retryTimer.current) clearInterval(retryTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin || !profile || profile.businessName) return;
+    setShowWizard(true);
+    if (!localStorage.getItem('freegstbill_onboarded')) setShowWelcome(true);
+  }, [isAdmin, profile]);
 
   // v1.10.83 - the "Install as Desktop App" banner is gone. The browser icon
   // it made opens only a browser window: it cannot start the app's server, so
@@ -454,7 +476,13 @@ function App() {
     setSidebarAutoHide(on);
     try { localStorage.setItem('freegstbill_sidebarAutoHide', on ? '1' : '0'); } catch { /* private mode */ }
   };
+  const requireInvoiceAccess = () => {
+    if (canOpenRoleView(user, 'new')) return true;
+    toast('Your account does not have permission to create or edit invoices.', 'error');
+    return false;
+  };
   const handleNewInvoice = () => {
+    if (!requireInvoiceAccess()) return;
     setEditorKey((k) => k + 1);
     sessionStorage.removeItem('gst_invoiceDraft');
     setEditingBill(null);
@@ -462,6 +490,7 @@ function App() {
   };
 
   const handleEditInvoice = (bill) => {
+    if (!requireInvoiceAccess()) return;
     setEditorKey((k) => k + 1);
     sessionStorage.removeItem('gst_invoiceDraft');
     setEditingBill(bill);
@@ -472,6 +501,7 @@ function App() {
   // enough to build the same PDF the invoice screen prints (same pages, HD),
   // prints it, and comes back.
   const handlePrintInvoice = (bill) => {
+    if (!requireInvoiceAccess()) return;
     setEditorKey((k) => k + 1);
     sessionStorage.removeItem('gst_invoiceDraft');
     setEditingBill({ ...bill, _printOnOpen: true });
@@ -479,6 +509,7 @@ function App() {
   };
 
   const handleDuplicateInvoice = (bill) => {
+    if (!requireInvoiceAccess()) return;
     setEditorKey((k) => k + 1);
     sessionStorage.removeItem('gst_invoiceDraft');
     const clone = JSON.parse(JSON.stringify(bill));
@@ -488,6 +519,7 @@ function App() {
   };
 
   const handleConvertToInvoice = (bill) => {
+    if (!requireInvoiceAccess()) return;
     setEditorKey((k) => k + 1);
     sessionStorage.removeItem('gst_invoiceDraft');
     const clone = JSON.parse(JSON.stringify(bill));
@@ -507,7 +539,10 @@ function App() {
   useEffect(() => onMenuChanged(() => setMenuTick(t => t + 1)), []);
   // Sidebar items in the saved order; hidden ones dropped. `module: null`
   // items (Settings, Support & About, Lock app) are always shown.
-  const menu = orderedMenu(getMenuOrder()).filter(m => !m.module || showIfModule(m.module));
+  const menu = orderedMenu(getMenuOrder()).filter(m =>
+    (!m.module || showIfModule(m.module)) &&
+    (isAdmin || (m.id !== 'settings' && m.id !== 'controlpanel')),
+  );
 
   // If the user just disabled the module backing the current view, kick them to dashboard
   // so they don't land on an empty page after toggling.
@@ -540,8 +575,8 @@ function App() {
     // and stays current; the old built-in guide had fallen far behind.
     guide: { icon: HelpCircle, label: 'User Guide', onClick: openDocs },
   };
-  const navItems = menu.filter(m => m.section === 'main').map(m => ({ id: m.id, ...NAV_EXTRAS[m.id] }));
-  const bottomIds = menu.filter(m => m.section === 'bottom').map(m => m.id);
+  const navItems = menu.filter(m => m.section === 'main' && canOpenRoleView(user, m.id)).map(m => ({ id: m.id, ...NAV_EXTRAS[m.id] }));
+  const bottomIds = menu.filter(m => m.section === 'bottom' && canOpenRoleView(user, m.id)).map(m => m.id);
   // v1.10.83 - small buttons at the top right of every screen (asked for:
   // "dark mode button should be on top, not in the sidebar").
   const topIds = menu.filter(m => m.section === 'top').map(m => m.id);
@@ -588,14 +623,14 @@ function App() {
   // Reading a const before its declaration triggers a Temporal Dead Zone
   // ReferenceError ("Cannot access 'X' before initialization") at runtime.
   const paletteActions = useMemo(() => {
-    const acts = [
-      { label: 'New Invoice', hint: 'Ctrl+N', category: 'action', run: () => { handleNewInvoice(); } },
-    ];
+    const acts = canOpenRoleView(user, 'new')
+      ? [{ label: 'New Invoice', hint: 'Ctrl+N', category: 'action', run: () => { handleNewInvoice(); } }]
+      : [];
     navItems.forEach(item => {
       if (item.id === 'new') return; // already covered above
       acts.push({ label: `Go to ${item.label}`, hint: '', category: 'nav', run: item.onClick || (() => setCurrentView(item.id)) });
     });
-    acts.push({ label: 'Go to Settings', hint: '', category: 'nav', run: () => setCurrentView('settings') });
+    if (isAdmin) acts.push({ label: 'Go to Settings', hint: '', category: 'nav', run: () => setCurrentView('settings') });
     // v1.10.74 - Control Panel has its own sidebar button but was missing here.
     // v1.10.83 - and, like every menu item, not when it is switched off.
     if (bottomIds.includes('controlpanel')) acts.push({ label: 'Go to Control Panel', hint: '', category: 'nav', run: () => setCurrentView('controlpanel') });
@@ -662,11 +697,13 @@ function App() {
       ['Business type', 'section-biztype'], ['Features', 'section-modules'], ['Region preference', 'section-region'],
       ['Google Drive backup', 'section-cloud'], ['App updates', 'section-updates'],
     ];
-    settingsJumps.forEach(([s, sectionId]) => {
-      acts.push({ label: `⚙️ Settings → ${s}`, hint: '', category: 'settings', run: () => openSettingsAt(sectionId) });
-    });
+    if (isAdmin) {
+      settingsJumps.forEach(([s, sectionId]) => {
+        acts.push({ label: `⚙️ Settings → ${s}`, hint: '', category: 'settings', run: () => openSettingsAt(sectionId) });
+      });
+    }
     return acts;
-  }, [navItems, bottomIds, topIds, updateInfo, handleNewInvoice, searchCorpus]);
+  }, [navItems, bottomIds, topIds, updateInfo, handleNewInvoice, searchCorpus, isAdmin, setCurrentView, user]);
 
   const filteredPalette = paletteActions.filter(a =>
     !paletteQuery.trim() || a.label.toLowerCase().includes(paletteQuery.toLowerCase())
@@ -808,7 +845,7 @@ function App() {
     );
   }
 
-  if (showWelcome) {
+  if (showWelcome && isAdmin) {
     return (
       <>
         <WelcomeGuide onComplete={(p) => {
@@ -829,13 +866,13 @@ function App() {
   const showResumeSetupPill = (() => {
     try {
       const ps = getPrintSettings();
-      return !showWizard && ps.onboardingComplete === true && ps.onboardingSkipped === true;
+      return isAdmin && !showWizard && ps.onboardingComplete === true && ps.onboardingSkipped === true;
     } catch { return false; }
   })();
 
   return (
     <div className={`app-layout${sidebarAutoHide ? ' sidebar-autohide' : ''}`}>
-      {showWizard && profile && (
+      {isAdmin && showWizard && profile && (
         <SetupWizard
           profile={profile}
           onSaved={setProfile}
@@ -1014,6 +1051,7 @@ function App() {
             })[id])}
           </div>
         </nav>
+        <AccountSessionMenu />
       </div>
 
       <div className="main-content">
@@ -1028,7 +1066,7 @@ function App() {
         <ErrorBoundary key={currentView} onHome={() => setCurrentView('dashboard')}>
         {currentView !== 'new' && <StarBanner />}
         {currentView === 'dashboard' && (
-          <Dashboard onNew={handleNewInvoice} onEdit={handleEditInvoice} onPrint={handlePrintInvoice} onDuplicate={handleDuplicateInvoice} onConvert={handleConvertToInvoice} onOpenProducts={() => setCurrentView('inventory')} onOpenSettings={() => setCurrentView('settings')} onOpenGuide={openDocs} onOpenSupport={() => setCurrentView('support')} activeProfile={profile} />
+          <Dashboard onNew={handleNewInvoice} onEdit={handleEditInvoice} onPrint={handlePrintInvoice} onDuplicate={handleDuplicateInvoice} onConvert={handleConvertToInvoice} onOpenProducts={() => setCurrentView('inventory')} onOpenSettings={() => setCurrentView('settings')} onOpenGuide={openDocs} onOpenSupport={() => setCurrentView('support')} activeProfile={profile} canViewBills={userHasModuleAccess(user, 'billing') || userHasModuleAccess(user, 'accounts')} canManageSetup={isAdmin} />
         )}
         {currentView === 'new' && (
           <InvoiceGenerator

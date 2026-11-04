@@ -208,6 +208,12 @@ export default [
 </ol>
 </section>
 
+<section id="account-server">
+<h3>"Connecting to the business server..." or "The local server did not respond"</h3>
+<p>The sign-in screen could not read the local account setup status. Make sure the Nexuzy Ledger server is running by opening the <b>Nexuzy Ledger</b> Desktop icon; wait for its window, then select ${ui('Try again')}. Install the latest release if this continues. Do not create a second install: all devices should use the one host computer's server and data folder.</p>
+<p>On first use, the host computer creates one administrator account. After signing in, that administrator adds each person under <b>Settings → Users &amp; devices</b>. To use another device, enable secure LAN access there and follow the certificate and sign-in instructions. See <a href="security.html#network">using devices on a trusted LAN</a>.</p>
+</section>
+
 <section id="cannot-connect">
 <h3>"Failed to fetch", "App Not Running" or "Needs a Quick Start"</h3>
 <p>You may see: <strong>"Failed to fetch"</strong> (Chrome, Edge), <strong>"NetworkError when attempting to fetch resource"</strong> (Firefox) or <strong>"Load failed"</strong> (Safari), often after words like <i>Restore failed:</i> or <i>Export failed:</i>; a red dot on <b>Control Panel</b> in the menu; a page saying <strong>"Nexuzy Ledger Software Needs a Quick Start"</strong>; <strong>"Could not check the PIN. Is the app still running?"</strong>; or the browser's own <strong>"This site can't be reached"</strong> or a blank page.</p>
@@ -253,7 +259,7 @@ export default [
 <section id="update-failed">
 <h3>An update went wrong</h3>
 <p>You may see: <strong>"Update failed — ..."</strong> in the app, <strong>"ERROR: could not reach GitHub. Are you online?"</strong>, <strong>"Could not check for updates. Check internet connection."</strong>, or <strong>"The new version is in place, but it is not ready to run yet"</strong>.</p>
-<p>Your data folder is never changed by an update, and a backup was saved in <code>Documents\\FreeGSTBill Backups</code> before it started.</p>
+<p>Your data folder is never changed by an update, and a backup was saved in <code>Documents\\Nexuzy Ledger  Backups</code> before it started.</p>
 <ol>
   <li>Check the internet, then run the update again. This fixes most problems.</li>
   <li>If the window showed a <strong>PROBLEM:</strong>, fix that first (see <a href="#install-failed">The install stopped with an error</a>), then click ${ui('Open App')}: it finishes the install by itself.</li>
@@ -338,7 +344,7 @@ export default [
 <p>The drive the app is on has no free space, so the app could not write. The app writes each file in full or not at all, so nothing already saved is lost or half-written.</p>
 <ol>
   <li>Free some space: empty the Recycle Bin (Mac: Bin), delete old downloads and videos you do not need.</li>
-  <li>Backups you have already copied somewhere else can be deleted from <code>Documents\\FreeGSTBill Backups</code>.</li>
+  <li>Backups you have already copied somewhere else can be deleted from <code>Documents\\Nexuzy Ledger  Backups</code>.</li>
   <li>Try again.</li>
 </ol>
 </section>
@@ -542,7 +548,7 @@ export default [
   <li>Open the data folder: ${ui('Open Data Folder')} in the <a href="control-panel.html#actions">Control Panel</a>.</li>
   <li>Open <code>backups</code>, then the newest date folder, then the same subfolder (<code>bills</code>). Copy that file.</li>
   <li>Paste it into the same subfolder of the data folder, replacing the damaged one, and reload the page.</li>
-  <li>No good copy there? Look in the ZIPs in <code>Documents\\FreeGSTBill Backups</code>, or move the damaged file to your Desktop (everything else keeps working) and <a href="#report-problem">send it to us</a>.</li>
+  <li>No good copy there? Look in the ZIPs in <code>Documents\\Nexuzy Ledger  Backups</code>, or move the damaged file to your Desktop (everything else keeps working) and <a href="#report-problem">send it to us</a>.</li>
 </ol>
 <p>Restoring a whole day from <b>Settings, Backup Management</b> also works, but it puts all your data back to that day. See <a href="backup.html#automatic-backups">Automatic daily backups</a>.</p>
 </section>
@@ -634,7 +640,7 @@ export default [
 
 <section id="other-devices">
 <h3>Can I use it on my phone or another computer?</h3>
-<p>The app runs on the computer it is installed on, and only that computer can open it. It has no user accounts, so it is deliberately not shared over your network, where anyone connected could read your books. (The optional <a href="settings.html#lock">PIN lock</a> locks the screen on this computer only.) To work on another computer, <a href="backup.html#move-pc">move your data</a> there.</p>
+<p>Yes, on a trusted local network. The administrator enables HTTPS under <a href="settings.html#users-and-devices">Settings → Users &amp; devices</a>, creates a separate account for each person, and installs the provided certificate as trusted on each device. The devices use the host's one set of books, so the host must stay on. This works without internet. Do not expose the app to the public internet.</p>
 </section>
 
 <section id="internet">
@@ -644,7 +650,7 @@ export default [
 
 <section id="privacy">
 <h3>Is my data sent anywhere?</h3>
-<p>No. There is no account, no tracking and no server of ours. Your data stays in the app's folder unless you choose Google Drive, which copies files into your own Drive, or you send a <a href="#report-problem">problem report</a> yourself. The full answer, with every address the app connects to, is in <a href="security.html">Is it safe?</a></p>
+<p>No data goes to Nexuzy. The app has local sign-in accounts, but no cloud signup or tracking. Business data stays on the host unless you enable trusted LAN access, choose Google Drive, or send a <a href="#report-problem">problem report</a> yourself. The full answer, with every address the app connects to, is in <a href="security.html">Is it safe?</a></p>
 </section>
 `,
 },
@@ -687,8 +693,8 @@ export default [
 </section>
 
 <section id="multi-user">
-<h2>Several people, or several computers</h2>
-<p>There are no user accounts or roles (an optional <a href="settings.html#lock">PIN</a> can lock the screen), and the app only opens on the computer it runs on. One computer holds the books; see <a href="backup.html#move-pc">moving to a new computer</a>. Hosting it online (Railway, Render, a server) is not supported; see <a href="security.html#host-online">why</a>.</p>
+<h2>Public internet hosting</h2>
+<p>Office LAN access is supported over HTTPS with separate accounts, but the app is not designed for public internet hosting on Railway, Render, a VPS or another internet server. See <a href="settings.html#users-and-devices">Users &amp; devices</a>, <a href="security.html#network">LAN security</a> and <a href="security.html#host-online">why public hosting is not supported</a>.</p>
 </section>
 
 <section id="income-tax-limits">

@@ -67,7 +67,7 @@ ${which}
 <div class="note warn"><strong>About the Windows publisher warning</strong>
 <p>This app is not currently signed with a trusted code-signing certificate, so Windows may show “Unknown Publisher.” The Nexuzy Lab developer name does not verify the publisher in Windows; removing that warning requires signing the installer with a trusted certificate. Download only from the official GitHub repository and review the public source code.</p></div>
 <p><b>Every day after that:</b> click the <b>Nexuzy Ledger</b> icon on your Desktop or in the Start menu.</p>
-<p><b>To update or repair it:</b> do the same three steps again. It finds your install, backs up your data to <code>Documents\\FreeGSTBill Backups</code>, and replaces only the app's own files. Your invoices, clients and settings stay exactly as they are.</p>
+<p><b>To update or repair it:</b> do the same three steps again. It finds your install, backs up your data to <code>Documents\\Nexuzy Ledger  Backups</code>, and replaces only the app's own files. Your invoices, clients and settings stay exactly as they are.</p>
 <div class="note tip"><strong>If the window shows PROBLEM in red</strong>
 <p>The line under it says what to do (no internet, the disk is full, the folder cannot be written to). Do that, then paste the same line again; it carries on where it stopped. Nothing in your data is changed by a failed install.</p></div>
 <p>The app is installed to <code>%LOCALAPPDATA%\\Programs\\Nexuzy Ledger</code>. If you installed it from the ZIP before, the line finds that copy (through its Desktop shortcut) and updates it where it is. Your data is in the <code>_system\\data</code> folder inside it.</p>
@@ -162,7 +162,7 @@ ${which}
 <p><b>The easy way:</b> in the app, open ${ui('Control Panel')} and use ${ui('Remove…')}. Tick what else to delete (your data, PDFs, backups) and click ${ui('Remove the app')}. See <a href="control-panel.html#remove">Remove the App</a>. Or, with the app closed, double-click <b>Nexuzy Ledger - WINDOWS</b> in the app folder, click <b>More options</b>, then ${ui('Remove the app...')}: the same tick boxes, then ${ui('Remove the app')}.</p>
 <p><b>Or with one line:</b> press ${key('Windows', 'R')}, paste this line and press ${key('Enter')}:</p>
 <pre><code>${WIN_REMOVE}</code></pre>
-<p>It stops the app and removes it and its icons. Your invoices, clients and settings are kept unless you type <code>DELETE</code> when it asks (and even then a last copy goes to <code>Documents\\FreeGSTBill Backups</code>).</p>
+<p>It stops the app and removes it and its icons. Your invoices, clients and settings are kept unless you type <code>DELETE</code> when it asks (and even then a last copy goes to <code>Documents\\Nexuzy Ledger  Backups</code>).</p>
 <p>By hand: in the launcher, ${ui('More options')} → ${ui('Stop the app')}, then delete the app folder and the <b>Nexuzy Ledger</b> shortcuts on the Desktop and in the Start menu. Nothing is installed into Windows itself.</p>
 </section>
 `,
@@ -198,7 +198,7 @@ ${which}
   <li><strong>The app opens</strong>It says <i>Done! Opening Nexuzy Ledger...</i> and the app appears in its own window if you have Chrome or Edge, or in Safari otherwise. A short welcome asks for your business details; see <a href="first-run.html">The first-run setup</a>. You can close Terminal.</li>
 </ol>
 <p><b>Every day after that:</b> click <b>Nexuzy Ledger</b> in the Dock or in Launchpad. (It lives in the <b>Applications</b> folder inside your home folder: Finder → ${ui('Go')} → ${ui('Home')} → <b>Applications</b>.)</p>
-<p><b>To update or repair it:</b> paste the same line again. It backs up your data to <code>Documents/FreeGSTBill Backups</code> and replaces only the app's own files; your invoices, clients and settings stay as they are.</p>
+<p><b>To update or repair it:</b> paste the same line again. It backs up your data to <code>Documents/Nexuzy Ledger  Backups</code> and replaces only the app's own files; your invoices, clients and settings stay as they are.</p>
 <p>If something goes wrong, Terminal shows <b>PROBLEM</b> and, under it, what to do. Do that, then paste the line again.</p>
 <p>The app's files are in <code>Applications/Nexuzy Ledger</code> in your home folder; your data is in <code>_system/data</code> inside it.</p>
 </section>
@@ -296,7 +296,7 @@ ${which}
   <li><strong>Answer one question</strong><i>Open Nexuzy Ledger by itself when this computer starts? [y/N]</i>: type <code>y</code> and press ${key('Enter')}, or just ${key('Enter')} for no.</li>
   <li><strong>The app opens</strong>In its own window if you have Chrome, Chromium or Edge, or in your browser otherwise.</li>
 </ol>
-<p><b>Every day after that:</b> open <b>Nexuzy Ledger</b> from your applications menu. <b>To update or repair it:</b> run the same line again; your data is backed up to <code>~/Documents/FreeGSTBill Backups</code> first and never touched.</p>
+<p><b>Every day after that:</b> open <b>Nexuzy Ledger</b> from your applications menu. <b>To update or repair it:</b> run the same line again; your data is backed up to <code>~/Documents/Nexuzy Ledger  Backups</code> first and never touched.</p>
 <p>If it says <i>curl: command not found</i>, run <code>sudo apt install -y curl</code> first. The app goes to <code>~/.local/share/free-gst-billing</code>; your data is in <code>_system/data</code> inside it.</p>
 <p><b>NAS or Alpine:</b> there may be no <code>bash</code>; end the line with <code>| sh</code> instead. Alpine needs Node.js from its own store first: <code>sudo apk add nodejs</code>. To choose the folder, put <code>FREEGSTBILL_DIR=/volume1/apps/free-gst-billing</code> just before <code>sh</code>.</p>
 <p><b>To remove it</b> (your invoices are kept unless you type <code>DELETE</code> when asked):</p>
@@ -345,7 +345,7 @@ ${which}
 cd Nexuzy-Ledger
 bash "_system/start-unix.sh"</code></pre>
 <p>The ZIP carries the app's packages, so there is no <code>npm install</code>; any Node.js 18 or newer runs it.</p>
-<p>The app listens on <code>127.0.0.1:47371</code> only (it has no login, so it is never opened to the network). Updating from inside the app needs <code>unzip</code> or python3.</p>
+<p>By default the app listens on <code>127.0.0.1:47371</code> only. An administrator can explicitly enable HTTPS for signed-in devices on a trusted local network in <b>Settings → Users &amp; devices</b>. Do not expose it to the public internet. Updating from inside the app needs <code>unzip</code> or python3.</p>
 </section>
 `,
 },
@@ -362,7 +362,7 @@ bash "_system/start-unix.sh"</code></pre>
 <ol class="steps">
   <li><strong>Open the app</strong>When a new version is out, the sidebar shows <b>Update to v…</b> (you can also go to <b>Settings → App Updates</b>).</li>
   <li><strong>Read what is new and click Update Now</strong>A window shows what changed. Click ${ui('Update Now')}.</li>
-  <li><strong>Wait about a minute</strong>A window shows the progress; it backs up your data first, then updates.</li>
+  <li><strong>Wait for the update to finish</strong>A window shows progress; it checks the release before downloading and backs up your data only when an update is needed.</li>
   <li><strong>Reload the page</strong>Press ${key('F5')} (on a Mac ${key('Cmd', 'R')}). The version at the bottom of the Dashboard shows the new number.</li>
 </ol>
 <p>Changes still look the same? Press ${key('Ctrl', 'F5')} (Mac: ${key('Cmd', 'Shift', 'R')}) to make the browser load the new version.</p>
@@ -398,15 +398,14 @@ bash "_system/start-unix.sh"</code></pre>
 <section id="windows">
 <h2>Windows: other ways</h2>
 <p><b>From the launcher:</b> double-click <b>Nexuzy Ledger - WINDOWS</b> in the Nexuzy-Ledger folder → ${ui('More options')} → ${ui('Update to the latest version')} → then ${ui('Open App')}.</p>
-<p><b>By hand, with the ZIP</b> (if the app does not open at all):</p>
+<p><b>With a newly downloaded ZIP</b> (if the app does not open at all):</p>
 <ol class="steps">
   <li><strong>Download</strong><a class="download" href="${SITE.download}">Download Nexuzy Ledger</a></li>
-  <li><strong>Stop the app</strong>Launcher → ${ui('More options')} → ${ui('Stop the app')}.</li>
-  <li><strong>Extract into the same place as before</strong>Right-click the ZIP → ${ui('Extract All\u2026')} → ${ui('Browse\u2026')} → choose the folder that <i>contains</i> your Nexuzy-Ledger folder (for example <b>Documents</b>) → ${ui('Extract')}.</li>
-  <li><strong>Replace the files</strong>Windows asks about files that already exist: choose ${ui('Replace the files in the destination')}. On Windows this <b>adds</b> to your folder; your <code>_system\\data</code> folder is not touched.</li>
-  <li><strong>Open the app</strong>Double-click <b>Nexuzy Ledger - WINDOWS</b> → ${ui('Open App')}. The first start after an update takes a minute.</li>
+  <li><strong>Extract the ZIP</strong>Right-click it → ${ui('Extract All\u2026')} and choose any folder.</li>
+  <li><strong>Run the Windows launcher</strong>Double-click <b>Nexuzy Ledger - WINDOWS</b>. If an install already exists, the package updates that copy instead of creating a second, empty one. The installer checks and replaces app files; it never mirrors release files over your business data.</li>
+  <li><strong>Open your existing app icon</strong>After the update finishes, use the Nexuzy Ledger Desktop or Start menu icon. Your invoices, settings, saved PDFs and other business data remain in place.</li>
 </ol>
-<p>If you extracted the new ZIP somewhere else and opened its launcher, it says <i>Nexuzy Ledger is already installed on this computer</i> and offers ${ui('Update the installed copy')}: use that, and delete the new folder.</p>
+<p>You do not need to extract over the old folder or manually choose which files to replace. The update does that for you.</p>
 </section>
 
 <section id="mac">

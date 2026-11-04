@@ -9,10 +9,10 @@ export default [
   slug: 'index',
   title: 'Nexuzy Ledger documentation',
   nav: 'Welcome',
-  lead: 'Make GST invoices, keep track of who owes you, and prepare your GST returns. On your own computer, with no account and no monthly fee.',
+  lead: 'Make GST invoices, keep track of who owes you, and prepare your GST returns. On your own computer, with local accounts and no monthly fee.',
   body: `
 <div class="note tip"><strong>Free forever. Works on your computer, even offline. No tracking. No ads.</strong>
-<p>Your invoices never leave your computer, there is no account to make, and nothing is ever sold to you inside the app. Don't take our word for it: <a href="security.html#check-yourself">check it yourself in two minutes</a>.</p></div>
+<p>Your books stay on the host computer. Create a local administrator account, then optionally add staff and signed-in devices on your trusted LAN. Nothing is ever sold to you inside the app. Don't take our word for it: <a href="security.html#check-yourself">check it yourself in two minutes</a>.</p></div>
 <ul class="doors">
   <li><a href="install.html"><b>Install it</b><span>Download, extract, click Install. About three minutes, no admin rights needed.</span></a></li>
   <li><a href="first-invoice.html"><b>Make your first invoice</b><span>From a blank app to a GST tax invoice you can send, in five minutes.</span></a></li>
@@ -21,13 +21,19 @@ export default [
 
 <section id="what-it-does">
 <h2>What it does</h2>
-<p>Nexuzy Ledger is invoicing and GST software for small businesses in India, and for anyone billing in other currencies: 20 are supported. It runs on your computer and opens in your web browser, the way a website does, while business records remain stored locally.</p>
+<p>Nexuzy Ledger is invoicing and GST software for small businesses in India, and for anyone billing in other currencies: 20 are supported. It runs on your computer and opens in your web browser, the way a website does, while business records remain stored locally. Trusted LAN access is optional and can work without internet.</p>
 <ul>
   <li><strong>Invoices</strong>: tax invoices, bills of supply, proforma estimates, credit notes and delivery challans, with CGST, SGST, IGST and UTGST worked out for you.</li>
   <li><strong>Getting paid</strong>: record payments, print receipts, see who is overdue and by how much.</li>
   <li><strong>GST returns</strong>: GSTR-1 and GSTR-3B built from your invoices and purchases, as files you upload to the GST portal.</li>
-  <li><strong>The rest of the books</strong>: clients, products and stock, purchases, expenses, recurring invoices, profit and loss, and an income tax calculator.</li>
+  <li><strong>Stock, purchasing and production</strong>: stock tracking, barcode lookup, purchase bills and orders, plus optional bill-of-materials manufacturing that records material use and production cost.</li>
+  <li><strong>Money and cost tracking</strong>: expenses, cash book, profit and loss, cost centres, cash-flow summaries and a clearly labelled partial working-capital estimate.</li>
+  <li><strong>Payroll and attendance</strong>: employee records, monthly salary runs, payslips, and daily present/absent/leave tracking. Attendance does not automatically change payslips.</li>
+  <li><strong>Team access</strong>: local administrator and staff accounts, with optional secure HTTPS access for signed-in devices on a trusted private LAN. The host computer keeps the books and must stay on.</li>
+  <li><strong>Income tax and recurring work</strong>: an income-tax helper, an ITR-4 filing-summary PDF, and scheduled recurring invoice generation while the app is running.</li>
 </ul>
+<div class="note tip"><strong>Start with the task you need</strong>
+<p><a href="first-invoice.html">Create an invoice</a> · <a href="products.html">Set up stock and products</a> · <a href="purchases.html">Record purchases and orders</a> · <a href="payroll.html">Manage payroll and attendance</a> · <a href="security.html#network">Add users and devices</a> · <a href="reports.html#cost-centres">Track costs</a>.</p></div>
 </section>
 
 <section id="requirements">
@@ -37,13 +43,13 @@ export default [
   <tr><th>Browser</th><td>Chrome, Edge, Firefox or Brave. The app opens in it.</td></tr>
   <tr><th>Disk space</th><td>Roughly 200 MB once installed.</td></tr>
   <tr><th>Internet</th><td>Only for the first install and for updates. Everything else works offline.</td></tr>
-  <tr><th>Account or signup</th><td>None.</td></tr>
+  <tr><th>Account or signup</th><td>Create a local administrator account on first launch. No online signup is needed; staff accounts are optional.</td></tr>
 </table>
 </section>
 
 <section id="your-data">
 <h2>Where your data lives</h2>
-<p>Every invoice, client and setting is saved as plain files inside the app's folder, in <code>_system\\data</code>. They never leave your computer unless you turn on Google Drive backup yourself.</p>
+<p>Every invoice, client and setting is saved as files on the host computer, inside the app's <code>_system\\data</code> folder. Devices on a trusted LAN use the host's books; they do not get separate copies. Your data never leaves the host unless you choose Google Drive backup.</p>
 <p>That also means backing up is your job, and it is easy. See <a href="backup.html">Backups, updates and moving PC</a>.</p>
 </section>
 
@@ -68,8 +74,9 @@ export default [
   body: `
 <section id="welcome">
 <h2>Step 1 of the welcome: where you invoice from</h2>
+<p>Before setup, the first launch asks you to create an administrator username and password on the host computer. Use at least 12 characters. The administrator can later add one staff account per person in <a href="settings.html#users-and-devices">Settings → Users &amp; devices</a>.</p>
 <p>The first screen explains what the app does, and asks <b>Where will you be invoicing from?</b></p>
-<p>A small <b>Safe and private</b> box on it sums up how your data is kept: on this computer, with no account, working offline, in open-source code anyone can check. Its ${ui('How we keep it safe')} link opens <a href="security.html">Is it safe? Security and privacy</a>.</p>
+<p>A small <b>Safe and private</b> box on it sums up how your data is kept: on this computer, with a local administrator account, working offline, in open-source code anyone can check. Its ${ui('How we keep it safe')} link opens <a href="security.html">Is it safe? Security and privacy</a>.</p>
 <table>
   <tr><td>🇮🇳 India</td><td>GST, GSTR-1 and 3B, UPI. The default.</td></tr>
   <tr><td>🌍 Outside India</td><td>VAT and other local taxes</td></tr>

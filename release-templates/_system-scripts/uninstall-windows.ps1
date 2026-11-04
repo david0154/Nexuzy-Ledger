@@ -55,7 +55,7 @@ foreach ($dir in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFo
 
 # Data deleted but backups kept: one last copy first. If that copy fails the
 # data is kept, never lost.
-$backupHome = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'FreeGSTBill Backups'
+$backupHome = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Nexuzy Ledger  Backups'
 $dataDir = Join-Path $Sys 'data'
 if ($Data -and -not $Backups -and @(Get-ChildItem -LiteralPath $dataDir -Recurse -File -Force).Count) {
   New-Item -ItemType Directory -Path $backupHome -Force | Out-Null

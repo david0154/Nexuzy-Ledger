@@ -41,7 +41,10 @@ export async function restorePrefs() {
 // merges them, so nothing this browser did not touch is ever replaced.
 const dirty = new Set();
 let timer = null;
+let mirroringEnabled = true;
 const push = () => {
+  timer = null;
+  if (!mirroringEnabled) return;
   const set = {};
   const remove = [];
   try {
@@ -53,7 +56,20 @@ const push = () => {
   dirty.clear();
   fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ set, remove }) }).catch(() => {});
 };
-const touch = (k) => { dirty.add(k); clearTimeout(timer); timer = setTimeout(push, 600); };
+const touch = (k) => {
+  if (!mirroringEnabled) return;
+  dirty.add(k);
+  clearTimeout(timer);
+  timer = setTimeout(push, 600);
+};
+
+export function setPrefsMirroringEnabled(enabled) {
+  if (mirroringEnabled === enabled) return;
+  mirroringEnabled = enabled;
+  clearTimeout(timer);
+  timer = null;
+  if (enabled && dirty.size) timer = setTimeout(push, 0);
+}
 
 // Every write or removal of a mirrored key, from anywhere in the app, updates
 // the copy in the data folder (one write per burst of changes). Only after a

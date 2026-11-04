@@ -72,10 +72,11 @@ else {
       `Not executable: ${scripts.filter((x) => !(x.mode & 0o111)).map((x) => x.name).join(', ')}. macOS: "you do not have appropriate access privileges".`);
     const ps1 = e.filter((x) => x.name.endsWith('.ps1')).map((x) => x.name.split('/').pop());
     check('ensure-node.ps1 ships with the scripts that use it (#109)', ps1.includes('ensure-node.ps1') && e.some((x) => x.name.endsWith('/check-node.sh')), 'ensure-node.ps1 / check-node.sh missing: install, update and start would fail.');
-    // v1.10.83 - the packages ship inside the ZIP: no user's PC runs npm.
-    check('node_modules ships inside the ZIP (no npm install on users\' PCs)', e.some((x) => x.name === 'Nexuzy-Ledger/_system/node_modules/express/package.json'),
-      '_system/node_modules/express is missing. Build with npm run release:zip (it runs npm ci in the staging folder).');
-    check('ZIP size looks right (12-60 MB; the server packages only)', statSync(appZip).size > 1.2e7 && statSync(appZip).size < 6e7, `It is ${(statSync(appZip).size / 1e6).toFixed(1)} MB.`);
+    check('the server bundle is present and node_modules is omitted',
+      e.some((x) => x.name === 'Nexuzy-Ledger/_system/server-bundle.json') &&
+      !e.some((x) => x.name.startsWith('Nexuzy-Ledger/_system/node_modules/')),
+      'Build with npm run release:zip to bundle server dependencies.');
+    check('ZIP size looks right (1.2-25 MB)', statSync(appZip).size > 1.2e6 && statSync(appZip).size < 2.5e7, `It is ${(statSync(appZip).size / 1e6).toFixed(1)} MB.`);
   }
 }
 

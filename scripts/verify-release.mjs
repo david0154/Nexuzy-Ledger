@@ -48,7 +48,7 @@ const fail = (msg, detail = '') => {
 /** Locate the ZIP just built. */
 function findZip() {
   if (!existsSync(OUT_DIR)) fail('release-build/ does not exist — run `npm run release:zip` first.');
-  const zips = readdirSync(OUT_DIR).filter((f) => f.endsWith('.zip'));
+  const zips = readdirSync(OUT_DIR).filter((f) => /^Nexuzy-Ledger(?:-v[\d.]+)?\.zip$/i.test(f));
   if (zips.length === 0) fail('No ZIP found in release-build/.');
   // Newest wins, so repeated builds verify the current one.
   return zips
@@ -119,7 +119,7 @@ function startServer(systemDir) {
 
     proc.stdout.on('data', (d) => {
       const m = String(d).match(/http:\/\/localhost:(\d+)/);
-      if (m) { clearTimeout(timer); resolvePromise({ proc, url: m[0] }); }
+      if (m) { clearTimeout(timer); resolvePromise({ proc, url: `http://127.0.0.1:${m[1]}` }); }
     });
     // The whole point of #54: the failure was on stderr and nobody looked.
     proc.stderr.on('data', (d) => { stderr += String(d); });
@@ -155,12 +155,11 @@ try {
     fail('_system/dist/index.html is missing — the built app was not packaged.');
   }
 
-  // v1.10.83 - the packages ship inside the ZIP and no installer runs npm any
-  // more, so the server is started WITHOUT an npm install: that is what proves
-  // the package is complete.
-  log('  2/5  checking the shipped packages (no npm install, as on a user\'s PC)…');
-  if (!existsSync(join(systemDir, 'node_modules', 'express', 'package.json'))) {
-    fail('_system/node_modules/express is missing: the ZIP does not carry its packages.');
+  // Releases ship a single server bundle, so startup verification must work
+  // with no node_modules and no package install.
+  log('  2/5  checking the bundled server (no npm install, as on a user\'s PC)…');
+  if (!existsSync(join(systemDir, 'server-bundle.json')) || existsSync(join(systemDir, 'node_modules'))) {
+    fail('_system/server-bundle.json is missing or node_modules was unexpectedly packaged.');
   }
 
   // Use an unused port so verification never tests against a user's running
@@ -173,7 +172,7 @@ try {
   log(`       bound at ${server.url}`);
 
   log('  4/5  exercising the HTTP surface…');
-  const endpoints = ['/', '/api/bills', '/api/clients', '/api/products', '/api/profile'];
+  const endpoints = ['/', '/api/auth/status', '/api/bills', '/api/clients', '/api/products', '/api/profile'];
   for (const ep of endpoints) {
     const res = await fetch(`${server.url}${ep}`).catch((e) => {
       fail(`GET ${ep} threw: ${e.message}`);

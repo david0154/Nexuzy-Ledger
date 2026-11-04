@@ -14,14 +14,14 @@ export default [
   lead: 'Plain answers for anyone who has heard "open source" and wonders whether it is safe to keep their business books in it: where your data is, what the app connects to, and how to check it yourself.',
   body: `
 <div class="note tip"><strong>The short answer</strong>
-<p>Your invoices, clients and settings are saved as files on your own computer. There is no account, no login and no cloud server of ours. The app has no ads and no tracking, and it sends none of your business data to us. Every line of its code is public, so anyone can check this.</p>
+<p>Your invoices, clients and settings are saved as files on the host computer. On first launch you create a local administrator account; the administrator can add staff. There is no cloud signup or cloud server of ours. The app has no ads and no tracking, and it sends none of your business data to us. Every line of its code is public, so anyone can check this.</p>
 <p><b>Don't take our word for it:</b> switch off your internet and use the app (it all works), or turn on <a href="#offline-mode">Offline mode</a> so it never goes online by itself. See <a href="#check-yourself">Check it yourself</a>.</p></div>
 
 <section id="your-data-stays">
 <h2>Your data stays on your computer</h2>
 <ul>
   <li><strong>Saved as files on your PC.</strong> Every invoice, client, product, payment and setting is a file in the <code>_system\\data</code> folder inside the app's folder. Saved invoice PDFs go in the <b>Saved Invoices</b> folder next to it.</li>
-  <li><strong>No account, no login, no signup.</strong> The app never asks for an email address or a password to use it.</li>
+  <li><strong>Local accounts, no cloud signup.</strong> The first administrator and optional staff accounts are stored on the host. Passwords are stored as salted hashes.</li>
   <li><strong>No cloud server.</strong> We do not run a server that holds your books. There is nothing of yours on our side to leak or to lose.</li>
   <li><strong>Google Drive only if you set it up.</strong> If you choose to connect your own Google Drive (Settings → Google Drive), copies of your invoice PDFs and backups go to <i>your</i> Drive. Nothing goes there until you do. See <a href="settings.html#google-drive">Google Drive</a>.</li>
 </ul>
@@ -46,7 +46,7 @@ export default [
 
 <section id="what-it-connects-to">
 <h2>Every address the app connects to</h2>
-<p>This is the complete list. Apart from these, the app talks only to itself on your own computer.</p>
+<p>This is the complete list of internet addresses. Apart from these, the app talks only to itself, or to signed-in devices on your private LAN when you explicitly enable <a href="#network">LAN access</a>.</p>
 <h3>By itself, while the app is open</h3>
 <div class="table-wrap"><table>
   <tr><th>Address</th><th>When</th><th>Why, and what is sent</th></tr>
@@ -90,23 +90,25 @@ export default [
 </section>
 
 <section id="network">
-<h2>Other computers cannot open it</h2>
-<p>The app has a small built-in server that your browser talks to. It listens only on this computer's own internal address, <code>127.0.0.1</code>, so other computers on your Wi-Fi or office network cannot open the app or read your data.</p>
-<p>It also refuses requests from other websites: a web page you visit cannot quietly read your books from the app in the background.</p>
-<p>This is also why several people cannot use it from different computers at the same time. See <a href="limitations.html#multi-user">Several people, or several computers</a>.</p>
+<h2>LAN access is off by default</h2>
+<p>The app's built-in server listens only on this computer's own internal address, <code>127.0.0.1</code>, by default. An administrator can explicitly enable <b>Settings → Users &amp; devices → Enable secure LAN access</b> for a trusted private network. That starts HTTPS listeners only on private IPv4 addresses; every device must sign in with its own account.</p>
+<p>The host publishes a Nexuzy Ledger service over local-network DNS-SD/mDNS so the separate Windows, macOS, or Linux staff desktop app can find it without typing an IP address. The client opens in its own application window, not a browser. If mDNS is blocked, staff can use the host-name fallback. They sign in with the host's existing accounts; the client does not start a second business server or show first-admin setup. Install the staff app once, trust the Nexuzy Lab certificate on each device, then launch it from its desktop icon.</p>
+<p>LAN HTTPS certificates are issued by a private CA named <b>Nexuzy Lab Local Network CA</b>. The connection is encrypted, but the CA is not in operating systems' public trust stores: download the CA from Settings and explicitly install it as trusted on each client device. The old CA was named “Nexuzy Ledger Local CA”; after upgrade, download and trust the new certificate again. This CA is not a code-signing certificate and cannot remove Windows' “unknown publisher” warning.</p>
+<p>All devices use the host's one set of books. The host must stay on and reachable, but internet access is not required. Turn LAN access off when it is no longer needed. Do not configure router port forwarding or expose the service to the public internet.</p>
+<p>The app also refuses cross-origin browser requests. A web page on another site cannot quietly read or change your books through the app in the background.</p>
 </section>
 
 <section id="host-online">
 <h2>Can I put it online, on Railway, Render or a server?</h2>
 <p><strong>Not yet, and please don't try.</strong> People ask whether they can host the app on a free website service (Railway, Render, a VPS, with Supabase as the database) so they can open it from anywhere. Today that is not safe, and it would not work properly:</p>
 <ul>
-  <li><strong>There is no login on the server.</strong> The app was made for one computer, so its server does not ask who you are. The <a href="settings.html#lock">PIN</a> only locks the screen in your browser. Put online, anyone who found the web address could read, change or delete all your invoices, clients and bank details.</li>
-  <li><strong>It only listens on your own computer</strong> (<code>127.0.0.1</code>, see <a href="#network">above</a>), so a hosting service cannot reach it. Changing that in the code removes the protection described above.</li>
+  <li><strong>It is designed for local business use.</strong> User accounts and HTTPS LAN access protect trusted office devices, but the app is not designed to be exposed to the public internet.</li>
+  <li><strong>Its normal listener is local-only</strong> (<code>127.0.0.1</code>, see <a href="#network">above</a>). LAN access is an explicit opt-in and binds only to private network addresses.</li>
   <li><strong>Supabase would not be used.</strong> The app does not use a database. It saves your books as files in its <code>data</code> folder, and on most free hosting plans those files are wiped every time the service restarts.</li>
   <li><strong>The "free" plans are not free for long.</strong> Most now give a trial credit and then charge every month, plus extra for storage that keeps your files.</li>
 </ul>
-<p>Hosting it online would also send your books to someone else's server, which is the one thing this app promises not to do.</p>
-<p><b>What you can do instead:</b> keep the app on one computer and take a <a href="backup.html">backup</a> often. To move to a new computer, see <a href="backup.html#move-pc">moving to a new computer</a>. Nexuzy Ledger is designed for local, single-computer use; it does not support access from a phone or tablet over Wi-Fi or from the internet.</p>
+<p>Hosting it publicly would place your books on someone else's server, which this app is not designed to do.</p>
+<p><b>What you can do instead:</b> for office devices, use the built-in <a href="#network">trusted LAN access</a>. For public internet access, use a service designed and secured for that purpose. Keep a <a href="backup.html">backup</a> and see <a href="backup.html#move-pc">moving to a new computer</a> when changing hosts.</p>
 </section>
 
 <section id="check-yourself">
@@ -115,7 +117,7 @@ export default [
 <ol>
   <li><strong>Switch the internet off.</strong> Turn off Wi-Fi (or unplug the cable), close the app and open it again. Make an invoice, download its PDF, print it, record a payment and open Reports. Everything works. That is because nothing the app does with your books needs the internet.</li>
   <li><strong>Turn on Offline mode</strong> (above) and leave it on. The app then goes online only when you click something that needs it.</li>
-  <li><strong>Watch its connections.</strong> On Windows, open <b>Resource Monitor</b> (press Windows key + R, type <code>resmon</code>, press Enter), open the <b>Network</b> tab and look at <b>node.exe</b>, the program the app runs on. With Offline mode on, it has no connections outside your computer. On a Mac, use Activity Monitor's <b>Network</b> tab. Your browser is listed separately: the app's page uses it only for the things in <a href="#what-it-connects-to">the list above</a>.</li>
+  <li><strong>Watch its connections.</strong> On Windows, open <b>Resource Monitor</b> (press Windows key + R, type <code>resmon</code>, press Enter), open the <b>Network</b> tab and look at <b>node.exe</b>, the program the app runs on. Offline mode stops internet checks; if you enabled LAN access, signed-in devices still connect to the host over the private network. On a Mac, use Activity Monitor's <b>Network</b> tab. Your browser is listed separately: the app's page uses it only for the things in <a href="#what-it-connects-to">the list above</a>.</li>
   <li><strong>Block it in the firewall.</strong> In Windows Defender Firewall's <b>Advanced settings</b>, add an <b>Outbound rule</b> that blocks the app's <code>node.exe</code> (in the app folder's <code>_system\\node</code> folder, or <code>C:\\Program Files\\nodejs</code>). The app keeps working; only the update check stops. Remove the rule to update.</li>
 </ol>
 </section>
@@ -138,7 +140,7 @@ export default [
 <ul>
   <li><strong>No administrator rights.</strong> The install line puts the app in your own user folder (Windows: <code>%LOCALAPPDATA%\\Programs\\Nexuzy Ledger</code>; Mac: <code>Applications</code> in your home folder). It does not change Windows system files, add a Windows service or ask for an admin password.</li>
   <li><strong>From the official place only.</strong> The install line downloads the script and the app from this project's own GitHub page, over a secure (HTTPS) connection.</li>
-  <li><strong>Your data is never touched.</strong> Installing over an existing copy backs up your data to <code>Documents\\FreeGSTBill Backups</code> first and replaces only the app's own files.</li>
+  <li><strong>Your data is never touched.</strong> Installing over an existing copy backs up your data to <code>Documents\\Nexuzy Ledger  Backups</code> first and replaces only the app's own files.</li>
 </ul>
 <h3>Why Windows or the Mac may show a warning for the ZIP</h3>
 <p>The app is <b>not code-signed</b>. A signing certificate costs a few hundred dollars every year, and this app is free. So when you open the downloaded ZIP's launcher, Windows may show <b>"Windows protected your PC"</b> and a Mac may say it <b>cannot check the app</b>. That message means "this program is not signed by a paid certificate". It does not mean a virus was found. See <a href="install.html#windows-protected">"Windows protected your PC"</a>.</p>

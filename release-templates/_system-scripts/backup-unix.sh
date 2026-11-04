@@ -3,7 +3,7 @@
 set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATA_DIR="$SCRIPT_DIR/data"
-BACKUPS_HOME="$HOME/Documents/FreeGSTBill Backups"
+BACKUPS_HOME="$HOME/Documents/Nexuzy Ledger  Backups"
 
 if [ ! -d "$DATA_DIR" ]; then
   echo "  No data folder found — nothing to back up."

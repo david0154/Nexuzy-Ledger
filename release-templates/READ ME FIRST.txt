@@ -138,7 +138,7 @@
   Back it up with "More options -> Back up my data", which
   writes a ZIP to:
 
-    Documents\FreeGSTBill Backups
+    Documents\Nexuzy Ledger  Backups
 
   Updating the app NEVER touches your data, and the updater
   takes its own backup before it starts.

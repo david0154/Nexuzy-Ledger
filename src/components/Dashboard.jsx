@@ -221,7 +221,7 @@ const foreignReceiptFields = (input) => {
   };
 };
 
-export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConvert, onOpenProducts, onOpenSettings, onOpenGuide, onOpenSupport, activeProfile }) {
+export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConvert, onOpenProducts, onOpenSettings, onOpenGuide, onOpenSupport, activeProfile, canViewBills = true, canManageSetup = true }) {
   // v1.10.64 — requested (#55, @sangwanmail-eng): "An invoice belonging to one
   // company should not appear under the other."
   //
@@ -359,6 +359,10 @@ export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConve
   const fyOptions = useMemo(() => getFYOptions(), []);
 
   const loadBills = async () => {
+    if (!canViewBills) {
+      setBills([]);
+      return;
+    }
     try {
       const data = await getAllBills();
       // Local date (toISOString() is UTC: still yesterday in India until 05:30).
@@ -483,7 +487,7 @@ export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConve
       const threshold = Number(cfg?.threshold ?? 5);
       setLowStockProducts(findLowStock(prods, threshold)); // services and uncounted left out (#121)
     });
-  }, []);
+  }, [canViewBills]);
 
   useEffect(() => {
     let result = bills;
@@ -1379,7 +1383,7 @@ export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConve
   // this screen". null while the data is still loading, so the card cannot
   // flash up half-ticked; null once it is all done, so it retires itself.
   const startedSteps = useMemo(() => {
-    if (guideDismissed || productCount === null || !profile) return null;
+    if (!canManageSetup || guideDismissed || productCount === null || !profile) return null;
     const hasBank = !!(profile.paymentAccounts?.length || profile.upiId || profile.accountNumber);
     const steps = [
       { key: 'business', done: !!profile.businessName?.trim(),
@@ -1397,7 +1401,7 @@ export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConve
     // v1.10.83 - no products step when Products is switched off (a freelancer).
     ].filter(s => s.key !== 'products' || isModuleEnabled('inventory', getEnabledModules()));
     return steps.every(s => s.done) ? null : steps;
-  }, [guideDismissed, productCount, profile, allBills.length, onNew, onOpenProducts, onOpenSettings]);
+  }, [canManageSetup, guideDismissed, productCount, profile, allBills.length, onNew, onOpenProducts, onOpenSettings]);
 
   return (
     <div className="dashboard-container">

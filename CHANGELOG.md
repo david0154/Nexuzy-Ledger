@@ -7,6 +7,154 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.93] - 2026-11-04
+
+### How to update
+
+**Current version:** 1.10.92  →  **New version:** 1.10.93
+
+If the in-app **Update** button works, use it and reload Nexuzy Ledger when it
+finishes. Otherwise, download `Nexuzy-Ledger.zip` from the release Assets,
+close the app, extract the ZIP over the existing folder, and open the launcher.
+Your business data in `_system/data/` is not replaced. Staff computers should
+download and install the platform-specific Nexuzy Ledger Staff desktop app:
+Windows Setup EXE, macOS DMG, or Linux DEB / AppImage.
+
+### Improved
+- Changed newly created and changed passwords to the requested 6–16
+  characters; existing accounts can still sign in with their existing longer
+  passwords until they choose a new one.
+- Rebranded the local HTTPS CA as Nexuzy Lab and documents the required
+  one-time trust installation and the separate Windows publisher-signing
+  warning.
+- Added the Nexuzy Lab website link to About & Support.
+
+### Added
+- Documented the two account types: create one business administrator on the
+  host at first launch, then have the administrator create staff logins with
+  Billing, Accounts, Inventory, Payroll, or read-only access.
+- Added a standalone Windows, macOS, and Linux staff desktop app. Staff sign in
+  with accounts created by the administrator; the client finds and connects
+  to the host in its own app window, without opening a browser, starting a
+  second business server, creating another administrator, or making separate
+  books. Platform installers include a desktop or app-menu launcher after
+  their one-time installation.
+
+## [1.10.92] - 2026-11-04
+
+### Added
+- Added assignable Billing, Accounts, Inventory and Payroll roles, with
+  optional multiple roles per staff account and a standalone read-only role.
+- Added role-aware sidebar/deep-link access and server-side authorization for
+  staff record reads and changes, including payroll data.
+- Preserved existing staff access when upgrading; administrators can review
+  and change each account's roles in Settings → Users & devices.
+
+## [1.10.91] - 2026-11-04
+
+### How to update
+
+**Current version:** 1.10.90  →  **New version:** 1.10.91
+
+Use the in-app **Update Now** button, run the platform install command from
+the Nexuzy Ledger documentation, or download `Nexuzy-Ledger.zip` from this
+release and open the launcher. App updates preserve your business data.
+
+### Fixed
+- Moved the Users & devices panel out of the Import/Export section so its
+  Settings tab displays the admin's staff-account and LAN-access controls.
+- Added a packaged browser check that verifies an administrator can reach
+  **Add staff** from **Settings → Users & devices**.
+
+## [1.10.90] - 2026-11-04
+
+## [1.10.90] - 2026-11-04
+
+### How to update
+
+**Current version:** 1.10.89  →  **New version:** 1.10.90
+
+Use the in-app **Update Now** button, run the platform install command from
+the Nexuzy Ledger documentation, or download `Nexuzy-Ledger.zip` from this
+release and open the launcher. App updates preserve your business data.
+
+### Improved
+- Moved the signed-in account controls into a compact menu at the bottom of
+  the navigation sidebar so Change password and Sign out no longer cover
+  dashboard actions or take up mobile header space.
+- Added clearer instructions for creating staff accounts and signing in from
+  another device.
+
+## [1.10.89] - 2026-11-03
+
+### How to update
+
+**Current version:** 1.10.88  →  **New version:** 1.10.89
+
+Use the in-app **Update Now** button, run the platform install command from
+the Nexuzy Ledger documentation, or download `Nexuzy-Ledger.zip` from this
+release and open the launcher. The updater replaces app files and recreates
+the Desktop and Start Menu shortcuts without replacing business data.
+
+### Fixed
+- Prevented a Windows port-conflict startup race from reading a missing server
+  address and leaving the app unavailable.
+- Windows updates now recreate the Desktop and Start Menu shortcuts after
+  refreshing the app; added checks that both shortcuts start the installed
+  server and that busy-port recovery returns a healthy server.
+- Release packages bundle the server and omit `node_modules`, reducing shipped
+  files and avoiding package installation on first launch.
+
+## [1.10.88] - 2026-11-03
+
+### Fixed
+- Re-running the Windows launcher from a new ZIP now updates the detected
+  installation instead of leaving users with a second, empty copy.
+- Windows install and update now use checked parallel file synchronization,
+  replacing app files while explicitly preserving business data, saved
+  invoices, trash, portable Node.js and custom hidden files.
+- The Windows in-app updater checks the release version before downloading or
+  backing up, and no longer silently ignores failed file copies.
+- Unix updates stage beside the app and move extracted files into place rather
+  than copying the full package a second time.
+- GitHub updaters select the Nexuzy Ledger app ZIP instead of an unrelated ZIP
+  attachment.
+- Added Windows update tests for exact data preservation, overwrite behavior,
+  dependency refresh and stale-file cleanup.
+
+## [1.10.87] - 2026-11-03
+
+### Fixed
+- Restored first-run sign-in and administrator setup from the IPv4 desktop
+  launcher by allowing same-host account API requests in the installed app.
+- Release verification now opens the production build on the same IPv4 loopback
+  address as the Windows launcher and tests the account bootstrap endpoint.
+- Release verification selects the Nexuzy Ledger application ZIP explicitly,
+  so a documentation ZIP cannot be mistaken for and deleted as the app release.
+- Added troubleshooting guidance for a sign-in screen that cannot contact the
+  local server, including how the administrator adds staff and trusted devices.
+
+---
+
+## [1.10.86] - 2026-11-03
+
+### Improved
+- The Payroll attendance register now explains its status cycle, reports monthly
+  present/absent/leave totals, exports the selected month, and gives accessible
+  day controls with clear save feedback.
+- README and user documentation now describe payroll, attendance, local
+  administrator/staff accounts, secure LAN access, manufacturing BOMs, cost
+  centres, purchase orders and the limits of financial reports.
+- Windows startup verifies that a healthy server belongs to the install being
+  opened, avoiding accidental connection to a different Nexuzy Ledger copy.
+  The app window now uses the same IPv4 loopback address as the health check.
+
+### Fixed
+- Attendance changes now report save failures instead of silently dropping
+  them.
+
+---
+
 ## [1.10.85] - 2026-11-01
 
 ### Added
@@ -775,7 +923,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -870,7 +1018,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -936,7 +1084,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -1049,7 +1197,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -1128,7 +1276,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -1221,7 +1369,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -1312,7 +1460,7 @@ the old folder. Restart the app afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` before it changes anything.
+`Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 #### Something went wrong?
 Open an issue with a screenshot of the error:
@@ -1404,7 +1552,7 @@ the old folder. Restart the app, or its container, afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -1458,7 +1606,7 @@ The in-app **Control Panel → Update Now** works here too. It needs `unzip`
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -1548,7 +1696,7 @@ The in-app **Control Panel → Update Now** works here too. It needs `unzip`
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -1622,7 +1770,7 @@ The in-app **Control Panel → Update Now** works here too. It needs `unzip`
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -1872,7 +2020,7 @@ The in-app **Control Panel → Update Now** works here too. It needs `unzip`
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -1944,7 +2092,7 @@ needs `unzip` (or python3). Restart the app, or its container, afterwards.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -2063,7 +2211,7 @@ on, **Control Panel → Update Now** works there too.
 #### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`, which
 an update never touches. The updater also takes an automatic backup to
-`Documents\FreeGSTBill Backups\` (on Linux `~/Documents/FreeGSTBill Backups/`)
+`Documents\Nexuzy Ledger  Backups\` (on Linux `~/Documents/Nexuzy Ledger  Backups/`)
 before it changes anything.
 
 #### Something went wrong?
@@ -3129,7 +3277,7 @@ That is all — your data is not touched.
 
 **Is my data safe?** Yes. Invoices, clients, products and settings live in
 `_system/data/`, which an update never touches. The updater also takes an
-automatic backup to `Documents\FreeGSTBill Backups\` before it changes
+automatic backup to `Documents\Nexuzy Ledger  Backups\` before it changes
 anything.
 
 **Something went wrong?** Open an issue with a screenshot:
@@ -3209,7 +3357,7 @@ That is all — your data is not touched.
 
 **Is my data safe?** Yes. Invoices, clients, products and settings live in
 `_system/data/`, which an update never touches. The updater also takes an
-automatic backup to `Documents\FreeGSTBill Backups\` before it changes
+automatic backup to `Documents\Nexuzy Ledger  Backups\` before it changes
 anything.
 
 **Something went wrong?** Open an issue with a screenshot:
@@ -3394,7 +3542,7 @@ That is all — your data is not touched.
 
 **Is my data safe?** Yes. Invoices, clients, products and settings live in
 `_system/data/`, which an update never touches. The updater also takes an
-automatic backup to `Documents\FreeGSTBill Backups\` before it changes
+automatic backup to `Documents\Nexuzy Ledger  Backups\` before it changes
 anything.
 
 **Something went wrong?** Open an issue with a screenshot:
@@ -3491,7 +3639,7 @@ That is all — your data is not touched.
 
 **Is my data safe?** Yes. Invoices, clients, products and settings live in
 `_system/data/`, which an update never touches. The updater also takes an
-automatic backup to `Documents\FreeGSTBill Backups\` before it changes
+automatic backup to `Documents\Nexuzy Ledger  Backups\` before it changes
 anything.
 
 **Something went wrong?** Open an issue with a screenshot:
@@ -3635,7 +3783,7 @@ In-app updates work normally from v1.10.47 onward.
 
 **Is my data safe?** Yes. Invoices, clients, products and settings live in
 `_system/data/`, which an update never touches. The updater also takes an
-automatic backup to `Documents\FreeGSTBill Backups\` before it changes
+automatic backup to `Documents\Nexuzy Ledger  Backups\` before it changes
 anything.
 
 **Something went wrong?** Open an issue with a screenshot:
@@ -3683,7 +3831,7 @@ Control Panel so the user never has to touch the folder again.
 
 Every script is idempotent — safe to re-run any time. `update` and
 `restore` snapshot the current `data/` folder to
-`~/Documents/FreeGSTBill Backups/pre-*-<timestamp>.zip` FIRST so a
+`~/Documents/Nexuzy Ledger  Backups/pre-*-<timestamp>.zip` FIRST so a
 partial failure can be rolled back without data loss.
 
 ### Added — in-app Control Panel (`/api/control-panel/*` + React view)

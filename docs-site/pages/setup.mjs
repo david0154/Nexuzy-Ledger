@@ -5,11 +5,11 @@ export default [
 {
   slug: 'settings',
   title: 'Settings',
-  lead: 'Every tab of Settings, card by card, in the order the tabs appear: Business type, Company, Profiles, Terms, Print & PDF, Features, Stock, Region, App lock, Backups, Google Drive, Import/Export and Updates. Each card in the app has a ? next to its title that opens the matching part of this page.',
+  lead: 'Every tab of Settings, card by card, in the order the tabs appear: Business type, Company, Profiles, Terms, Print & PDF, Features, Stock, Region, App lock, Backups, Google Drive, Import/Export, Updates and Users & devices. Each card in the app has a ? next to its title that opens the matching part of this page.',
   body: `
 <section id="save-bar">
 <h2>Settings tabs and the Save all changes bar</h2>
-<p>Open ${ui('Settings')} from the sidebar. Settings is split into <b>tabs</b>, a row of buttons at the top of the page: ${ui('Business type')}, ${ui('Company')}, ${ui('Profiles')}, ${ui('Terms')}, ${ui('Print &amp; PDF')}, ${ui('Features')}, ${ui('Stock')}, ${ui('Region')}, ${ui('App lock')}, ${ui('Privacy &amp; internet')}, ${ui('Backups')}, ${ui('Google Drive')}, ${ui('Import/Export')} and ${ui('Updates')}. Click one to show that tab. The tab you are on is filled in blue. On a phone or a small screen the buttons wrap onto two or three lines; nothing is hidden.</p>
+<p>Open ${ui('Settings')} from the sidebar. Settings is split into <b>tabs</b>, a row of buttons at the top of the page: ${ui('Business type')}, ${ui('Company')}, ${ui('Profiles')}, ${ui('Terms')}, ${ui('Print &amp; PDF')}, ${ui('Features')}, ${ui('Stock')}, ${ui('Region')}, ${ui('App lock')}, ${ui('Privacy &amp; internet')}, ${ui('Backups')}, ${ui('Google Drive')}, ${ui('Import/Export')}, ${ui('Updates')} and ${ui('Users &amp; devices')}. Click one to show that tab. The tab you are on is filled in blue. On a phone or a small screen the buttons wrap onto two or three lines; nothing is hidden.</p>
 <p>The app remembers the tab you had open until you close the browser tab, so coming back to Settings opens the same tab.</p>
 <p><b>The ? buttons.</b> The ${ui('?')} at the top right of Settings opens the help for the tab you are on. Every card inside a tab also has its own small ${ui('?')} next to its title, which opens the help for just that card, here or on the <a href="print-settings.html">Print and PDF</a> and <a href="backup.html">Backups</a> pages. They open in your web browser and need internet.</p>
 <h3>The Save all changes bar</h3>
@@ -504,6 +504,17 @@ export default [
   <li><b>Still the old version after updating</b>: reload the page, or close the browser tab and open the app again.</li>
 </ul>
 </section>
+
+<section id="users-and-devices">
+<h2>Users &amp; devices</h2>
+<p>To add a person, sign in as administrator, open <b>Settings</b> from the left menu, and choose <b>Users &amp; devices</b>. Under <b>Staff accounts</b>, enter a unique username and a temporary password of 6–16 characters, choose one or more access roles, then click <b>Add staff</b>. Give each person their own credentials. Staff can change their own password; the administrator can change roles, reset a password or deactivate an account.</p>
+<p><b>Roles:</b> Billing covers invoices, clients, recurring invoices and receipts. Accounts covers expenses, purchase bills, cash book and reports. Inventory covers products, stock, manufacturing and purchase orders. Payroll covers employee, attendance and payroll records. You can combine these roles. <b>Read-only</b> can view sections but cannot change records, and must be assigned by itself. Existing staff retain their current access until the administrator changes their roles.</p>
+<p>The first time the host app opens, create the administrator account using a password of 6–16 characters. Existing accounts keep their current password, including longer passwords created by older releases; a new password must be 6–16 characters.</p>
+<p>To connect devices, click ${ui('Enable secure LAN access')}. The host advertises Nexuzy Ledger on the local network. Download the separate <b>Nexuzy Ledger Staff</b> desktop app for Windows (Setup EXE), macOS (DMG), or Linux (DEB or AppImage) from the <a href="https://github.com/david0154/Nexuzy-Ledger/releases/latest">latest release</a>. Windows Setup creates a desktop shortcut. On macOS, drag the app from the DMG into Applications and open it once to create a desktop alias. On Linux, the DEB adds an app launcher; opening the AppImage once adds a desktop launcher. Afterwards, click the icon to open the staff app in its own window; no browser is needed. The client does not run a business server or create another administrator. If discovery is blocked, enter the host name (for example <code>office-pc.local</code>) and port shown by the host. Trust the Nexuzy Lab certificate on each device before signing in.</p>
+<p>LAN HTTPS uses a private certificate issued by <b>Nexuzy Lab Local Network CA</b>. This keeps traffic encrypted, but devices must explicitly trust the downloaded CA once: download it from the host, verify the issuer name, and install it in that device's trusted root certificate store. Re-download and trust the CA after the first upgrade that changes the old “Nexuzy Ledger Local CA” to the Nexuzy Lab name. This private certificate is not a public code-signing certificate and does not remove Windows' “unknown publisher” warning.</p>
+<p>Sign in on the staff client using that person's account. Every client uses the host's one data folder, so the host must remain on and reachable over the same trusted private network. Internet is not needed.</p>
+<p>If a device cannot connect, allow Nexuzy Ledger through the host firewall on private networks only. A DHCP reservation helps keep the host address stable. Do not configure router port forwarding or expose the app to the public internet. Turn LAN access off when it is no longer needed.</p>
+</section>
 `,
 },
 
@@ -556,11 +567,11 @@ export default [
   <li><strong>Type a folder</strong>On another drive, a USB disk or a synced folder, such as <code>D:\\FreeGSTBill</code> or <code>E:\\</code>.</li>
   <li><strong>Save it</strong>Click ${ui('Save folder')}. The app checks it can write there and copies today's backup at once. The message says where the copies go.</li>
 </ol>
-<p>Each daily backup is then also copied into <code>FreeGSTBill Backups\\<i>date</i></code> inside that folder, keeping 30 days. The line under the box shows where. If a copy fails (a USB disk not plugged in), the card says so in red. ${ui('Stop copying')} turns it off; copies already made stay.</p>
+<p>Each daily backup is then also copied into <code>Nexuzy Ledger  Backups\\<i>date</i></code> inside that folder, keeping 30 days. The line under the box shows where. If a copy fails (a USB disk not plugged in), the card says so in red. ${ui('Stop copying')} turns it off; copies already made stay.</p>
 <p><b>If the computer fails</b>: install the app again, set the same folder here, and its backups appear in the list with ${ui('Restore')}.</p>
 <p>Or by hand:</p>
 <ul>
-  <li><strong>One click</strong>: ${ui('Create Backup')} in the <a href="control-panel.html">Control Panel</a>, or ${ui('Back up my data')} in the launcher under ${ui('More options')}, saves a ZIP in <code>Documents\\FreeGSTBill Backups</code>. Copy it to a pen drive or cloud storage.</li>
+  <li><strong>One click</strong>: ${ui('Create Backup')} in the <a href="control-panel.html">Control Panel</a>, or ${ui('Back up my data')} in the launcher under ${ui('More options')}, saves a ZIP in <code>Documents\\Nexuzy Ledger  Backups</code>. Copy it to a pen drive or cloud storage.</li>
   <li><strong>One file you choose</strong>: see <a href="#export-import">Export Backup</a>.</li>
   <li><strong>Google Drive</strong>: see <a href="settings.html#google-drive">Cloud Backup (Google Drive)</a>.</li>
 </ul>
@@ -653,7 +664,7 @@ export default [
   <li>${ui('Update Now')} in the <a href="control-panel.html">Control Panel</a>.</li>
   <li>In the launcher, ${ui('More options')}, then ${ui('Update to the latest version')}.</li>
 </ul>
-<p>Every update first saves a backup of your data in <code>Documents\\FreeGSTBill Backups</code>, then replaces the app. It never touches your data folder or your saved PDFs. It takes about a minute; reload the page when it finishes.</p>
+<p>Every update first saves a backup of your data in <code>Documents\\Nexuzy Ledger  Backups</code>, then replaces the app. It never touches your data folder or your saved PDFs. It takes about a minute; reload the page when it finishes.</p>
 <p>To update by hand instead: download the ZIP, stop the app, extract the ZIP over your app folder replacing the files, and open the launcher again.</p>
 <p>If you extract a new ZIP into a different folder by mistake, its launcher does not install a second copy. It shows <b>Already installed on this computer</b>, with the folder, version and number of invoices, and offers ${ui('Update the installed copy')} and ${ui('Open the installed copy')}. The update uses the files in the folder you extracted, so it needs no download and works without internet; your invoices, saved PDFs and trash stay as they are. The new folder can then be deleted.</p>
 <p>Updating also removes files that older versions left behind, such as launchers under their old names, once their replacements are in place. Your data, backups and Node.js are never touched.</p>
@@ -677,11 +688,11 @@ export default [
 <div class="table-wrap"><table>
   <tr><th>Card</th><th>Button</th><th>What it does</th></tr>
   <tr><td><a href="#update">Update Software</a></td><td>${ui('Update Now')}</td><td>Downloads the latest version. Your data is backed up first and never touched.</td></tr>
-  <tr><td><a href="#backup">Backup Data</a></td><td>${ui('Create Backup')}</td><td>Saves your data as a dated ZIP in <code>Documents\\FreeGSTBill Backups</code>.</td></tr>
+  <tr><td><a href="#backup">Backup Data</a></td><td>${ui('Create Backup')}</td><td>Saves your data as a dated ZIP in <code>Documents\\Nexuzy Ledger  Backups</code>.</td></tr>
   <tr><td><a href="#restore">Restore Backup</a></td><td>${ui('Choose Backup ZIP')}</td><td>Pick a backup ZIP to restore. What you have now is saved first, as a safety net.</td></tr>
   <tr><td><a href="#move">Move to Another PC</a></td><td>${ui('Export for Move')}</td><td>Saves your data and settings as one ZIP on your Desktop. See <a href="backup.html#move-pc">Moving to a new computer</a>.</td></tr>
   <tr><td>Open Data Folder</td><td>${ui('Open')}</td><td>Opens the folder with your bills, clients, products and settings.</td></tr>
-  <tr><td>Open Backups Folder</td><td>${ui('Open')}</td><td>Opens <code>Documents\\FreeGSTBill Backups</code>.</td></tr>
+  <tr><td>Open Backups Folder</td><td>${ui('Open')}</td><td>Opens <code>Documents\\Nexuzy Ledger  Backups</code>.</td></tr>
   <tr><td><a href="#restart">Restart the App</a></td><td>${ui('Restart')}</td><td>Restarts the app when something is not working, then reloads the page.</td></tr>
   <tr><td><a href="#stop">Stop Server</a></td><td>${ui('Stop Server')}</td><td>Stops the app. Open it again from the launcher or shortcut.</td></tr>
   <tr><td><a href="#remove">Remove the App</a></td><td>${ui('Remove…')}</td><td>Uninstalls the app. You tick whether your data, PDFs and backups are deleted too. Where it cannot remove itself, the button reads ${ui('How to remove it')} and opens the steps.</td></tr>
@@ -701,8 +712,8 @@ export default [
 <p><b>When to use it.</b> When a new version is out (we ship one most Saturdays) or a problem you reported has been fixed. You need internet.</p>
 <ol>
   <li>Click ${ui('Update Now')}. The button shows <b>Updating...</b>; wait until it finishes. It can take a few minutes.</li>
-  <li><b>Windows:</b> a black window opens. It first saves a backup of your data, <code>pre-update-<i>date</i>.zip</code>, in <code>Documents\\FreeGSTBill Backups</code>, then downloads and applies the update. It ends with <b>[OK] Update complete!</b></li>
-  <li><b>Mac and Linux:</b> it does the same, saving the backup as <code>pre-update-<i>date</i>.tar.gz</code> in <code>Documents/FreeGSTBill Backups</code>. If you already have the newest version it says so and changes nothing. It ends with <b>[OK] Update complete</b> and the old and new version numbers.</li>
+  <li><b>Windows:</b> a black window opens. It first saves a backup of your data, <code>pre-update-<i>date</i>.zip</code>, in <code>Documents\\Nexuzy Ledger  Backups</code>, then downloads and applies the update. It ends with <b>[OK] Update complete!</b></li>
+  <li><b>Mac and Linux:</b> it does the same, saving the backup as <code>pre-update-<i>date</i>.tar.gz</code> in <code>Documents/Nexuzy Ledger  Backups</code>. If you already have the newest version it says so and changes nothing. It ends with <b>[OK] Update complete</b> and the old and new version numbers.</li>
   <li>Restart the app to run the new version: click ${ui('Stop Server')} (see <a href="#stop">Stop Server</a>), then open the app again from its icon or launcher. Then press <kbd>Ctrl</kbd> + <kbd>F5</kbd> (Mac: <kbd>&#8984;</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>).</li>
 </ol>
 <p><b>Is it safe?</b> Yes. Your data is backed up first and the update never touches the data folder. On Mac and Linux, if the update fails half way, the old app files are put back.</p>
@@ -716,7 +727,7 @@ export default [
 
 <section id="backup">
 <h3>Backup Data</h3>
-<p><b>What it does.</b> Saves all your bills, clients, products and settings as one dated ZIP file, <code>backup-<i>date_time</i>.zip</code>, in the <code>Documents\\FreeGSTBill Backups</code> folder (Mac and Linux: <code>Documents/FreeGSTBill Backups</code>).</p>
+<p><b>What it does.</b> Saves all your bills, clients, products and settings as one dated ZIP file, <code>backup-<i>date_time</i>.zip</code>, in the <code>Documents\\Nexuzy Ledger  Backups</code> folder (Mac and Linux: <code>Documents/Nexuzy Ledger  Backups</code>).</p>
 <p><b>When to use it.</b> Before a big change, at the end of the month, or any time you want a copy to keep on a pen drive. The app also makes its own daily backup; this is an extra one at a moment you choose.</p>
 <ol>
   <li>Click ${ui('Create Backup')}. It shows <b>Backing up...</b> for a moment.</li>
@@ -732,7 +743,7 @@ export default [
 <p><b>What it does.</b> Replaces the data in the app with the data from a backup ZIP you choose.</p>
 <p><b>When to use it.</b> After moving to a new computer, or to go back to how things were on an earlier day. It works with ZIPs made by ${ui('Create Backup')} or ${ui('Export for Move')}.</p>
 <ol>
-  <li><b>Windows.</b> Click ${ui('Choose Backup ZIP')}. A file window opens in your <code>FreeGSTBill Backups</code> folder. Pick the ZIP and click <b>Open</b>. (Close the window to cancel; nothing changes.)</li>
+  <li><b>Windows.</b> Click ${ui('Choose Backup ZIP')}. A file window opens in your <code>Nexuzy Ledger  Backups</code> folder. Pick the ZIP and click <b>Open</b>. (Close the window to cancel; nothing changes.)</li>
   <li>The app first saves what you have now as <code>pre-restore-<i>date</i>.zip</code> in the same folder. This is your way back if you chose the wrong file.</li>
   <li>It then replaces the data with the backup's contents and shows <b>[OK] Restore complete!</b> Press <b>Enter</b> to close the black window.</li>
   <li>Restart the app (<a href="#stop">Stop Server</a>, then open it again) to see the restored data.</li>
@@ -791,12 +802,12 @@ export default [
     <ul>
       <li><b>My invoices, clients, products and settings</b>: the data folder, with the daily backups inside it.</li>
       <li><b>Saved invoice PDFs</b>: the <code>Saved Invoices</code> and <code>Trash</code> folders.</li>
-      <li><b>All backup files</b> in <code>Documents\\FreeGSTBill Backups</code>.</li>
+      <li><b>All backup files</b> in <code>Documents\\Nexuzy Ledger  Backups</code>.</li>
     </ul>
     ${ui('Select everything')} ticks all three, for a computer you are giving away.</li>
   <li>Click ${ui('Remove the app')}. If your data is ticked, it asks once more. The app closes and the page says it is being removed. Close the window.</li>
 </ol>
-<p><b>Is it safe?</b> If you delete your data but keep the backups, a last copy, <code>before-removal-<i>date</i>.zip</code> (Mac and Linux: <code>.tar.gz</code>), is saved in <code>Documents\\FreeGSTBill Backups</code> first. If that copy cannot be made, your data is kept. Whatever you keep stays in the app folder; install the app into the same folder again and it is all there. Other files you put in the app folder yourself are not touched, and neither is a second backup folder you chose in Settings.</p>
+<p><b>Is it safe?</b> If you delete your data but keep the backups, a last copy, <code>before-removal-<i>date</i>.zip</code> (Mac and Linux: <code>.tar.gz</code>), is saved in <code>Documents\\Nexuzy Ledger  Backups</code> first. If that copy cannot be made, your data is kept. Whatever you keep stays in the app folder; install the app into the same folder again and it is all there. Other files you put in the app folder yourself are not touched, and neither is a second backup folder you chose in Settings.</p>
 <p><b>Something wrong?</b> If the button reads ${ui('How to remove it')}, the app is running from source code or an old ZIP and cannot remove itself; the button opens <a href="install.html#uninstall">Removing the app</a> with the other ways. On Windows, if a file is in use, a message names the folder to delete by hand after a restart.</p>
 </section>
 
@@ -818,6 +829,7 @@ export default [
 <p>Versions 1.10.44 to 1.10.71 showed this message, then called "Launcher scripts not detected", on every installed copy by mistake. Update to 1.10.72 or later using the launcher's <b>Update to the latest version</b>.</p>
 <p>On Linux and macOS only Update and Backup have scripts, so Restore, Move and Stop show <b>Not available here</b>.</p>
 </section>
+
 `,
 },
 ];

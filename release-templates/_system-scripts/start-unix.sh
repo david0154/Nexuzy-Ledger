@@ -23,7 +23,7 @@ if [ -f "$SYSTEM_DIR/data/port.txt" ]; then
 fi
 
 # Is our server already up?
-if curl -fsS --max-time 1 "http://localhost:$PORT/api/profile" >/dev/null 2>&1; then
+if curl -fsS --max-time 1 "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
   echo "  Server already running on port $PORT — opening browser…"
 else
   # v1.10.81 (#109) - an old Node.js was started here and never answered.
@@ -41,7 +41,7 @@ else
   up=0
   while [ $(date +%s) -lt $deadline ]; do
     sleep 0.4
-    if curl -fsS --max-time 1 "http://localhost:$PORT/api/profile" >/dev/null 2>&1; then
+    if curl -fsS --max-time 1 "http://localhost:$PORT/api/health" >/dev/null 2>&1; then
       up=1
       break
     fi

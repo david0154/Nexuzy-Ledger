@@ -1,11 +1,15 @@
 import express from 'express';
+import https from 'https';
 // v1.10.0 — `cors` package no longer imported. The CORS-lockdown
 // middleware below is intentionally custom + strict (localhost only)
 // where `cors()` echoed `*` for every origin.
 import fs from 'fs';
 import crypto from 'crypto';
+import os from 'os';
 import path from 'path';
+import forge from 'node-forge';
 import { fileURLToPath } from 'url';
+import { execFile } from 'child_process';
 // v1.10.31 — Data-F3.1: share computeInvoiceTotals with the client so
 // server-generated recurring invoices honour UTGST, cess, RCM, TDS/TCS,
 // discount modes (percent / unit / with-tax), tax-inclusive back-calc,
@@ -16,10 +20,12 @@ import { fileURLToPath } from 'url';
 import { redact } from './src/utils/errorReport.js';
 import { validateCashEntry, cleanCashEntry } from './src/utils/cashBook.js';
 import { validatePurchasePayments } from './src/utils/purchasePayments.js';
+import { isValidStaffRoles, normalizeStaffRoles, requiredModuleForApiRequest, requiredReadModuleForApiRequest, userCanReadModule, userCanWriteModule } from './src/utils/accessRoles.js';
+import { advertiseLanService } from './src/utils/lanDiscovery.js';
 import { templateTotals, clientYearToDate, nextCounterValue, startFor, numberSeriesFor, counterKeyFor, formatDocNumber, businessKeyOf, getFinancialYearLabel, INVOICE_TYPES } from './src/utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = path.resolve(process.env.NEXUZY_DATA_DIR || path.join(__dirname, 'data'));
 
 // Port choice — we deliberately default to a high, unusual number rather than
 // the conventional 3001. The 3000-range is heavily used by every other Node /
@@ -31,7 +37,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 // wins over this default — so a single user who genuinely needs 47371 for
 // something else can edit that file and we'll respect it forever.
 const DEFAULT_PORT = 47371;
-const PORT_FILE = path.join(__dirname, 'data', 'port.txt');
+const PORT_FILE = path.join(DATA_DIR, 'port.txt');
 
 // Read the persisted port (if any) — written once on first successful start
 // and every time we get bumped off our preferred port by EADDRINUSE.
@@ -42,27 +48,21 @@ const persistedPort = (() => {
     return (isFinite(n) && n >= 1024 && n <= 65535) ? n : null;
   } catch { return null; }
 })();
-const STARTING_PORT = persistedPort || DEFAULT_PORT;
+const requestedPort = parseInt(process.env.NEXUZY_PORT || '', 10);
+const STARTING_PORT = (Number.isInteger(requestedPort) && (requestedPort === 0 || (requestedPort >= 1024 && requestedPort <= 65535)))
+  ? requestedPort : (persistedPort || DEFAULT_PORT);
 const MAX_PORT_SCAN = 50; // 47371 → 47420 is enough headroom for any conceivable collision
+const LAN_START_PORT = 47372;
 
 const app = express();
 
-// v1.10.0 — CORS lockdown. Previously `app.use(cors())` echoed
-// Access-Control-Allow-Origin: *, which meant any site the user visited
-// could `fetch('http://localhost:47371/api/bills')` and read/wipe all
-// data. This is a local desktop-style app: legitimate callers either
-// have no Origin header (same-page fetch from our own served HTML,
-// browsers' XHR to localhost from about:blank tools, curl) or an
-// Origin pointing at http://localhost:<port>. Everything else is
-// rejected. The Vite dev server proxies /api → us so its origin is
-// also localhost.
+// Only same-origin browser requests are allowed. The Vite proxy rewrites its
+// upstream Origin to the local Express origin, preventing localhost pages on
+// unrelated ports from making state-changing requests with cookies.
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allow =
-    !origin ||
-    /^https?:\/\/localhost(:\d+)?$/i.test(origin) ||
-    /^https?:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin) ||
-    /^https?:\/\/\[::1\](:\d+)?$/i.test(origin);
+  const sameOrigin = origin && `${req.socket.encrypted ? 'https' : 'http'}://${req.headers.host}`.toLowerCase() === origin.toLowerCase();
+  const allow = !origin || sameOrigin;
   if (!allow) {
     return res.status(403).json({ error: 'Cross-origin request refused' });
   }
@@ -112,6 +112,460 @@ try {
   try { fs.appendFileSync(path.join(DATA_DIR, 'errors.log'), `[${new Date().toISOString()}] [startup] ${why} ${err.code || ''}\n`, 'utf-8'); } catch { /* the folder is the problem */ }
   process.exit(1);
 }
+
+// Password accounts are stored separately from business data. A deployment
+// stays loopback-only until an administrator explicitly enables HTTPS LAN access.
+const USERS_PATH = path.join(DATA_DIR, 'users.json');
+const NETWORK_PATH = path.join(DATA_DIR, 'network.json');
+const TLS_CERT_PATH = path.join(DATA_DIR, 'lan-server-certificate.pem');
+const TLS_KEY_PATH = path.join(DATA_DIR, 'lan-server-private-key.pem');
+const TLS_CA_CERT_PATH = path.join(DATA_DIR, 'lan-root-certificate.pem');
+const TLS_CA_KEY_PATH = path.join(DATA_DIR, 'lan-root-private-key.pem');
+const sessions = new Map();
+const loginFailures = new Map();
+const SESSION_IDLE_MS = 12 * 60 * 60 * 1000;
+const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_MAX_LENGTH = 16;
+
+const readUsers = () => {
+  if (!fs.existsSync(USERS_PATH)) return [];
+  const users = readJSON(USERS_PATH, null);
+  if (!Array.isArray(users)) throw new Error('The local user account file is unreadable. Restore it from a backup before using the app.');
+  return users;
+};
+const publicUser = ({ id, username, role, roles, active, createdAt }) => ({
+  id, username, role,
+  ...(role === 'admin' ? {} : { roles: normalizeStaffRoles(roles, true) }),
+  active, createdAt,
+});
+const userById = (id) => readUsers().find((user) => user.id === id && user.active);
+const passwordHash = (password, salt) => crypto.scryptSync(password, salt, 64).toString('hex');
+const passwordsMatch = (password, user) => {
+  const actual = Buffer.from(passwordHash(password, user.salt), 'hex');
+  const expected = Buffer.from(user.passwordHash, 'hex');
+  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+};
+const isLoopback = (req) => {
+  const address = req.socket.remoteAddress || '';
+  return address === '::1' || address === '127.0.0.1' || address.startsWith('::ffff:127.');
+};
+const sessionFor = (req) => {
+  const cookie = String(req.headers.cookie || '').split(';').map((part) => part.trim())
+    .find((part) => part.startsWith('nexuzy_session='));
+  if (!cookie) return null;
+  const token = cookie.slice('nexuzy_session='.length);
+  const session = sessions.get(token);
+  if (!session) return null;
+  if (Date.now() - session.lastSeen > SESSION_IDLE_MS || Date.now() - session.createdAt > SESSION_IDLE_MS) {
+    sessions.delete(token);
+    return null;
+  }
+  const user = userById(session.userId);
+  if (!user) {
+    sessions.delete(token);
+    return null;
+  }
+  session.lastSeen = Date.now();
+  return { token, user };
+};
+const setSessionCookie = (req, res, token) => {
+  const secure = req.socket.encrypted ? '; Secure' : '';
+  res.setHeader('Set-Cookie', `nexuzy_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${SESSION_IDLE_MS / 1000}${secure}`);
+};
+const makeSession = (req, res, user) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  sessions.set(token, { userId: user.id, createdAt: Date.now(), lastSeen: Date.now() });
+  setSessionCookie(req, res, token);
+  return publicUser(user);
+};
+const validUsername = (value) => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,31}$/.test(value.trim());
+const validPassword = (value) => typeof value === 'string'
+  && value.length >= PASSWORD_MIN_LENGTH
+  && value.length <= PASSWORD_MAX_LENGTH;
+const createAccount = (username, password, role, roles = []) => {
+  const users = readUsers();
+  const salt = crypto.randomBytes(16).toString('hex');
+  const user = {
+    id: crypto.randomBytes(16).toString('hex'),
+    username: username.trim(),
+    role,
+    ...(role === 'staff' ? { roles: normalizeStaffRoles(roles) } : {}),
+    active: true,
+    salt,
+    passwordHash: passwordHash(password, salt),
+    createdAt: new Date().toISOString(),
+  };
+  users.push(user);
+  writeJSON(USERS_PATH, users);
+  return user;
+};
+
+app.get('/api/auth/status', (req, res) => {
+  const users = readUsers();
+  const session = sessionFor(req);
+  res.json({
+    setupRequired: users.length === 0,
+    authRequired: users.length > 0,
+    user: session ? publicUser(session.user) : null,
+  });
+});
+
+app.post('/api/auth/setup', (req, res) => {
+  if (!isLoopback(req)) return res.status(403).json({ error: 'Create the first administrator on the host computer.' });
+  if (readUsers().length) return res.status(409).json({ error: 'The administrator account has already been created.' });
+  const { username, password } = req.body || {};
+  if (!validUsername(username)) return res.status(400).json({ error: 'Use a username with 3-32 letters, numbers, dots, dashes or underscores.' });
+  if (!validPassword(password)) return res.status(400).json({ error: `Use a password with ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters.` });
+  const user = createAccount(username, password, 'admin');
+  return res.json({ user: makeSession(req, res, user) });
+});
+
+const clientAddress = (req) => req.socket.remoteAddress || 'unknown';
+app.post('/api/auth/login', (req, res) => {
+  const address = clientAddress(req);
+  const failure = loginFailures.get(address) || { count: 0, until: 0 };
+  if (failure.until > Date.now()) return res.status(429).json({ error: 'Too many sign-in attempts. Wait a little and try again.' });
+  const { username, password } = req.body || {};
+  const user = readUsers().find((candidate) => candidate.active && candidate.username.toLowerCase() === String(username || '').trim().toLowerCase());
+  const valid = user && typeof password === 'string' && password.length <= 128 && passwordsMatch(password, user);
+  if (!valid) {
+    failure.count += 1;
+    if (failure.count >= 5) { failure.count = 0; failure.until = Date.now() + 30_000; }
+    loginFailures.set(address, failure);
+    return res.status(failure.until > Date.now() ? 429 : 401).json({ error: failure.until > Date.now() ? 'Too many sign-in attempts. Wait a little and try again.' : 'Username or password is incorrect.' });
+  }
+  loginFailures.delete(address);
+  return res.json({ user: makeSession(req, res, user) });
+});
+
+app.post('/api/auth/password', (req, res) => {
+  const session = sessionFor(req);
+  if (!session) return res.status(401).json({ error: 'Sign in again before changing your password.' });
+  const { currentPassword, newPassword } = req.body || {};
+  if (typeof currentPassword !== 'string' || currentPassword.length > 128) return res.status(401).json({ error: 'Current password is incorrect.' });
+  if (!passwordsMatch(String(currentPassword || ''), session.user)) return res.status(401).json({ error: 'Current password is incorrect.' });
+  if (!validPassword(newPassword)) return res.status(400).json({ error: `Use a password with ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters.` });
+  const users = readUsers();
+  const user = users.find((candidate) => candidate.id === session.user.id);
+  if (!user) return res.status(401).json({ error: 'Account is no longer available.' });
+  user.salt = crypto.randomBytes(16).toString('hex');
+  user.passwordHash = passwordHash(newPassword, user.salt);
+  writeJSON(USERS_PATH, users);
+  for (const [token, activeSession] of sessions) {
+    if (activeSession.userId === user.id) sessions.delete(token);
+  }
+  return res.json({ user: makeSession(req, res, user) });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  const session = sessionFor(req);
+  if (session) sessions.delete(session.token);
+  res.setHeader('Set-Cookie', `nexuzy_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${req.socket.encrypted ? '; Secure' : ''}`);
+  res.json({ success: true });
+});
+
+app.get('/api/auth/users', (req, res) => {
+  const session = sessionFor(req);
+  if (session?.user.role !== 'admin') return res.status(403).json({ error: 'Only the administrator can manage user accounts.' });
+  res.json(readUsers().map(publicUser));
+});
+
+app.post('/api/auth/users', (req, res) => {
+  const session = sessionFor(req);
+  if (session?.user.role !== 'admin') return res.status(403).json({ error: 'Only the administrator can manage user accounts.' });
+  const { username, password, roles } = req.body || {};
+  if (!validUsername(username)) return res.status(400).json({ error: 'Use a username with 3-32 letters, numbers, dots, dashes or underscores.' });
+  if (!validPassword(password)) return res.status(400).json({ error: `Use a password with ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters.` });
+  if (roles !== undefined && !isValidStaffRoles(roles)) return res.status(400).json({ error: 'Choose one or more valid roles. Read-only must be assigned by itself.' });
+  const users = readUsers();
+  if (users.some((user) => user.username.toLowerCase() === username.trim().toLowerCase())) return res.status(409).json({ error: 'That username is already in use.' });
+  const user = createAccount(username, password, 'staff', roles === undefined ? ['billing'] : roles);
+  res.status(201).json({ user: publicUser(user) });
+});
+
+app.patch('/api/auth/users/:id', (req, res) => {
+  const session = sessionFor(req);
+  if (session?.user.role !== 'admin') return res.status(403).json({ error: 'Only the administrator can manage user accounts.' });
+  const users = readUsers();
+  const user = users.find((candidate) => candidate.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+  if (user.role === 'admin') return res.status(400).json({ error: 'The primary administrator account cannot be changed here.' });
+  const { active, password, roles } = req.body || {};
+  if (roles !== undefined && !isValidStaffRoles(roles)) return res.status(400).json({ error: 'Choose one or more valid roles. Read-only must be assigned by itself.' });
+  if (typeof active === 'boolean') user.active = active;
+  if (roles !== undefined) user.roles = normalizeStaffRoles(roles);
+  if (password !== undefined) {
+    if (!validPassword(password)) return res.status(400).json({ error: `Use a password with ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters.` });
+    user.salt = crypto.randomBytes(16).toString('hex');
+    user.passwordHash = passwordHash(password, user.salt);
+    for (const [token, activeSession] of sessions) {
+      if (activeSession.userId === user.id) sessions.delete(token);
+    }
+  }
+  writeJSON(USERS_PATH, users);
+  res.json({ user: publicUser(user) });
+});
+
+function isAdminOnlyRequest(req) {
+  const { method, path: requestPath } = req;
+  if (requestPath === '/api/network' || requestPath.startsWith('/api/network/')) return true;
+  if (/^\/api\/(control-panel|export|import|backups|backup-folder|errors-log)(\/|$)/.test(requestPath)) return true;
+  if (['/api/profile', '/api/profiles', '/api/templates', '/api/number-series/rename'].includes(requestPath) && !['GET', 'HEAD'].includes(method)) return true;
+  if (requestPath.startsWith('/api/meta/') && requestPath !== '/api/meta/payroll' && method !== 'GET' && !requestPath.endsWith('/increment')) return true;
+  if (requestPath === '/api/lock/set' && method !== 'GET') return true;
+  return false;
+}
+
+app.use('/api', (req, res, next) => {
+  const requestPath = req.originalUrl.split('?')[0];
+  if (requestPath === '/api/health') {
+    return isLoopback(req) ? next() : res.status(403).json({ error: 'Health details are available on the host computer only.' });
+  }
+  if (requestPath.startsWith('/api/auth/')) return next();
+  if (!readUsers().length && !getNetworkConfig().enabled) return next();
+  const session = sessionFor(req);
+  if (!session) return res.status(401).json({ error: 'Sign in to access business data.', code: 'AUTH_REQUIRED' });
+  req.authUser = session.user;
+  if (isAdminOnlyRequest({ ...req, path: requestPath }) && session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'This action is available to the administrator only.', code: 'ADMIN_REQUIRED' });
+  }
+  if (['GET', 'HEAD'].includes(req.method)) {
+    const requiredModule = requiredReadModuleForApiRequest(requestPath);
+    if (requiredModule && !userCanReadModule(session.user, requiredModule)) {
+      return res.status(403).json({ error: 'Your account does not have permission to view this section.', code: 'ROLE_REQUIRED' });
+    }
+  } else if (!['OPTIONS'].includes(req.method)) {
+    const requiredModule = requiredModuleForApiRequest(requestPath);
+    if (requiredModule && !userCanWriteModule(session.user, requiredModule)) {
+      return res.status(403).json({ error: 'Your account does not have permission to change records in this section.', code: 'ROLE_REQUIRED' });
+    }
+  }
+  next();
+});
+
+const isPrivateIPv4 = (address) => /^10\./.test(address)
+  || /^192\.168\./.test(address)
+  || /^172\.(1[6-9]|2\d|3[01])\./.test(address)
+  || /^169\.254\./.test(address);
+const getLanAddresses = () => [...new Set(Object.values(os.networkInterfaces()).flat()
+  .filter((entry) => entry && !entry.internal && entry.family === 'IPv4' && isPrivateIPv4(entry.address))
+  .map((entry) => entry.address))];
+const getLanBindAddresses = () => {
+  const override = process.env.NEXUZY_LAN_BIND_ADDRESS;
+  if (override === '127.0.0.1' || (override && isPrivateIPv4(override))) return [override];
+  return getLanAddresses();
+};
+const getNetworkConfig = () => readJSON(NETWORK_PATH, { enabled: false, port: LAN_START_PORT });
+const certificateSerial = () => {
+  const bytes = crypto.randomBytes(16);
+  bytes[0] &= 0x7f;
+  if (bytes.every((byte) => byte === 0)) bytes[15] = 1;
+  return bytes.toString('hex');
+};
+const makeRootCertificate = () => {
+  const keys = forge.pki.rsa.generateKeyPair(2048);
+  const cert = forge.pki.createCertificate();
+  const subject = [{ name: 'commonName', value: 'Nexuzy Lab Local Network CA' }, { name: 'organizationName', value: 'Nexuzy Lab' }];
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = certificateSerial();
+  cert.validity.notBefore = new Date(Date.now() - 60_000);
+  cert.validity.notAfter = new Date();
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 10);
+  cert.setSubject(subject);
+  cert.setIssuer(subject);
+  cert.setExtensions([
+    { name: 'basicConstraints', cA: true, critical: true },
+    { name: 'keyUsage', keyCertSign: true, cRLSign: true, critical: true },
+    { name: 'subjectKeyIdentifier' },
+  ]);
+  cert.sign(keys.privateKey, forge.md.sha256.create());
+  fs.writeFileSync(TLS_CA_CERT_PATH, forge.pki.certificateToPem(cert), { mode: 0o600 });
+  fs.writeFileSync(TLS_CA_KEY_PATH, forge.pki.privateKeyToPem(keys.privateKey), { mode: 0o600 });
+};
+const generateLanCertificate = (addresses) => {
+  const rootCert = forge.pki.certificateFromPem(fs.readFileSync(TLS_CA_CERT_PATH, 'utf8'));
+  const rootKey = forge.pki.privateKeyFromPem(fs.readFileSync(TLS_CA_KEY_PATH, 'utf8'));
+  const hostname = os.hostname().toLowerCase();
+  const ips = [...new Set(['127.0.0.1', ...addresses])];
+  const altNames = [
+    { type: 2, value: 'localhost' },
+    ...(hostname && /^[a-z0-9.-]+$/.test(hostname) ? [{ type: 2, value: hostname }, { type: 2, value: `${hostname}.local` }] : []),
+    ...ips.map((ip) => ({ type: 7, ip })),
+  ];
+  const keys = forge.pki.rsa.generateKeyPair(2048);
+  const cert = forge.pki.createCertificate();
+  cert.publicKey = keys.publicKey;
+  cert.serialNumber = certificateSerial();
+  cert.validity.notBefore = new Date(Date.now() - 60_000);
+  cert.validity.notAfter = new Date(cert.validity.notBefore.getTime() + 825 * 24 * 60 * 60 * 1000);
+  cert.setSubject([{ name: 'commonName', value: hostname || 'nexuzy-ledger.local' }]);
+  cert.setIssuer(rootCert.subject.attributes);
+  cert.setExtensions([
+    { name: 'basicConstraints', cA: false, critical: true },
+    { name: 'keyUsage', digitalSignature: true, keyEncipherment: true, critical: true },
+    { name: 'extKeyUsage', serverAuth: true },
+    { name: 'subjectAltName', altNames },
+    { name: 'subjectKeyIdentifier' },
+  ]);
+  cert.sign(rootKey, forge.md.sha256.create());
+  fs.writeFileSync(TLS_CERT_PATH, forge.pki.certificateToPem(cert), { mode: 0o600 });
+  fs.writeFileSync(TLS_KEY_PATH, forge.pki.privateKeyToPem(keys.privateKey), { mode: 0o600 });
+};
+const ensureLanCertificates = () => {
+  const addresses = [...new Set(getLanBindAddresses())].sort();
+  if (!addresses.length) throw new Error('No private IPv4 network address is available. Connect the host to a private LAN and try again.');
+  const rootChanged = !fs.existsSync(TLS_CA_CERT_PATH) || !fs.existsSync(TLS_CA_KEY_PATH)
+    || forge.pki.certificateFromPem(fs.readFileSync(TLS_CA_CERT_PATH, 'utf8'))
+      .subject.getField('CN')?.value !== 'Nexuzy Lab Local Network CA';
+  if (rootChanged) makeRootCertificate();
+  const previousAddresses = [...(getNetworkConfig().certificateAddresses || [])].sort();
+  let renewServerCertificate = rootChanged || !fs.existsSync(TLS_CERT_PATH) || !fs.existsSync(TLS_KEY_PATH)
+    || JSON.stringify(addresses) !== JSON.stringify(previousAddresses);
+  if (!renewServerCertificate) {
+    const existingCert = forge.pki.certificateFromPem(fs.readFileSync(TLS_CERT_PATH, 'utf8'));
+    renewServerCertificate = existingCert.validity.notAfter.getTime() <= Date.now() + 30 * 24 * 60 * 60 * 1000;
+  }
+  if (renewServerCertificate) {
+    generateLanCertificate(addresses);
+    writeJSON(NETWORK_PATH, { ...getNetworkConfig(), certificateAddresses: addresses });
+  }
+};
+
+let lanServers = [];
+let lanPort = null;
+let lanDiscovery = null;
+function listenLanServer(address, port) {
+  return new Promise((resolve, reject) => {
+    const server = https.createServer({
+      cert: fs.readFileSync(TLS_CERT_PATH),
+      key: fs.readFileSync(TLS_KEY_PATH),
+    }, app);
+    const handleError = (err) => reject(err);
+    server.once('error', handleError);
+    server.listen(port, address, () => {
+      server.removeListener('error', handleError);
+      server.on('error', (err) => console.error(`  LAN HTTPS server error: ${err.message}`));
+      resolve(server);
+    });
+  });
+}
+async function startLanServer(port = getNetworkConfig().port || LAN_START_PORT) {
+  if (lanServers.length) return lanPort;
+  const addresses = getLanBindAddresses();
+  if (!addresses.length) throw new Error('No private IPv4 network address is available. Connect the host to a private LAN and try again.');
+  const started = [];
+  try {
+    for (const address of addresses) started.push(await listenLanServer(address, port));
+  } catch (err) {
+    await Promise.all(started.map((server) => new Promise((resolve) => server.close(resolve))));
+    if ((err.code === 'EADDRINUSE' || err.code === 'EACCES') && port < LAN_START_PORT + MAX_PORT_SCAN) {
+      return startLanServer(port + 1);
+    }
+    throw err;
+  }
+  lanServers = started;
+  lanPort = port;
+  const config = getNetworkConfig();
+  writeJSON(NETWORK_PATH, { ...config, enabled: true, port });
+  try {
+    lanDiscovery = advertiseLanService({
+      hostname: os.hostname(),
+      port,
+      onError: (err) => {
+        console.error(`  LAN service discovery error: ${err.message}`);
+      },
+    });
+  } catch (err) {
+    lanDiscovery = null;
+    console.error(`  Could not advertise LAN service discovery: ${err.message}`);
+  }
+  console.log(`  LAN HTTPS access enabled on ${addresses.join(', ')} port ${port}`);
+  return port;
+}
+function stopLanServer() {
+  const servers = lanServers;
+  lanServers = [];
+  lanPort = null;
+  const closeServers = Promise.all(servers.map((server) => new Promise((resolve) => server.close(resolve))));
+  if (!lanDiscovery) return closeServers;
+  const discovery = lanDiscovery;
+  lanDiscovery = null;
+  return Promise.all([closeServers, discovery.close()]);
+}
+
+app.get('/api/network', (req, res) => {
+  const config = getNetworkConfig();
+  res.json({
+    enabled: config.enabled && lanServers.length > 0,
+    port: lanServers.length ? lanPort : (config.port || LAN_START_PORT),
+    addresses: getLanAddresses(),
+    hostName: os.hostname(),
+    certificateReady: fs.existsSync(TLS_CA_CERT_PATH),
+  });
+});
+
+app.get('/api/network/certificate', (req, res) => {
+  if (!fs.existsSync(TLS_CA_CERT_PATH)) return res.status(404).json({ error: 'Enable LAN access to create the certificate first.' });
+  res.type('application/x-x509-ca-cert');
+  res.setHeader('Content-Disposition', 'attachment; filename="Nexuzy-Lab-LAN-CA.cer"');
+  res.sendFile(TLS_CA_CERT_PATH);
+});
+
+app.post('/api/network/certificate/install', async (req, res) => {
+  if (!fs.existsSync(TLS_CA_CERT_PATH)) return res.status(404).json({ error: 'Enable LAN access to create the certificate first.' });
+  const tempCertificate = path.join(os.tmpdir(), `Nexuzy-Lab-LAN-CA-${process.pid}.cer`);
+
+  const run = (command, args) => new Promise((resolve, reject) => {
+    execFile(command, args, { windowsHide: true }, (error, stdout, stderr) => {
+      if (error) {
+        const detail = String(stderr || stdout || error.message).trim();
+        reject(new Error(detail || error.message));
+        return;
+      }
+      resolve();
+    });
+  });
+
+  try {
+    fs.copyFileSync(TLS_CA_CERT_PATH, tempCertificate);
+    if (process.platform === 'win32') {
+      await run('certutil.exe', ['-user', '-addstore', 'root', tempCertificate]);
+      return res.json({ message: 'Nexuzy Lab Local Network CA was installed for your Windows user.' });
+    }
+    if (process.platform === 'darwin') {
+      await run('security', ['add-trusted-cert', '-d', '-r', 'trustRoot', '-k', `${os.homedir()}/Library/Keychains/login.keychain-db`, tempCertificate]);
+      return res.json({ message: 'Nexuzy Lab Local Network CA was added to this macOS user trust.' });
+    }
+    return res.status(501).json({
+      error: 'Automatic Linux certificate installation is not available here. Download the certificate, then install it with your Linux distribution certificate manager.',
+    });
+  } catch (error) {
+    res.status(500).json({ error: `Certificate installation failed: ${error.message}` });
+  } finally {
+    fs.rmSync(tempCertificate, { force: true });
+  }
+});
+
+app.post('/api/network', async (req, res) => {
+  const enabled = req.body?.enabled;
+  if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'Choose whether LAN access is enabled.' });
+  if (!readUsers().length) return res.status(403).json({ error: 'Create the administrator account before changing network access.' });
+  if (!enabled) {
+    writeJSON(NETWORK_PATH, { ...getNetworkConfig(), enabled: false });
+    res.json({ enabled: false });
+    setTimeout(() => stopLanServer(), 250);
+    return;
+  }
+  try {
+    ensureLanCertificates();
+    const port = await startLanServer();
+    res.json({ enabled: true, port, addresses: getLanAddresses() });
+  } catch (err) {
+    writeJSON(NETWORK_PATH, { ...getNetworkConfig(), enabled: false });
+    console.error(`  Could not enable LAN HTTPS access: ${err.message}`);
+    res.status(500).json({ error: `Could not start secure LAN access: ${err.message}` });
+  }
+});
 
 // Helper: safe filename from ID (replace slashes, etc.)
 function safeFileName(id) {
@@ -786,6 +1240,9 @@ app.get(LOCAL_PREFS_ROUTE, (req, res) => {
 });
 // { set: { key: string }, remove: [key] } - merged, never replaced wholesale.
 app.post(LOCAL_PREFS_ROUTE, express.json({ limit: '25mb' }), (req, res) => {
+  if (readUsers().length && req.authUser?.role !== 'admin') {
+    return res.status(403).json({ error: 'Only the administrator can change shared application settings.' });
+  }
   const { set = {}, remove = [] } = req.body || {};
   if (!set || typeof set !== 'object' || Array.isArray(set) || !Array.isArray(remove)) return errRes(res, 400, 'bad-request');
   const prefs = readJSON(LOCAL_PREFS_PATH, {});
@@ -1394,7 +1851,6 @@ app.get('/api/check-update', async (req, res) => {
 // when running from the source repo.
 // ============================================================
 import { spawn } from 'child_process';
-import os from 'os';
 
 const isWindows = process.platform === 'win32';
 const isMac = process.platform === 'darwin';
@@ -1516,7 +1972,7 @@ app.post('/api/control-panel/open-data-folder', (req, res) => {
 });
 
 app.post('/api/control-panel/open-backups-folder', (req, res) => {
-  const backupsHome = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'FreeGSTBill Backups');
+  const backupsHome = path.join(process.env.USERPROFILE || process.env.HOME || '', 'Documents', 'Nexuzy Ledger  Backups');
   try {
     if (!fs.existsSync(backupsHome)) fs.mkdirSync(backupsHome, { recursive: true });
     if (isWindows) spawn('explorer.exe', [backupsHome], { detached: true }).unref();
@@ -1653,10 +2109,10 @@ function todayLocalIso() {
 // v1.10.80 (#99) - a second copy of every daily backup in a folder the user
 // picks (another drive, a USB disk, a synced folder), so a failed C: drive does
 // not take the backups with it. Stored in meta.json as `backupFolder`; the
-// copies go in "<folder>/FreeGSTBill Backups/<date>", 30 days kept, and are
+// copies go in "<folder>/Nexuzy Ledger  Backups/<date>", 30 days kept, and are
 // listed and restorable like the ones in data/backups.
 const BACKUP_FOLDER_KEY = 'backupFolder';
-const EXTRA_BACKUP_SUBDIR = 'FreeGSTBill Backups';
+const EXTRA_BACKUP_SUBDIR = 'Nexuzy Ledger  Backups';
 const DATE_DIR = /^\d{4}-\d{2}-\d{2}$/;
 const extraBackupsDir = () => {
   const folder = readJSON(META_PATH, {})[BACKUP_FOLDER_KEY];
@@ -2180,14 +2636,34 @@ process.on('unhandledRejection', (err) => { console.error(`  Unexpected error (t
 let activeServer = null;
 function startServer(port) {
   const server = app.listen(port, '127.0.0.1', () => {
+    const address = server.address();
+    if (!server.listening || !address || typeof address === 'string') {
+      const err = new Error(`The server did not bind to port ${port}.`);
+      console.error(`  Failed to start server: ${err.message}`);
+      logFatal(err, 'startup');
+      return;
+    }
     activeServer = server;
+    const boundPort = address.port;
     // Persist the chosen port — the .bat launcher reads this for the browser URL.
     // Writing on EVERY successful boot means: if our preferred 47371 was busy and
     // we landed on 47372 instead, next launch tries 47372 first (cuts collision
     // scans in half on repeated reboots of whatever was holding 47371).
-    try { fs.writeFileSync(PORT_FILE, String(port), 'utf-8'); } catch { /* ignore */ }
-    console.log(`\n  Nexuzy Ledger running at http://localhost:${port}`);
+    try { fs.writeFileSync(PORT_FILE, String(boundPort), 'utf-8'); } catch { /* ignore */ }
+    console.log(`\n  Nexuzy Ledger running at http://localhost:${boundPort}`);
     console.log(`  Data stored in: ${DATA_DIR}\n`);
+    if (getNetworkConfig().enabled) {
+      try {
+        ensureLanCertificates();
+        startLanServer().catch((err) => {
+          writeJSON(NETWORK_PATH, { ...getNetworkConfig(), enabled: false });
+          console.error(`  Could not restart LAN HTTPS access: ${err.message}`);
+        });
+      } catch (err) {
+        writeJSON(NETWORK_PATH, { ...getNetworkConfig(), enabled: false });
+        console.error(`  Could not restart LAN HTTPS access: ${err.message}`);
+      }
+    }
   });
   server.on('error', (err) => {
     // v1.10.83 - EACCES too: Windows reserves port ranges for Hyper-V / WSL
@@ -2222,11 +2698,11 @@ function gracefulShutdown(signal) {
     process.exit(1);
   }, 3000);
   force.unref();
-  activeServer.close(() => {
+  stopLanServer().finally(() => activeServer.close(() => {
     clearTimeout(force);
     console.log('  Server closed cleanly.');
     process.exit(0);
-  });
+  }));
 }
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

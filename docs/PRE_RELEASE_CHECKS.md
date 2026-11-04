@@ -38,7 +38,7 @@ npm run release:check    # everything below marked [auto]
 - [auto] the release ZIP: `/` paths only (ERR-014, ERR-061), server.js where the launchers look, all four launcher files and READ ME FIRST present
 - [auto] **every `.command` and `.sh` executable inside the ZIP** (ERR-062: Macs refused to open the launcher, #120)
 - [auto] ensure-node.ps1 and check-node.sh are shipped (#109)
-- [auto] `_system/node_modules/express` is inside the ZIP: the packages ship with the app and no user's PC runs npm (v1.10.83)
+- [auto] `_system/server-bundle.json` is inside the ZIP and `node_modules/` is absent: bundled server starts without npm on the user's PC
 - [auto] the docs ZIP: `/` paths, index.html and support.html in the right folder (ERR-061)
 - [auto] every `.ps1` and READ ME FIRST.txt is plain ASCII (ERR-001); every `.sh` / `.command` uses LF (ERR-014)
 - [auto] supporters.json is valid

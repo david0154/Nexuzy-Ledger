@@ -31,7 +31,7 @@ done
 
 # Data deleted but backups kept: one last copy first. If that copy fails the
 # data is kept, never lost.
-BACKUP_HOME="$HOME/Documents/FreeGSTBill Backups"
+BACKUP_HOME="$HOME/Documents/Nexuzy Ledger  Backups"
 if [ -n "$DATA" ] && [ -z "$BACKUPS" ] && [ -n "$(ls -A "$SYS/data" 2>/dev/null)" ]; then
   mkdir -p "$BACKUP_HOME" 2>/dev/null &&
     tar -czf "$BACKUP_HOME/before-removal-$(date +%Y-%m-%d_%H-%M-%S).tar.gz" -C "$SYS" data || DATA=''

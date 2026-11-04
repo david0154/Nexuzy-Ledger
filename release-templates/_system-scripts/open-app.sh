@@ -36,14 +36,14 @@ problem() {
 }
 
 up() {
-  node -e "fetch('http://127.0.0.1:$PORT/api/profile').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" 2>/dev/null
+  node -e "fetch('http://127.0.0.1:$PORT/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" 2>/dev/null
 }
 
 command -v node >/dev/null 2>&1 || problem 'Node.js was not found.'
 node -e 'process.exit(+process.versions.node.split(".")[0] >= 18 ? 0 : 1)' || problem 'the Node.js on this computer is older than version 18.'
 
 if ! up; then
-  [ -f "$SYS/node_modules/express/package.json" ] || problem 'some of its files are missing.'
+  { [ -f "$SYS/server-bundle.json" ] && [ -f "$SYS/server.js" ]; } || [ -f "$SYS/node_modules/express/package.json" ] || problem 'some of its files are missing.'
   printf '  Starting Nexuzy Ledger...\n'
   (cd "$SYS" && nohup node "$SYS/server.js" >/dev/null 2>&1 &)
   # The first start after an install is the slow one (90s, as on Windows).

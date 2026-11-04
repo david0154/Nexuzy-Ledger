@@ -130,7 +130,7 @@ stop_app() {
 
 backup_data() {
   [ -n "$(ls -A "$SYS/data" 2>/dev/null)" ] || return 0
-  if [ -n "$TEST" ]; then home_dir="$TEST/Backups"; else home_dir="$HOME/Documents/FreeGSTBill Backups"; fi
+  if [ -n "$TEST" ]; then home_dir="$TEST/Backups"; else home_dir="$HOME/Documents/Nexuzy Ledger  Backups"; fi
   mkdir -p "$home_dir" || fail "Could not create $home_dir for the backup." 'Check the free space, then run the install line again.'
   BACKUP="$home_dir/pre-update-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
   tar -czf "$BACKUP" -C "$SYS" data || fail 'The backup of your data failed, so nothing was changed.' 'Check the free space, then run the install line again.'

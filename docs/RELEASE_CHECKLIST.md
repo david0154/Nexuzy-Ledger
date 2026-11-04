@@ -46,7 +46,7 @@ That is all — your data is not touched.
 ### Is my data safe?
 Yes. Invoices, clients, products and settings live in `_system/data/`,
 which an update never touches. The updater also takes an automatic backup
-to `Documents\FreeGSTBill Backups\` before it changes anything.
+to `Documents\Nexuzy Ledger  Backups\` before it changes anything.
 
 ### Something went wrong?
 Open an issue with a screenshot of the error:

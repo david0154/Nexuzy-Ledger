@@ -3,6 +3,7 @@ import { SITE } from '../site.mjs';
 const ui = (s) => `<span class="ui">${s}</span>`;
 const DONATION_URL = 'https://razorpay.me/@nexuzylab';
 const EMAIL = 'info@nexuzy.in';
+const WEBSITE = 'https://nexuzy.in';
 const share = encodeURIComponent(`I use Nexuzy Ledger for GST invoices and business records: ${SITE.repo}`);
 
 export default [
@@ -15,6 +16,7 @@ export default [
 <section id="about">
 <h2>Nexuzy Ledger by Nexuzy Lab</h2>
 <p>Nexuzy Ledger is developed by Nexuzy Lab. Developers: David and Manoj Konar. It is an offline-first GST billing and business accounting app for Indian businesses. The source code is available in this <a href="${SITE.repo}">GitHub repository</a> under the MIT licence.</p>
+<p><a href="${WEBSITE}" target="_blank" rel="noopener noreferrer">Visit Nexuzy Lab at nexuzy.in</a>.</p>
 <p>Invoices and business records are stored on your computer. Donations are entirely optional and do not unlock or change any app features.</p>
 <p>For details about how the app handles data, see <a href="security.html">Security and privacy</a>.</p>
 </section>

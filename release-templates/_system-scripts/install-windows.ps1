@@ -43,10 +43,9 @@ function Find-OtherInstall {
     }
   }
   $roots += Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
-  $roots += Join-Path $env:LOCALAPPDATA 'Programs\Nexuzy Ledger'
   foreach ($r in $roots) {
     if (-not $r -or $r.TrimEnd('\') -eq $here) { continue }
-    if ((Test-Path -LiteralPath (Join-Path $r '_system\server.js')) -and (Test-Path -LiteralPath (Join-Path $r '_system\node_modules'))) { return $r }
+    if (Test-Path -LiteralPath (Join-Path $r '_system\server.js')) { return $r }
   }
   return $null
 }
@@ -56,13 +55,17 @@ if (-not $env:FREEGSTBILL_DIR) {
     Write-Host '  Nexuzy Ledger is already installed on this computer, in:' -ForegroundColor Yellow
     Write-Host "    $other"
     Write-Host ''
-    Write-Host '  Installing again here would make a second copy with no invoices in it.'
-    Write-Host '  To get the newest version, update the installed copy instead:'
-    Write-Host '  open it from your Nexuzy Ledger shortcut, then'
-    Write-Host '  More options -> Update to the latest version.'
+    Write-Host '  Updating that installation from this package. Your business data stays in place.'
     Write-Host ''
-    Write-Host '  Nothing was changed. This folder is not needed; you can delete it.'
-    Read-Host '  Press Enter to close'
+    $updater = Join-Path $SystemDir 'update-windows.ps1'
+    if (-not (Test-Path -LiteralPath $updater)) {
+      Write-Host '  This package is missing its updater. Nothing was changed.' -ForegroundColor Red
+      Read-Host '  Press Enter to close'
+      exit 1
+    }
+    $powerShellExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    & $powerShellExe -NoProfile -ExecutionPolicy Bypass -File $updater -InstallTo $other
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     exit 0
   }
 }

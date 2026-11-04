@@ -122,7 +122,10 @@ else
 fi
 
 FROM=$(version_of "$SYSTEM_DIR")
-WORK=$(mktemp -d "${TMPDIR:-/tmp}/fgsb-update.XXXXXX") || fail 'Could not create a temporary folder.'
+# Keep the extracted package on the same filesystem as the install. This lets
+# the updater move staged directories into place instead of copying thousands
+# of files a second time.
+WORK=$(mktemp -d "$SYSTEM_DIR/.update-work.XXXXXX") || fail 'Could not create a temporary folder beside the app.'
 
 # --- Step 1: get the release ZIP --------------------------------------------
 ZIP="$WORK/update.zip"
@@ -143,7 +146,7 @@ const agent = { 'User-Agent': 'FreeGSTBill-Updater' };
   const info = releases.find((item) => !item.draft);
   if (!info) throw new Error('No published Nexuzy Ledger release was found.');
   const assets = info.assets || [];
-  const asset = assets.find((a) => /^Nexuzy-Ledger-v.+\.zip$/i.test(a.name)) || assets.find((a) => /\.zip$/i.test(a.name));
+  const asset = assets.find((a) => /^Nexuzy-Ledger(?:-v[\d.]+)?\.zip$/i.test(a.name));
   console.log(`  Latest release: ${info.tag_name}`);
   const attachment = String(info.body || '').match(/https:\/\/github\.com\/user-attachments\/files\/[^\s)<>]+\.zip(?=[)\s]|$)/i);
   const url = asset?.browser_download_url || attachment?.[0];
@@ -235,7 +238,7 @@ fi
 
 # --- Step 4: back up data/ before touching anything -------------------------
 if [ -d "$SYSTEM_DIR/data" ]; then
-  BACKUPS_HOME="${HOME:-$SYSTEM_DIR/..}/Documents/FreeGSTBill Backups"
+  BACKUPS_HOME="${HOME:-$SYSTEM_DIR/..}/Documents/Nexuzy Ledger  Backups"
   mkdir -p "$BACKUPS_HOME" || fail "Could not create $BACKUPS_HOME for the backup. Nothing was changed."
   BACKUP="$BACKUPS_HOME/pre-update-$(date +%Y-%m-%d_%H-%M-%S).tar.gz"
   say "Backing up your data to $BACKUP ..."
@@ -250,7 +253,8 @@ mkdir -p "$ROLLBACK"
 # v1.10.83 - a release that ships its packages replaces node_modules like any
 # other app folder (and a rollback puts the old one back); npm is not needed.
 SHIPPED=''
-[ -f "$NEW_SYSTEM/node_modules/express/package.json" ] && SHIPPED=1
+if { [ -f "$NEW_SYSTEM/server-bundle.json" ] && [ -f "$NEW_SYSTEM/server.js" ]; } ||
+   [ -f "$NEW_SYSTEM/node_modules/express/package.json" ]; then SHIPPED=1; fi
 STATE=applying
 for entry in "$NEW_SYSTEM"/* "$NEW_SYSTEM"/.[!.]*; do
   [ -e "$entry" ] || continue
@@ -266,7 +270,7 @@ for entry in "$NEW_SYSTEM"/* "$NEW_SYSTEM"/.[!.]*; do
   else
     printf '%s\n' "$name" >> "$WORK/added"
   fi
-  cp -R "$entry" "$SYSTEM_DIR/$name"
+  mv "$entry" "$SYSTEM_DIR/$name"
 done
 # v1.10.83 - a clean update: what an older version had and this one does not
 # goes into the rollback folder too (so a failed update still puts it back),
