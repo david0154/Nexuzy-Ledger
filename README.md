@@ -750,6 +750,13 @@ If the app saves you time, you can help keep it going:
    (for example `office-pc.local`) and the port shown in Users & devices.
    Staff do not need to open a browser to use the client.
 
+   **Staff client first-run setup:** On a new staff computer, open the staff
+   app and choose the discovered business host. If discovery is unavailable,
+   enter the host hostname/IP and port once. The client saves that host on the
+   device. On later opens, it goes directly to the Nexuzy Ledger login page and
+   asks only for the staff username and password. Use **Change host** only when
+   the business host or network address needs to be changed.
+
    **Certificate trust details:** The private Nexuzy Lab LAN root is generated
    locally and never bypasses TLS verification. Keep the root and intermediate
    certificate stores separate: the Nexuzy root belongs under

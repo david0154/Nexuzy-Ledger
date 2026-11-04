@@ -693,7 +693,10 @@ export default [
 </section>
 
 <section id="multi-user">
-<h2>Public internet hosting</h2>
+<h2>Administrator and staff accounts</h2>
+<p>The first launch on the host creates one local administrator account. The administrator opens <b>Settings → Users &amp; devices → Staff accounts</b>, creates one account per person, chooses a password of 6–16 characters, and assigns Billing, Accounts, Inventory, Payroll, or Read-only roles. The administrator can reset passwords, change roles, deactivate accounts, and manage secure LAN access. Staff do not create separate books or administrator accounts.</p>
+<h2>Staff desktop client setup</h2>
+<p>Enable <b>Secure LAN access</b>, install the device trust certificate, and install the separate Windows, macOS, or Linux Staff desktop application. On first opening, choose the discovered host or enter its hostname/IP and port once. The client saves the host locally; later openings go directly to staff login and ask only for username and password. Use <b>Change host</b> if the host address changes.</p>
 <p>Office LAN access is supported over HTTPS with separate accounts, but the app is not designed for public internet hosting on Railway, Render, a VPS or another internet server. See <a href="settings.html#users-and-devices">Users &amp; devices</a>, <a href="security.html#network">LAN security</a> and <a href="security.html#host-online">why public hosting is not supported</a>.</p>
 </section>
 

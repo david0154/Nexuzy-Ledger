@@ -115,12 +115,18 @@ folder, run `$env:FREEGSTBILL_DIR = 'D:\Apps\Nexuzy Ledger'` first.
 <a id="accounts-and-multiple-devices"></a>
 ## 3. Accounts and multiple devices
 
-The app remains local-only until the administrator turns on **Settings →
-Users & devices → Enable secure LAN access**. On the host, add a separate staff
-account for each person. Staff can create and update business records but
-cannot open Settings, manage users, change company settings, or back up/restore
-the books. The administrator can deactivate a staff account or reset its
-password; each person can also change their own password.
+On first launch, the host creates one administrator account. That administrator
+must sign in and can then create separate staff accounts under **Settings →
+Users & devices → Staff accounts**. Give each person a unique username and a
+password of 6–16 characters, then assign one or more roles: Billing, Accounts,
+Inventory, Payroll, or Read-only. Read-only must be the only role on that
+account. The administrator can change roles, reset passwords, or deactivate
+staff accounts without changing the administrator account or the business data.
+
+Staff can create and update records allowed by their assigned roles, but cannot
+open administrator Settings, manage users, change company settings, or
+back up and restore the books. Each user signs in separately and passwords are
+stored as salted hashes, never as readable text.
 
 When LAN access is enabled:
 
@@ -134,9 +140,14 @@ When LAN access is enabled:
    Authorities**. On macOS, add it to Keychain Access and set it to **Always
    Trust**. On phones/tablets, use the device's certificate installation and
    trust settings.
-3. Open one of the `https://` addresses shown in Settings and sign in with
-   your own account. Use the browser's **Install app** or **Add to Home
-   Screen** option if you want a shortcut.
+3. Install the separate Nexuzy Ledger Staff desktop application for Windows,
+   macOS, or Linux. On first launch, select the discovered host (or enter its
+   hostname/IP and port once). The staff app saves this host on that computer.
+   Every later launch opens the host login directly and asks only for the
+   staff username and password. The saved host can be changed with **Change
+   host**.
+   Windows users run the Setup EXE, macOS users open the DMG and copy the app
+   to Applications, and Linux users install the DEB or open the AppImage.
 4. If a device cannot connect, allow Nexuzy Ledger through the host's firewall
    on **Private networks only**. A DHCP reservation for the host is recommended
    so its address remains stable.
